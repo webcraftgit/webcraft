@@ -1,0 +1,15 @@
+const puppeteer=require("puppeteer-core"); const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+(async()=>{const b=await puppeteer.launch({executablePath:"/opt/google/chrome/chrome",args:["--no-sandbox","--disable-dev-shm-usage"],protocolTimeout:120000});
+ const p=await b.newPage(); await p.setViewport({width:1440,height:1000});
+ await p.emulateMediaFeatures([{name:"prefers-reduced-motion",value:"no-preference"}]);
+ await p.goto("http://localhost:3000/#showcase",{waitUntil:"domcontentloaded"}); await sleep(4000);
+ await p.evaluate(()=>[...document.querySelectorAll("button[aria-label]")].find(x=>/nokturn/i.test(x.getAttribute("aria-label")||"")).click());
+ await sleep(4500); await p.waitForSelector('div[role="dialog"] img[src*="/demo/nokturn/"]',{timeout:20000}); await sleep(3500);
+ const clip=await p.evaluate(()=>{const d=document.querySelector('div[role="dialog"]');
+  const a=[...d.querySelectorAll("article")]; a[0].scrollIntoView({block:"center"}); return null;});
+ await sleep(1500);
+ const box=await p.evaluate(()=>{const d=document.querySelector('div[role="dialog"]');
+  const a=[...d.querySelectorAll("article")]; const r1=a[0].getBoundingClientRect(), r2=a[1].getBoundingClientRect();
+  return {x:Math.round(r1.x)-10,y:Math.round(r1.y)-10,width:Math.round(r2.right-r1.x)+20,height:Math.round(r1.height)+20};});
+ await p.screenshot({path:"/mnt/user-data/outputs/nokturn-tee-in-grid.png",clip:box});
+ await b.close();})();

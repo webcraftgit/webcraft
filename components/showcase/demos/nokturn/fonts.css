@@ -1,0 +1,25 @@
+/* NOKTURN — display face.
+ *
+ * Metal Macabre is not on npm or Fontsource and is not redistributable through
+ * this repo, so it is a DROP-IN SLOT rather than a dependency: put the file at
+ * public/fonts/metal-macabre.woff2 and it takes over everywhere the wordmark
+ * is set, with no code change. Until then the stack falls through to
+ * UnifrakturMaguntia, which is the same blackletter genre, self-hosted from
+ * npm, and metrically close enough that the layout does not move when the real
+ * face lands. See public/fonts/README.txt.
+ *
+ * Both formats are declared because these display faces are usually shipped as
+ * .ttf; a converted .woff2 is roughly a third of the size, so convert if you
+ * can, but dropping the .ttf in alone still works.
+ *
+ * font-display: swap — the wordmark is decorative and must never block the
+ * catalogue from painting. */
+@font-face {
+  font-family: "Metal Macabre";
+  src:
+    url("/fonts/metal-macabre.woff2") format("woff2"),
+    url("/fonts/metal-macabre.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}

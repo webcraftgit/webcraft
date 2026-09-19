@@ -1,0 +1,82 @@
+/* NOKTURN hero — hanging chain swing.
+ *
+ * A pendulum, not a wobble: rotate about the hitch point (transform-origin is
+ * set per chain from the artwork), ease-in-out so the chain slows at each end
+ * of its arc, `alternate` so it swings back rather than snapping. Amplitude
+ * and period differ per chain — a longer chain swings slower (period ~
+ * sqrt(length)) and through a smaller angle, which is what makes three chains
+ * read as physical rather than one animation copied three times.
+ *
+ * Pure CSS transform: composited, no JS per frame. */
+@keyframes nokturn-swing {
+  from { transform: rotate(calc(var(--swing, 1.5deg) * -1)); }
+  to   { transform: rotate(var(--swing, 1.5deg)); }
+}
+
+.nokturn-chain {
+  animation: nokturn-swing var(--period, 4s) ease-in-out var(--delay, 0s) infinite alternate;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nokturn-chain { animation: none; }
+}
+
+/* Scroll cue (CP4_29) — a short bright segment travelling down a 1px track,
+ * fading at both ends so it reads as a drip rather than a loading bar. */
+@keyframes nokturn-cue {
+  0%   { transform: translateY(-100%); opacity: 0; }
+  30%  { opacity: 1; }
+  100% { transform: translateY(200%); opacity: 0; }
+}
+
+.nokturn-cue {
+  animation: nokturn-cue 2.2s cubic-bezier(0.65, 0, 0.35, 1) 1.8s infinite;
+  opacity: 0;
+}
+
+.nokturn-cue-label { color: #8A867E; }
+.group:hover .nokturn-cue-label,
+.group:focus-visible .nokturn-cue-label { color: #E6E1D6; }
+
+@media (prefers-reduced-motion: reduce) {
+  .nokturn-cue { animation: none; opacity: 1; }
+}
+
+/* Fog drift (CP4_31) — exactly one tile per loop, so the seam never shows. */
+@keyframes nokturn-fog {
+  from { transform: translateX(0); }
+  to   { transform: translateX(var(--fog-shift, -1400px)); }
+}
+.nokturn-fog {
+  animation: nokturn-fog var(--fog-period, 120s) linear infinite;
+  will-change: transform;
+}
+
+/* Fog swell (CP4_34) — a slow rise-and-thicken from the ground line.
+ * scaleY from the bottom, so it never lifts off the edge and opens a gap. */
+@keyframes nokturn-fog-swell {
+  from { transform: scaleY(1);    opacity: 0.75; }
+  to   { transform: scaleY(1.12); opacity: 1; }
+}
+.nokturn-fog-swell {
+  transform-origin: 50% 100%;
+  animation: nokturn-fog-swell var(--swell-period, 11s) ease-in-out var(--swell-delay, 0s) infinite alternate;
+  will-change: transform, opacity;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nokturn-fog, .nokturn-fog-swell { animation: none; }
+}
+
+/* Mobile chain zoom (CP4_33). The chain layer is laid out in cqw of the hero,
+ * which is right on desktop and far too small on a phone. Scale it up from
+ * top-centre and let the hero's overflow crop the sides. The zoom is the
+ * one dial: 1.6 puts link size on a 390px phone at roughly what it is on
+ * a 1024px screen. */
+@media (max-width: 639px) {
+  .nokturn-chains-frame {
+    transform: scale(1.6);
+    transform-origin: 50% 0;
+  }
+}

@@ -1,0 +1,16 @@
+node_modules
+.next
+out
+# Secrets. `.env*.local` alone left a plain `.env` or `.env.production`
+# trackable, and those are the files people actually paste live Supabase
+# service-role keys into. Ignore every env file, then re-admit the committed
+# template: README.md and docs/SETUP.md both point at `.env.example`, so it
+# has to stay tracked or the setup runbook breaks.
+.env
+.env.*
+!.env.example
+.DS_Store
+*.tsbuildinfo
+
+
+.vercel
