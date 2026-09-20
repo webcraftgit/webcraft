@@ -114,18 +114,25 @@ export default function ContactSection() {
         className="container-x relative grid gap-12 py-[clamp(96px,12vw,160px)] lg:grid-cols-[1fr_1.1fr] lg:gap-16"
       >
         {/* ——— pitch ——— */}
+        {/* CP4_54 — MOBILE FRICTION. Arriving here from "Rozpocznij projekt",
+            the whole first screen was the eyebrow + heading + a paragraph of
+            supporting copy: the visitor landed on a headline with no visible
+            way to act. On phones the eyebrow and the intro are hidden, so the
+            reply promise and the email address are on the first screen with
+            the heading. Both stay in the DOM (display:none, not removed), so
+            the crawler and the desktop layout are unchanged. */}
         <div>
-          <p data-reveal className="eyebrow mb-4">
+          <p data-reveal className="eyebrow mb-4 hidden md:block">
             {t.contact.eyebrow}
           </p>
           <h2 data-reveal id="contact-heading" className="heading-2 max-w-[16ch]">
             {t.contact.heading}
           </h2>
-          <p data-reveal className="mt-5 max-w-[46ch] text-lg text-ink-soft">
+          <p data-reveal className="mt-5 hidden max-w-[46ch] text-lg text-ink-soft md:block">
             {t.contact.intro}
           </p>
 
-          <p data-reveal className="mt-8 flex items-center gap-2.5 text-[15px] font-medium text-ink">
+          <p data-reveal className="mt-6 flex items-center gap-2.5 text-[15px] font-medium text-ink md:mt-8">
             <span className="relative flex h-2.5 w-2.5" aria-hidden>
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent-green opacity-60" />
               <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-accent-green" />
@@ -133,7 +140,7 @@ export default function ContactSection() {
             {t.contact.replyPromise}
           </p>
 
-          <p data-reveal className="mt-6 text-[14px] text-ink-soft">
+          <p data-reveal className="mt-4 text-[14px] text-ink-soft md:mt-6">
             {t.contact.preferEmailPre}
             <a
               href={`mailto:${CONTACT_EMAIL}`}

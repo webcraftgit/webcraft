@@ -105,6 +105,17 @@ html.lenis, html.lenis body { height: auto; }
   to { transform: translate3d(10px, -18px, 0); opacity: 0.9; }
 }
 
+/* CP4_54: these dots live inside a `mask-image` band. A masked box is one
+ * raster layer, so anything animating inside it can drag the whole band into
+ * a repaint on every frame — on a phone that lands squarely on the scroll,
+ * which is the hiccup the client reported. Promoting each dot gives it its
+ * own tiny composited layer, so transform + opacity run on the compositor and
+ * the band itself is never repainted. They are 7–15px; the memory is nothing. */
+.drift-dot {
+  will-change: transform, opacity;
+  contain: layout paint;
+}
+
 /* ---------- CP2.7: metallic slide cards ---------- */
 .metal-card {
   background:

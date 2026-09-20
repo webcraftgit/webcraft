@@ -1184,12 +1184,177 @@ function SizeChart({
   );
 }
 
+/* ———————————————————— opening gate (CP4_54) ————————————————————
+ *
+ * THE PROBLEM. Opening the demo from the showcase looked broken: a second of
+ * nothing, then the whole store appeared at once with no intro. The hero DOES
+ * have an intro (the cross wiping up through its glow) — it just never got
+ * seen. Two reasons, and both had to be fixed:
+ *
+ *   1. The site is a `dynamic()` chunk. On click the overlay mounts empty
+ *      while the JS, the four webfonts and the 110KB mark artwork are still
+ *      in flight. That is the "lag for a second".
+ *   2. When it finally mounts, all of that work lands on the main thread at
+ *      once. The intro's first frames are dropped, the browser catches up at
+ *      the end state, and the animation reads as a jump cut.
+ *
+ * THE FIX, as the client asked for it: the cross becomes the loading bar. It
+ * fills from the TOP DOWN, and its fill is tied to real progress — every hero
+ * asset plus `document.fonts.ready` — so it cannot finish before the store is
+ * genuinely ready to be shown. Underneath, the hero plays its own intro
+ * unwatched and settles, so when the gate lifts there is a finished page
+ * behind it rather than one that starts moving.
+ *
+ * TWO DIALS. GATE_MIN_MS is the floor: on a warm cache everything is ready in
+ * 80ms, and a bar that fills instantly is worse than no bar, so the fill is
+ * never faster than this. GATE_MAX_MS is the ceiling — a dead image request
+ * must never hold the store shut, so past it the gate opens regardless.
+ */
+const GATE_MIN_MS = 2200; // the fill always takes at least this long
+const GATE_MAX_MS = 8000; // …and never longer than this, whatever fails
+const GATE_HOLD_MS = 320; // a beat at 100% before it lifts
+
+const GATE_ASSETS = [
+  MARK,
+  MARK_GLOW,
+  `${CHAIN_DIR}/rail.webp`,
+  `${CHAIN_DIR}/v1.webp`,
+  `${CHAIN_DIR}/v2.webp`,
+  `${CHAIN_DIR}/v3.webp`,
+];
+
+function OpeningGate({ above, onDone }: { above: number; onDone: () => void }) {
+  const p = useMotionValue(0);
+  /* inset() takes the distance from each edge, so the BOTTOM inset shrinking
+     from 100% to 0% is a fill travelling downward. */
+  const remaining = useTransform(p, (v) => (1 - v) * 100);
+  const clipPath = useMotionTemplate`inset(0% 0% ${remaining}% 0%)`;
+
+  useEffect(() => {
+    let raf = 0;
+    let timer = 0;
+    let alive = true;
+
+    const start = performance.now();
+    const total = GATE_ASSETS.length + 1; // + the webfonts
+    let done = 0;
+    const bump = () => {
+      done += 1;
+    };
+
+    GATE_ASSETS.forEach((src) => {
+      const img = new Image();
+      img.onload = bump;
+      img.onerror = bump; // a missing file must not wedge the bar
+      img.src = src;
+    });
+
+    const fonts = document.fonts?.ready;
+    if (fonts) fonts.then(bump, bump);
+    else bump();
+
+    const tick = () => {
+      if (!alive) return;
+      const elapsed = performance.now() - start;
+      const byTime = elapsed / GATE_MIN_MS;
+      /* Starts at 8% so the bar is visibly alive from the first frame, then
+         tracks the real work. Taking the MINIMUM of the two is what makes it
+         honest: it can neither outrun the loading nor finish before the floor. */
+      const byWork = 0.08 + (done / total) * 0.92;
+      const value = elapsed >= GATE_MAX_MS ? 1 : Math.min(1, byTime, byWork);
+
+      p.set(value);
+
+      if (value >= 1) {
+        timer = window.setTimeout(onDone, GATE_HOLD_MS);
+        return;
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+
+    return () => {
+      alive = false;
+      cancelAnimationFrame(raf);
+      window.clearTimeout(timer);
+    };
+  }, [p, onDone]);
+
+  return (
+    <motion.div
+      /* Sits above everything INSIDE the demo root (never `fixed` — see the
+         layout note at the top of this file). Opaque, and it swallows input
+         so nothing can be scrolled or clicked half-loaded. */
+      className="absolute inset-0 z-50"
+      style={{ background: T.void }}
+      initial={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
+      aria-hidden
+    >
+      {/* THE BOX IS THE HERO'S BOX. The gate hands over to the hero's own
+          mark, and if the two are drawn at different sizes the handover reads
+          as the logo jumping — the exact class of "slight hiccup" this whole
+          change exists to remove. So the frame below reproduces the hero's
+          geometry exactly: the section rect (everything under the header),
+          then the mark's own insets inside it. Both images are
+          `object-contain`ed into identical boxes, so they register to the
+          pixel and the crossfade is the glow lighting, nothing moving. */}
+      <div className="absolute inset-x-0 bottom-0" style={{ top: above }}>
+        <div
+          className="absolute inset-x-[14%] top-[12%] sm:inset-x-5 sm:top-[4%] lg:inset-x-12"
+          style={{ bottom: CUE_H }}
+        >
+        {/* the unlit cross — the empty half of the bar */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={MARK}
+          alt=""
+          className="absolute inset-0 h-full w-full object-contain"
+          style={{ opacity: 0.1, filter: "grayscale(1) brightness(0.8)" }}
+          draggable={false}
+        />
+        {/* the lit cross, revealed top-down */}
+        <motion.div className="absolute inset-0" style={{ clipPath }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={MARK}
+            alt=""
+            className="absolute inset-0 h-full w-full object-contain"
+            draggable={false}
+          />
+        </motion.div>
+        </div>
+      </div>
+
+      {/* a hairline low in the frame, filling with the same value — it is what
+          says "loading" rather than "decorative", which a logo alone does not.
+          It sits roughly where the hero's scroll cue will be, so that hands
+          over too. */}
+      <div className="absolute inset-x-0 flex justify-center" style={{ bottom: 46 }}>
+        <div className="h-px w-[42%] max-w-[260px]" style={{ background: T.rule }}>
+          <motion.div
+            className="h-full origin-left"
+            style={{ scaleX: p, background: T.signal }}
+          />
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
 /* ———————————————————— the site ———————————————————— */
 
 export default function NokturnSite({ preview = false }: { preview?: boolean }) {
   const c = useNokturnCopy();
   const reduced = usePrefersReducedMotion();
   const still = preview || reduced;
+
+  /* The preview card and reduced-motion both skip the gate outright: a card on
+     the home page must not spend two seconds black, and a visitor who asked
+     for less motion should not be made to watch a loading animation. */
+  const [gateDone, setGateDone] = useState(still);
+  const openGate = useCallback(() => setGateDone(true), []);
 
   const [view, setView] = useState<string | null>(null); // null = shop, else product id
   const [cat, setCat] = useState<Category | "all">("all");
@@ -1340,6 +1505,10 @@ export default function NokturnSite({ preview = false }: { preview?: boolean }) 
       style={{ background: T.void, color: T.bone, fontFamily: UI }}
     >
       <Atmosphere />
+
+      <AnimatePresence>
+        {!gateDone && <OpeningGate key="gate" above={aboveH} onDone={openGate} />}
+      </AnimatePresence>
 
       <p aria-live="polite" className="sr-only">
         {announce}

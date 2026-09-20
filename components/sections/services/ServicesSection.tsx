@@ -129,6 +129,15 @@ function WheelSlide({ i, rotation, active, service, onFocus }: SlideProps) {
     const a = Math.abs(p);
     return a <= 1 ? 1 - a * 0.4 : Math.max(0, 0.6 - (a - 1) * (0.6 / 0.45));
   });
+  /* CP4_54 — MOBILE SCROLL JANK. Every disc carried a live `filter`
+   * (blur + brightness) even at rest, where it evaluates to `blur(0px)`.
+   * A non-none filter is not free: it forces the disc onto its own
+   * composited layer, and a phone re-rasterizes that layer — 340px wide,
+   * with an inset sheen and a 70px shadow — whenever the layer's texture
+   * is evicted. Scrolling past evicts it, which is exactly the "the
+   * bubbles blink out for a frame" the client is seeing.
+   * Desktop keeps the depth-of-field; mobile gets scale + opacity only,
+   * which the compositor animates without repainting anything. */
   const filter = useTransform(pos, (p) => {
     const a = Math.min(Math.abs(p), 1.2);
     return `blur(${(a * 6).toFixed(2)}px) brightness(${(1 - a * 0.24).toFixed(3)})`;
@@ -145,10 +154,22 @@ function WheelSlide({ i, rotation, active, service, onFocus }: SlideProps) {
       className="pointer-events-none absolute inset-x-0 top-16 flex list-none justify-center md:top-24"
     >
       <motion.div
-        style={{ x, y, rotate, scale, opacity, filter, pointerEvents }}
+        style={{
+          x,
+          y,
+          rotate,
+          scale,
+          opacity,
+          // static string on phones: no filter, no extra layer, no repaint
+          filter: isMobile ? "none" : filter,
+          pointerEvents,
+        }}
         onClick={onFocus}
         className={cn(
-          "w-[min(86vw,340px)] will-change-transform md:w-[460px] lg:w-[560px]",
+          "w-[min(86vw,340px)] md:w-[460px] lg:w-[560px]",
+          // four permanently promoted layers is a lot of texture memory on a
+          // phone; only the disc in focus keeps the hint
+          active && "will-change-transform",
           !active && "cursor-pointer"
         )}
       >
@@ -245,10 +266,10 @@ export default function ServicesSection() {
             </div>
           ) : (
             <div className="absolute inset-0">
-              {[...Array(14)].map((_, i) => (
+              {[...Array(isMobile ? 8 : 14)].map((_, i) => (
                 <span
                   key={i}
-                  className="absolute block rounded-full bg-brand-400/40"
+                  className="drift-dot absolute block rounded-full bg-brand-400/40"
                   style={{
                     width: 7 + (i % 3) * 4,
                     height: 7 + (i % 3) * 4,

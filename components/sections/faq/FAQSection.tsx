@@ -1,10 +1,11 @@
 "use client";
 
-import { useId, useState } from "react";
+import { useCallback, useId, useRef, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useReveal } from "@/hooks/useReveal";
 import { useT } from "@/components/i18n/LanguageProvider";
+import { scrollWindowTo } from "@/lib/scroll-to";
 
 /**
  * FAQ (CP4) — glass accordion. Open/close is pointer-driven, so Framer
@@ -21,6 +22,58 @@ export default function FAQSection() {
   const reveal = useReveal<HTMLDivElement>();
   const [open, setOpen] = useState<number | null>(0);
   const baseId = useId();
+
+  /* CP4_54 — CENTRE THE ANSWER YOU JUST OPENED.
+   *
+   * Opening an item near the bottom of the screen pushed its answer below the
+   * fold, so the reward for tapping was a scroll. Now the page moves the item
+   * into the middle of the viewport.
+   *
+   * The catch: at the moment of the click the panel is still 0px tall and the
+   * previously-open panel is still at full height, so measuring the live
+   * layout would centre on geometry that is about to change. Waiting for the
+   * 450ms collapse to finish instead would mean the page sits still and THEN
+   * lurches. So the final geometry is PREDICTED from the two heights we
+   * already know — the answer's own content height, and the height the item
+   * above is about to give back — and the scroll starts on the same frame as
+   * the accordion. The two animations run together and land together.
+   *
+   * A tall answer is top-aligned under the navbar instead of centred, because
+   * centring something taller than the screen hides its first line. */
+  const items = useRef<Array<HTMLDivElement | null>>([]);
+  const panels = useRef<Array<HTMLDivElement | null>>([]);
+  const NAV_CLEARANCE = 108; // fixed navbar + a little air
+
+  /** natural (fully open) height of panel i, measured from its content */
+  const panelHeight = (i: number) => {
+    const inner = panels.current[i]?.firstElementChild as HTMLElement | null;
+    return inner?.offsetHeight ?? 0;
+  };
+
+  const toggle = useCallback(
+    (i: number) => {
+      const prev = open;
+      const next = prev === i ? null : i;
+      setOpen(next);
+      if (next === null) return; // closing: leave the page where it is
+
+      const el = items.current[i];
+      if (!el) return;
+
+      const rect = el.getBoundingClientRect();
+      // an item ABOVE this one collapsing lifts everything below it
+      const lift = prev !== null && prev < i ? panelHeight(prev) : 0;
+      const top = rect.top - lift;
+      const height = rect.height + panelHeight(i);
+
+      const vh = window.innerHeight;
+      const offset =
+        height > vh - NAV_CLEARANCE ? NAV_CLEARANCE : (vh - height) / 2;
+
+      scrollWindowTo(window.scrollY + top - offset);
+    },
+    [open]
+  );
 
   return (
     <section id="faq" aria-labelledby="faq-heading" className="relative">
@@ -40,6 +93,9 @@ export default function FAQSection() {
             return (
               <div
                 key={item.q}
+                ref={(node) => {
+                  items.current[i] = node;
+                }}
                 className="glass overflow-hidden rounded-card transition-colors duration-300"
                 style={{
                   borderColor: isOpen ? "var(--glass-border-hover)" : undefined,
@@ -50,7 +106,7 @@ export default function FAQSection() {
                     id={btnId}
                     aria-expanded={isOpen}
                     aria-controls={panelId}
-                    onClick={() => setOpen(isOpen ? null : i)}
+                    onClick={() => toggle(i)}
                     className="flex w-full items-center justify-between gap-6 px-5 py-4 text-left md:px-6 md:py-5"
                   >
                     <span className="font-display text-[clamp(1.02rem,1.4vw,1.2rem)] font-medium leading-snug text-ink">
@@ -92,6 +148,9 @@ export default function FAQSection() {
                   * before the collapse finished animating. */}
                 <motion.div
                   id={panelId}
+                  ref={(node) => {
+                    panels.current[i] = node;
+                  }}
                   role="region"
                   aria-labelledby={btnId}
                   aria-hidden={!isOpen}

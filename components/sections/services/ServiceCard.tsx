@@ -117,10 +117,13 @@ export default function ServiceCard({ service, active, index }: Props) {
 
   return (
     /* idle float -- only the disc in focus breathes */
+    /* CP4_54: the bob is OFF on phones. Framer drives it from the main thread
+       on every frame, forever — competing with Lenis's scroll loop on exactly
+       the hardware that has the least headroom. Desktop keeps it. */
     <motion.div
-      animate={reduced || !active ? { y: 0 } : { y: [0, -8, 0] }}
+      animate={reduced || isMobile || !active ? { y: 0 } : { y: [0, -8, 0] }}
       transition={
-        reduced || !active
+        reduced || isMobile || !active
           ? { duration: 0.3 }
           : { duration: 5 + index * 0.9, repeat: Infinity, ease: "easeInOut" }
       }
