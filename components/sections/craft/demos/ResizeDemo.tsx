@@ -6,9 +6,29 @@ import { usePrefersReducedMotion } from "@/hooks/useMediaQuery";
 import { cn } from "@/lib/utils";
 import { useT } from "@/components/i18n/LanguageProvider";
 
-const MIN_W = 240;
 const BP_TABLET = 560; // px — mini-viewport breakpoints, not real media queries
 const BP_MOBILE = 420;
+
+/* CP4_55 — THE DEMO WAS UNUSABLE ON A PHONE.
+ *
+ * The breakpoints above are REAL pixels of the mini viewport, and the mini
+ * viewport can only ever be as wide as the card holding it. On a 390px phone
+ * that card is ~300px — so the drag had about 60px of travel between the
+ * floor and the card edge, and 560px (let alone "desktop") was not reachable
+ * at any point. The handle worked; there was simply nowhere for it to go.
+ *
+ * The fix is the one every responsive-preview tool uses: on a narrow card the
+ * mini viewport REPRESENTS a wider screen than it physically occupies. Drag
+ * distance maps onto a virtual width via `scale`, and the breakpoints and the
+ * px readout both read the VIRTUAL number — so the readout stays truthful
+ * about the screen being simulated, which is the thing the demo is about.
+ * Above REF_W the scale is exactly 1 and desktop behaviour is untouched.
+ *
+ * The floor moves with the card too (half its width, rather than a fixed
+ * 240px that a 300px card cannot go meaningfully below), so there is real
+ * travel on both sides of both breakpoints at any card size. */
+const REF_W = 700; // card width at which the mini viewport is 1:1
+const MIN_W = 240; // floor, in real px, on a card wide enough for it
 
 type Bp = "desktop" | "tablet" | "mobile";
 const bpOf = (w: number): Bp => (w < BP_MOBILE ? "mobile" : w < BP_TABLET ? "tablet" : "desktop");
@@ -27,14 +47,21 @@ export default function ResizeDemo() {
   const width = useMotionValue<number>(720);
   const [bp, setBp] = useState<Bp>("desktop");
 
+  /* 1 on a roomy card; >1 on a phone, where every real pixel of drag stands
+     for more than one pixel of simulated screen. */
+  const scale = maxW >= REF_W ? 1 : REF_W / maxW;
+  const minW = maxW >= REF_W ? MIN_W : Math.round(maxW * 0.5);
+
   /* keep the mini viewport inside its card at any card size */
   useEffect(() => {
     const el = track.current;
     if (!el) return;
     const ro = new ResizeObserver(([e]) => {
-      const m = Math.max(MIN_W, e.contentRect.width);
+      const m = Math.max(160, e.contentRect.width);
       setMaxW(m);
+      const floor = m >= REF_W ? MIN_W : Math.round(m * 0.5);
       if (width.get() > m) width.set(m);
+      if (width.get() < floor) width.set(floor);
       if (width.get() === 720) width.set(m); // initial: fill
     });
     ro.observe(el);
@@ -42,9 +69,13 @@ export default function ResizeDemo() {
   }, [width]);
 
   useMotionValueEvent(width, "change", (w) => {
-    const next = bpOf(w);
+    const next = bpOf(w * scale); // virtual width decides the breakpoint
     setBp((prev) => (prev === next ? prev : next));
   });
+  /* the card can be resized under a parked handle — re-evaluate on scale change */
+  useEffect(() => {
+    setBp(bpOf(width.get() * scale));
+  }, [scale, width]);
 
   const layout = {
     desktop: { cols: "grid-cols-3", navLinks: 3, stackNav: false },
@@ -55,7 +86,7 @@ export default function ResizeDemo() {
   const setFromPointer = (clientX: number) => {
     const r = track.current?.getBoundingClientRect();
     if (!r) return;
-    width.set(Math.min(maxW, Math.max(MIN_W, clientX - r.left)));
+    width.set(Math.min(maxW, Math.max(minW, clientX - r.left)));
   };
 
   return (
@@ -140,7 +171,7 @@ export default function ResizeDemo() {
         </div>
 
         {/* width readout */}
-        <WidthReadout width={width} />
+        <WidthReadout width={width} scale={scale} />
       </motion.div>
 
       {/* drag handle — sits on the mini viewport's right edge */}
@@ -159,11 +190,13 @@ export default function ResizeDemo() {
         }}
         onKeyDown={(e) => {
           const step = e.shiftKey ? 80 : 24;
-          if (e.key === "ArrowLeft") width.set(Math.max(MIN_W, width.get() - step));
+          if (e.key === "ArrowLeft") width.set(Math.max(minW, width.get() - step));
           if (e.key === "ArrowRight") width.set(Math.min(maxW, width.get() + step));
         }}
         className={cn(
           "absolute top-[calc(50%+14px)] z-10 flex h-16 w-5 -translate-y-1/2 cursor-ew-resize touch-none items-center justify-center rounded-full",
+          // a 20px-wide target is fine for a mouse and poor for a thumb
+          "after:absolute after:-inset-y-2 after:-inset-x-3 after:content-['']",
           "-ml-2.5 border border-brand-400/40 bg-bg-soft shadow-[0_0_16px_rgba(56,189,248,0.3)]",
           !reduced && "transition-shadow hover:shadow-[0_0_24px_rgba(56,189,248,0.55)]"
         )}
@@ -178,10 +211,17 @@ export default function ResizeDemo() {
 }
 
 /** live px readout without re-rendering the demo per pixel */
-function WidthReadout({ width }: { width: ReturnType<typeof useMotionValue<number>> }) {
+function WidthReadout({
+  width,
+  scale,
+}: {
+  width: ReturnType<typeof useMotionValue<number>>;
+  scale: number;
+}) {
   const [w, setW] = useState(0);
-  useMotionValueEvent(width, "change", (v) => setW(Math.round(v)));
-  useEffect(() => setW(Math.round(width.get())), [width]);
+  // the SIMULATED width, which is what the demo is claiming to show
+  useMotionValueEvent(width, "change", (v) => setW(Math.round(v * scale)));
+  useEffect(() => setW(Math.round(width.get() * scale)), [width, scale]);
   return (
     <span className="pointer-events-none absolute bottom-2 right-2.5 font-mono text-[10.5px] tabular-nums text-ink-soft/80">
       {w}px

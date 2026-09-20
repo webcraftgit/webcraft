@@ -14,6 +14,8 @@ import { useIsMobile, usePrefersReducedMotion } from "@/hooks/useMediaQuery";
 import { cn } from "@/lib/utils";
 import { useT } from "@/components/i18n/LanguageProvider";
 import { DemoPreviewContext } from "@/components/showcase/DemoHeading";
+import { scrollWindowTo } from "@/lib/scroll-to";
+import { ScrollTrigger } from "@/lib/gsap";
 
 /* demo sites lazy-load — they carry their own R3F canvases */
 const BlackwoodSite = dynamic(() => import("./demos/blackwood/BlackwoodSite"));
@@ -156,7 +158,62 @@ export default function ShowcaseGallery() {
   const [open, setOpen] = useState<Demo | null>(null);
   const closeBtn = useRef<HTMLButtonElement>(null);
 
-  const close = useCallback(() => setOpen(null), []);
+  /* CP4_55 — COMING BACK OUT OF A DEMO DUMPED YOU IN THE PROCESS SECTION.
+   *
+   * While the player is open the grid is `hidden` (deliberate — it is what
+   * unmounts the previews' WebGL behind the overlay, CP3.6). But `hidden`
+   * removes it from layout, so the document gets shorter by the full height
+   * of the gallery while you are inside the demo. The browser clamps the
+   * scroll position to the new, shorter page; closing restores the height but
+   * NOT the position, so you came back somewhere else entirely — reliably a
+   * section or two further down.
+   *
+   * So the card you just left is put back under the camera explicitly. Not
+   * the old scroll number (it was already clamped away by the time we could
+   * read it back) — the card's own position, measured after the grid is laid
+   * out again, centred in the viewport. Instantly, not animated: this is
+   * restoring a place the visitor already had, and gliding there would be a
+   * scroll they never asked for.
+   *
+   * ScrollTrigger is refreshed in the same breath because the document height
+   * changed twice while it was not looking, and every trigger below the
+   * gallery is measured against it. */
+  const cards = useRef<Record<string, HTMLElement | null>>({});
+  const returningTo = useRef<string | null>(null);
+
+  const close = useCallback(() => {
+    setOpen((current) => {
+      returningTo.current = current?.id ?? null;
+      return null;
+    });
+  }, []);
+
+  useEffect(() => {
+    if (open) return;
+    const id = returningTo.current;
+    if (!id) return;
+    returningTo.current = null;
+
+    /* two frames: one for React to un-`hidden` the grid, one for the browser
+       to lay it out, so the rect we measure is the final one. */
+    let raf2 = 0;
+    const raf1 = requestAnimationFrame(() => {
+      raf2 = requestAnimationFrame(() => {
+        const el = cards.current[id];
+        if (!el) return;
+        const r = el.getBoundingClientRect();
+        scrollWindowTo(
+          window.scrollY + r.top - (window.innerHeight - r.height) / 2,
+          { immediate: true }
+        );
+        ScrollTrigger.refresh();
+      });
+    });
+    return () => {
+      cancelAnimationFrame(raf1);
+      cancelAnimationFrame(raf2);
+    };
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -182,6 +239,9 @@ export default function ShowcaseGallery() {
         {DEMOS.map((d) => (
           <article
             key={d.id}
+            ref={(node) => {
+              cards.current[d.id] = node;
+            }}
             data-reveal
             className="glass group relative overflow-hidden rounded-panel transition-colors duration-300 hover:border-[var(--glass-border-hover)]"
           >

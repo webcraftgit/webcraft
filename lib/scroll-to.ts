@@ -24,15 +24,22 @@ declare global {
   }
 }
 
-export function scrollWindowTo(top: number, duration = 0.7) {
+export function scrollWindowTo(
+  top: number,
+  opts: { duration?: number; immediate?: boolean } = {}
+) {
   if (typeof window === "undefined") return;
   const y = Math.max(0, Math.round(top));
   const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  // `immediate` is for RESTORING a position the visitor already had (e.g.
+  // coming back out of the demo player). Animating there would be a scroll
+  // they never asked for, from a place they were never at.
+  const jump = opts.immediate || reduced;
 
   const lenis = window.__lenis;
   if (lenis) {
-    lenis.scrollTo(y, reduced ? { immediate: true } : { duration });
+    lenis.scrollTo(y, jump ? { immediate: true } : { duration: opts.duration ?? 0.7 });
     return;
   }
-  window.scrollTo({ top: y, behavior: reduced ? "auto" : "smooth" });
+  window.scrollTo({ top: y, behavior: jump ? "auto" : "smooth" });
 }

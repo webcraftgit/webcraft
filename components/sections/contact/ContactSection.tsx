@@ -141,7 +141,10 @@ export default function ContactSection() {
           </p>
 
           <p data-reveal className="mt-4 text-[14px] text-ink-soft md:mt-6">
-            {t.contact.preferEmailPre}
+            {/* CP4_55: the lead-in ("Wolisz e-mail?") is the last of the small
+                supporting copy the client asked to lose on phones — on mobile
+                the address stands on its own. */}
+            <span className="hidden md:inline">{t.contact.preferEmailPre}</span>
             <a
               href={`mailto:${CONTACT_EMAIL}`}
               className="font-medium text-brand-300 underline decoration-brand-500/40 underline-offset-4 hover:text-brand-400"
