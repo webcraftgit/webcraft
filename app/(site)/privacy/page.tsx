@@ -12,8 +12,8 @@ import { POLICY_VERSION } from "@/lib/analytics/consent";
  * A Polish lawyer must review this before launch. The controller-identity
  * fields below are legally required (Art. 13(1)(a) RODO). The site is run by a
  * private individual, not a registered company, so the controller is that
- * person: fill in your own name + contact email (there is no company name or
- * NIP to list). If this ever becomes a registered business, swap those in.
+ * person — Krzysztof Powierża, kristofpow@gmail.com (there is no company name
+ * or NIP to list). If this ever becomes a registered business, swap those in.
  *
  * Copy lives in this file rather than the shared dictionary on purpose: it is
  * long-form legal text that changes on a different schedule from the marketing
@@ -29,7 +29,7 @@ const COPY = {
     sections: [
       {
         h: "Who is responsible",
-        p: "This site is run by a private individual, not a company. The controller of your data is [TODO: your full name], reachable at [TODO: contact email]. There is no registered business, so there is no company name or NIP to give — you deal directly with a person.",
+        p: "This site is run by a private individual, not a company. The controller of your data is Krzysztof Powierża, reachable at kristofpow@gmail.com. There is no registered business, so there is no company name or NIP to give — you deal directly with a person.",
       },
       {
         h: "What we collect without asking",
@@ -67,7 +67,7 @@ const COPY = {
     sections: [
       {
         h: "Kto odpowiada",
-        p: "Tę stronę prowadzi osoba prywatna, a nie firma. Administratorem Twoich danych jest [TODO: imię i nazwisko], kontakt: [TODO: adres e-mail]. Nie ma zarejestrowanej działalności, więc nie podajemy nazwy firmy ani NIP-u — masz do czynienia bezpośrednio z osobą.",
+        p: "Tę stronę prowadzi osoba prywatna, a nie firma. Administratorem Twoich danych jest Krzysztof Powierża, kontakt: kristofpow@gmail.com. Nie ma zarejestrowanej działalności, więc nie podajemy nazwy firmy ani NIP-u — masz do czynienia bezpośrednio z osobą.",
       },
       {
         h: "Co zbieramy bez pytania",

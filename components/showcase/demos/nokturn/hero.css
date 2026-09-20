@@ -69,14 +69,32 @@
   .nokturn-fog, .nokturn-fog-swell { animation: none; }
 }
 
-/* Mobile chain zoom (CP4_33). The chain layer is laid out in cqw of the hero,
- * which is right on desktop and far too small on a phone. Scale it up from
- * top-centre and let the hero's overflow crop the sides. The zoom is the
- * one dial: 1.6 puts link size on a 390px phone at roughly what it is on
- * a 1024px screen. */
+/* Mobile chain zoom (CP4_33, rebuilt CP4_53). The chain layer is laid out in
+ * cqw of the hero, which is right on desktop and far too small on a phone. The
+ * zoom is one dial: 1.6 puts link size on a 390px phone at roughly what it is
+ * on a 1024px screen. The hero's overflow crops the sides.
+ *
+ * ————— WHY THIS IS A WIDTH AND NOT A `transform: scale(1.6)` —————
+ * It used to be the transform. Geometrically identical — but a transform does
+ * not change LAYOUT, so the chains were still laid out at phone size, the
+ * browser rasterized those layers at 1x (and `will-change: transform` on the
+ * swinging chains pins the layer at that scale), and then the compositor blew
+ * the bitmap up 60%. The rail lost its barbs and read as a dotted thread, the
+ * drapes became faint scratches, and `blur(0.7px)` on the rail became an
+ * effective 1.12px blur on an element a few pixels wide.
+ *
+ * This frame is the container-query container, so widening it to 160% widens
+ * `1cqw` by exactly the same 1.6 — every chain's left/top/width, which are all
+ * authored in cqw, grow with it. `left: -30%` re-centres the wider box, so the
+ * painted result occupies the SAME rectangle the transform did, to the pixel.
+ * The difference is that the chains are now genuinely that size at layout
+ * time, so they rasterize sharp and the rail's blur stays 0.7px.
+ * Per-chain `transform-origin` is a percentage, so the pivots are unaffected. */
+/* Doubled class: `inset-0` (Tailwind) also sets `left: 0` at the same
+ * specificity, and which one wins would otherwise depend on stylesheet order. */
 @media (max-width: 639px) {
-  .nokturn-chains-frame {
-    transform: scale(1.6);
-    transform-origin: 50% 0;
+  .nokturn-chains-frame.nokturn-chains-frame {
+    width: 160%;
+    left: -30%;
   }
 }

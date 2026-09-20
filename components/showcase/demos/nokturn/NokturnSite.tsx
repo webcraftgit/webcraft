@@ -697,13 +697,15 @@ function HeroChains({ still, ready, y }: { still: boolean; ready: boolean; y: Mo
         transition={{ delay: INTRO.chains, duration: 1.1, ease: [0.34, 1.35, 0.64, 1] }}
         className="absolute inset-0"
       >
-       {/* MOBILE (CP4_33): the chains are drawn in cqw of the hero, so on a
-           390px phone the whole rail shrank to ~55px and every chain became
-           a 1–2px scribble. Below `sm` this frame scales the chain layer up
-           from top-centre (NOKTURN_CHAIN_ZOOM in hero.css), cropping the
-           sides: links read at a real size, the drapes frame the cross
-           instead of running off as noise. The cross itself goes the other
-           way — smaller — see the mark box in Hero. */}
+       {/* MOBILE (CP4_33, rebuilt CP4_53): the chains are drawn in cqw of THIS
+           element, so on a 390px phone the whole rail shrank to ~55px and every
+           chain became a 1–2px scribble. Below `sm` hero.css widens this frame
+           to 160% and re-centres it, which widens 1cqw by the same 1.6 and so
+           enlarges every chain — at layout time, so they rasterize sharp. It
+           was a `transform: scale(1.6)` until CP4_53; that painted the same
+           rectangle but upscaled a 1x bitmap, which is what made the chains
+           read as smears. The cross itself goes the other way — smaller — see
+           the mark box in Hero. */}
        <div className="nokturn-chains-frame absolute inset-0" style={{ containerType: "inline-size" }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
