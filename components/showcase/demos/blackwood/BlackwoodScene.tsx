@@ -279,6 +279,8 @@ function CameraRig({ progress }: { progress?: MutableRefObject<number> }) {
   const smooth = useRef({ p: progress?.current ?? 0 });
   const pos = useMemo(() => new THREE.Vector3(), []);
   const look = useMemo(() => new THREE.Vector3(), []);
+  const hero = useMemo(() => new THREE.Vector3(...HERO), []);
+  const aim = useMemo(() => new THREE.Vector3(), []);
 
   useFrame((_, rawDt) => {
     const dt = Math.min(rawDt, 1 / 20);
@@ -287,9 +289,22 @@ function CameraRig({ progress }: { progress?: MutableRefObject<number> }) {
     const { u, fov } = curveU(smooth.current.p);
     POS_CURVE.getPoint(u, pos);
     LOOK_CURVE.getPoint(u, look);
+    /* CP4_64 PORTRAIT FRAMING. Every beat aims LEFT of the bottle so it sits
+     * in the right third, clear of the desktop copy column. On a phone the
+     * frame is ~0.46 wide, so the same aim pushed the bottle half off the
+     * right edge. Below ~1.25 aspect the aim slides onto the bottle itself
+     * (f → 0 by 0.7: phones and portrait tablets are fully centred), dropped
+     * by 10% of the visible height so the bottle rides slightly HIGH — the
+     * mobile hero copy sits low. Landscape tablets and desktop are untouched. */
+    const cam = camera as THREE.PerspectiveCamera;
+    const f = THREE.MathUtils.smoothstep(cam.aspect, 0.7, 1.25);
+    if (f < 1) {
+      const visH = 2 * pos.distanceTo(hero) * Math.tan(THREE.MathUtils.degToRad(fov / 2));
+      aim.set(hero.x, hero.y - 0.1 * visH, hero.z);
+      look.lerp(aim, 1 - f);
+    }
     camera.position.copy(pos);
     camera.lookAt(look);
-    const cam = camera as THREE.PerspectiveCamera;
     if (Math.abs(cam.fov - fov) > 0.001) {
       cam.fov = fov;
       cam.updateProjectionMatrix();
@@ -1521,6 +1536,82 @@ void mainImage(const in vec4 inputColor, const in vec2 uv, out vec4 outputColor)
   }
 }
 
+/* ————— CP4_64: THE WHITE ISLANDS — ROOT CAUSE ——————————————————————
+ * postprocessing's BrightnessContrastEffect declares inputColorSpace = sRGB,
+ * so the EffectPass wraps it: sRGBTransferOETF before, and sRGBToLinear after
+ * (HueSaturation, Vignette and Noise are linear). Contrast pushes the darkest
+ * pixels BELOW ZERO — (x - .5) / .88 + .5 < 0 for sRGB x < .06 — and the
+ * conversion back is
+ *     mix(pow(c * .9479 + .0521, 2.4), c * .0774, c <= .04045)
+ * For c < -.055 the pow() base is negative. HLSL (Windows Chrome = ANGLE →
+ * D3D) returns NaN, and mix() keeps it even on the branch it "doesn't pick"
+ * (NaN × 0 = NaN). So: the DARKEST parts of the frame — the whiskey body,
+ * the wall between the cask rows, the shadow under the table edge — became
+ * NaN, and the client's AMD driver writes NaN to the screen as WHITE.
+ * SwiftShader never shows it: its pow() of a negative base returns 0, not
+ * NaN (tested directly). PROVEN with the `bwnan` probe below, which paints
+ * every negative-pow-base pixel magenta: with the stock effect it covers the
+ * whiskey body, the neck, the wall between the cask rows and the table edge —
+ * the client's screenshot, shape for shape; with the clamp, zero pixels.
+ * `?bwno=grade` "fixed"
+ * it because no contrast = nothing below zero; the CP4_61 "merged shader"
+ * theory was wrong.
+ * FIX: the same contrast maths, CLAMPED to [0,1] before the pass converts
+ * back. Identical look (the screen clips negatives anyway), no NaN possible.
+ * `?bwdebug&bwno=clamp` restores the stock effect for an A/B on real GPUs. */
+class SafeContrastEffect extends Effect {
+  constructor(contrast: number) {
+    super(
+      "SafeContrastEffect",
+      /* glsl */ `
+uniform float uGain;
+void mainImage(const in vec4 inputColor, const in vec2 uv, out vec4 outputColor) {
+  vec3 c = (inputColor.rgb - 0.5) * uGain + 0.5;
+  outputColor = vec4(clamp(c, 0.0, 1.0), inputColor.a);
+}`,
+      {
+        // BrightnessContrastEffect's own gain: /(1-c) above zero, ×(1+c) below
+        uniforms: new Map([["uGain", new THREE.Uniform(contrast > 0 ? 1 / (1 - contrast) : 1 + contrast)]]),
+      },
+    );
+    // same colour space as the stock effect, so the grade looks identical
+    this.inputColorSpace = THREE.SRGBColorSpace;
+  }
+}
+
+/** DEBUG ONLY (`?bwdebug&bwnan`): sits right after the contrast, in sRGB,
+ *  and paints magenta every pixel the NEXT conversion (sRGBToLinear) would
+ *  turn into NaN on D3D: any channel below -0.055, i.e. a negative pow()
+ *  base. SwiftShader's pow() of a negative base is NOT NaN (tested: it
+ *  returns 0), so this sandbox can never show the white itself — this probe
+ *  shows where it WOULD be. */
+class NanProbeEffect extends Effect {
+  constructor() {
+    super(
+      "NanProbeEffect",
+      /* glsl */ `
+void mainImage(const in vec4 inputColor, const in vec2 uv, out vec4 outputColor) {
+  bool bad = any(lessThan(inputColor.rgb * 0.9478672986 + 0.0521327014, vec3(0.0)));
+  outputColor = bad ? vec4(1.0, 0.0, 1.0, 1.0) : inputColor;
+}`,
+    );
+    this.inputColorSpace = THREE.SRGBColorSpace;
+  }
+}
+const BW_NAN = BW_DEBUG && typeof window !== "undefined" && window.location.search.includes("bwnan");
+
+function NanProbe() {
+  const effect = useMemo(() => new NanProbeEffect(), []);
+  useEffect(() => () => effect.dispose(), [effect]);
+  return <primitive object={effect} />;
+}
+
+function Contrast() {
+  const effect = useMemo(() => new SafeContrastEffect(LOOK.contrast), []);
+  useEffect(() => () => effect.dispose(), [effect]);
+  return bwOn("clamp") ? <primitive object={effect} /> : <BrightnessContrast contrast={LOOK.contrast} />;
+}
+
 /** As its OWN pass, never merged: an Effect sharing an EffectPass with DoF runs
  *  AFTER DoF has already read the raw input in update(). */
 function useSanitizePass(camera: THREE.Camera) {
@@ -1542,7 +1633,11 @@ function Post({ progress, tier }: { progress?: MutableRefObject<number>; tier: T
   // (before DoF / bloom can spread anything AO itself produced)
   const cleanIn = useSanitizePass(camera);
   const cleanMid = useSanitizePass(camera);
-  /* CP4_61 — THE WHITE ISLANDS FIX. The client bisected it on their GPU:
+  /* CP4_64 NOTE: the theory below was WRONG — the real cause is NaN from the
+   * contrast step, see SafeContrastEffect. The pass is kept (harmless, one
+   * full-screen pass) until the client confirms CP4_64 on the AMD machine;
+   * after that it can go.
+   * CP4_61 — THE WHITE ISLANDS FIX. The client bisected it on their GPU:
    * ?bwno=grade removes them. The grade's own maths cannot make white islands
    * (BrightnessContrast is a subtract/divide, HueSaturation ends in min(c,1)),
    * so the grade is not the bug — the MERGE is. Without a Pass between them,
@@ -1586,7 +1681,7 @@ function Post({ progress, tier }: { progress?: MutableRefObject<number>; tier: T
         )}
         <ToneMapping mode={ToneMappingMode.AGX} />
         {bwOn("split") ? <primitive object={cleanOut} /> : <></>}
-        {bwOn("grade") ? <BrightnessContrast contrast={LOOK.contrast} /> : <></>}
+        {bwOn("grade") ? <Contrast /> : <></>}
         {bwOn("grade") ? <HueSaturation saturation={LOOK.saturation} /> : <></>}
         <Vignette offset={0.25} darkness={0.72} />
       </EffectComposer>
@@ -1614,7 +1709,8 @@ function Post({ progress, tier }: { progress?: MutableRefObject<number>; tier: T
         {bwOn("split") ? <primitive object={cleanOut} /> : <></>}
         {/* CP4_59: AgX is flat by design; a touch of contrast and a little
             less saturation after it is the grade, not a second tone map */}
-        {bwOn("grade") ? <BrightnessContrast contrast={LOOK.contrast} /> : <></>}
+        {bwOn("grade") ? <Contrast /> : <></>}
+        {BW_NAN ? <NanProbe /> : <></>}
         {bwOn("grade") ? <HueSaturation saturation={LOOK.saturation} /> : <></>}
         <Vignette offset={0.25} darkness={0.72} />
         <Noise opacity={0.035} />
