@@ -3,40 +3,44 @@
 import { useLocale } from "@/components/i18n/LanguageProvider";
 
 /* ————————————————————————————————————————————————————————————————
- * BLACKWOOD — DEMO COPY, EN + PL
+ * BLACKWOOD — DEMO COPY, EN + PL  (CP4_62: full rewrite)
  *
- * Same pattern as demos/wisniowa/copy.ts, and for the same reason: this does
- * NOT belong in lib/i18n/dictionaries.ts, because that file is imported by the
- * site shell and therefore ships to every homepage visitor. Blackwood is a
- * lazy chunk that only loads when the demo is opened; its copy rides along
- * with it.
+ * Same pattern as demos/wisniowa/copy.ts: this does NOT belong in
+ * lib/i18n/dictionaries.ts (that ships to every homepage visitor). `en` is the
+ * typed source of truth and `pl` is declared `typeof en`, so a key added to
+ * one language and not the other FAILS THE BUILD.
  *
- * `en` is the typed source of truth and `pl` is declared `typeof en`, so a key
- * added to one language and not the other FAILS THE BUILD rather than silently
- * rendering undefined.
+ * THE LABEL IS THE SOURCE OF TRUTH. The bottle label is baked into the 3D
+ * asset (label_basecolor in blackwood_bottle.glb); words are cheaper to move
+ * than textures, so every fact here must agree with it:
+ *   Speyside · Est. 1887 · Single Malt Scotch Whisky · 18 years old
+ *   first-fill European oak, then 9 months in charred virgin oak from the
+ *   distillery's own coopers · Cask No. 0447 · Bottle 0186 / 1200
+ *   non chill-filtered · natural colour · 40% ALC/VOL · 700 ml
+ *   Nose: dried fig, heather honey, cedar smoke
+ *   Palate: toffee, clove, Seville orange peel
+ *   Finish: long, drying, faintly saline
+ * DO NOT write "natural strength" / "cask strength" (the label says 40%), DO
+ * NOT write "single cask" (1,200 × 700 ml is more than one cask yields), and
+ * DO NOT mention peat (the smoke is the char, the label never says peat).
  *
- * WHAT IS NOT TRANSLATED, AND WHY
- *  · "BLACKWOOD" — a brand name, not copy.
- *  · "Speyside" — a Scotch whisky region. Polish drinks writing uses the
- *    Scottish region names as-is; "Dolina Spey" would read as a translation
- *    error to anyone who knows the category.
- *  · "Dunnage" — the term of art for a low, earth-or-timber-floored warehouse.
- *    Polish whisky writing keeps the English word.
- *  · "single malt" — likewise standard in Polish, lower-cased.
- *  · The numerals in MASH (100% / 18 / 9) and the tasting-note weights: they
- *    are data, not language.
+ * VOICE RULES: facts carry the emotion — numbers, names, places. One aphorism
+ * per page, and it is the hero headline. No "patience", "craft", "passion",
+ * "tradition", "we believe". Morag Innes and Warehouse No. 4 are invented,
+ * like the brand; the footer says so.
  *
- * ONE DELIBERATE DIFFERENCE: the PL hero headline is "Wolny ogień, / długa
- * ciemność." A literal "Powolny ogień" is a syllable longer and pushes the
- * second line past the copy column at the 2.9rem floor of the clamp on a
- * phone. Shorter, and it carries the same image.
+ * PL is written as Polish copy, not translated line by line. Kept in English:
+ * "BLACKWOOD", "Speyside", "Spey", "single malt", "dunnage" (Polish whisky
+ * writing keeps these). PL numbers follow Polish typography (1200, 40%).
+ * The PL hero keeps "Wolny ogień" — "na wolnym ogniu" is the Polish idiom for
+ * slow cooking, so it reads as slow, not free.
  * ———————————————————————————————————————————————————————————————— */
 
 export const en = {
-  announce: "Speyside · Est. 1887 · Distilled and bottled at the distillery",
-  nav: ["The whisky", "Craft", "Our story", "Find a bottle"],
+  announce: "Speyside · Est. 1887 · Distilled, matured and bottled at the distillery",
+  nav: ["The cask", "The distillery", "Tasting"],
   navCta: "Find a bottle",
-  /** Rail: "Section 3 of 7" — the only string with interpolation. */
+  /** Rail: "Section 3 of 6" — the only string with interpolation. */
   railSection: (n: number, total: number) => `Section ${n} of ${total}`,
 
   hero: {
@@ -44,209 +48,187 @@ export const en = {
     est: "Est. 1887",
     titleA: "Slow fire,",
     titleB: "long dark.",
-    lead: "Single malt Scotch whisky, eighteen winters in the dark. Time is the only ingredient we cannot buy.",
-    link: "Our story",
-    scroll: "Scroll — the cellar comes to you",
+    lead: "An eighteen-year-old single malt from a warehouse by the Spey that has never been heated. 1,200 numbered bottles, and no second batch.",
+    link: "Read about the cask",
+    scroll: "Scroll down into Warehouse No. 4",
   },
 
-  whisky: {
-    eyebrow: "02 — The whisky",
-    heading: "One grain, and eighteen years of patience.",
-    mash: [
-      {
-        pct: "100%",
-        grain: "Malted barley",
-        copy: "One grain, and nothing to hide behind. Floor-malted, peated lightly, never heavily.",
-      },
-      {
-        pct: "18",
-        grain: "Winters",
-        copy: "In first-fill European oak casks, in a warehouse with a dark timber floor and no heating.",
-      },
-      {
-        pct: "9",
-        grain: "Months",
-        copy: "The finish: charred virgin oak, long enough for spice, short enough to keep the fruit.",
-      },
+  cask: {
+    eyebrow: "02 — The cask",
+    heading: "Eighteen years in old oak. Nine months in new.",
+    spec: [
+      { label: "Age", value: "18 years" },
+      { label: "Matured in", value: "First-fill European oak" },
+      { label: "Finished in", value: "9 months, charred virgin oak" },
+      { label: "Cask", value: "No. 0447" },
+      { label: "Strength", value: "40% ABV · 700 ml" },
+      { label: "Release", value: "1,200 bottles" },
     ],
+    body: "No colouring, no chill-filtering. The European oak gives the fig and the dark honey. The new, charred oak adds cedar and clove, and gets nine months rather than a year so it doesn’t bury them.",
   },
 
-  craft: {
-    eyebrow: "03 — Craft",
-    heading: "The casks are made here, by hand.",
-    body: "Our coopers raise every cask in the yard behind the stillhouse, then toast and char it over an open flame until the staves blister. The spirit spends eighteen years inside one. Nothing about this is efficient. That is rather the point.",
+  distillery: {
+    eyebrow: "03 — The distillery",
+    heading: "The casks are made fifty yards from the stills.",
+    body: "Blackwood has malted, distilled, coopered and bottled on the same bend of the Spey since 1887. Nothing leaves the site until it is in a bottle.",
     items: [
       {
-        label: "Two stills",
-        copy: "Copper, onion-necked, run slowly so the spirit stays light and floral.",
+        label: "The floor maltings",
+        copy: "Barley is steeped, spread on a stone floor and turned by hand for six days before the kiln.",
       },
       {
-        label: "Our own coopers",
-        copy: "Every cask is raised, toasted and charred on site, by hand.",
+        label: "Two copper stills",
+        copy: "Onion-necked and run slowly, which keeps the spirit light enough to take eighteen years of wood.",
       },
       {
-        label: "Dunnage",
-        copy: "Casks racked two high on old timber floors, where the air is cold and damp.",
+        label: "The cooperage",
+        copy: "Our coopers raise, toast and char every finishing cask in the yard behind the stillhouse.",
       },
       {
-        label: "Eighteen years",
-        copy: "Bottled at natural strength. No chill-filtering, no added colour.",
+        label: "Warehouse No. 4",
+        copy: "Dunnage: brick walls, a timber floor, casks racked two high. Cold in winter, damp all year, never heated.",
       },
     ],
   },
 
-  notes: {
-    eyebrow: "04 — Notes",
-    heading: "What the glass keeps.",
+  tasting: {
+    eyebrow: "04 — Tasting",
+    heading: "Add a drop of water. Then wait a minute.",
     items: [
-      { name: "Dried fig", note: "The European oak, first and loudest." },
       {
-        name: "Heather honey",
-        note: "Speyside in a sentence. Soft, floral, never cloying.",
+        stage: "Nose",
+        notes: "Dried fig, heather honey, cedar smoke.",
+        comment: "The fig and honey are the European oak. The smoke is the char, not peat.",
       },
       {
-        name: "Seville orange peel",
-        note: "Arrives mid-palate, bitter-bright, with clove behind it.",
+        stage: "Palate",
+        notes: "Toffee, clove, Seville orange peel.",
+        comment: "Fuller than the nose suggests. The orange arrives late, and bitter.",
       },
       {
-        name: "Cedar smoke",
-        note: "The virgin-oak finish. What stays on the glass when it is empty.",
+        stage: "Finish",
+        notes: "Long, drying, faintly saline.",
+        comment: "The cedar stays longest. Where the salt comes from, nobody at the distillery quite agrees.",
       },
     ],
   },
 
-  story: {
-    eyebrow: "05 — Our story",
+  voice: {
+    eyebrow: "05 — In the warehouse",
     quote:
-      "“We have never been in a hurry. The warehouse is cold in January and damp all year, and the cask breathes both. That is the whole recipe. The rest is just not interfering.”",
-    attribution: "Fourth-generation distiller",
-  },
-
-  barrel: {
-    eyebrow: "06 — The barrel",
-    heading: "Five hundred litres of European oak, and eighteen winters.",
-    body: "First-fill European oak gives the fig and the dark honey; nine months in charred virgin oak adds the cedar and clove. The spirit goes in clear. Eighteen years later it comes out the colour of the wood it lived in.",
+      "“People ask what we do to it for eighteen years. Mostly, we leave it alone. We check the casks, we keep the doors shut in winter, and we don’t let anyone talk us into bottling it early.”",
+    name: "Morag Innes",
+    role: "Distillery manager, fourth generation at Blackwood",
   },
 
   find: {
-    eyebrow: "07 — Find a bottle",
-    heading: "Allocated, and worth the asking.",
-    cta: "Find a bottle",
+    eyebrow: "06 — Find a bottle",
+    heading: "1,200 bottles. No second batch.",
+    body: "Sold through a handful of specialist whisky shops and at the distillery door. Every bottle is numbered.",
+    cta: "Find a stockist",
     disclaimer:
-      "Blackwood is a fictional brand, built by Webcraft to demonstrate a concept site · Please drink responsibly",
+      "Blackwood is a fictional brand, built by Webcraft to demonstrate a concept site. Please drink responsibly.",
   },
 };
 
 export const pl: typeof en = {
-  announce: "Speyside · od 1887 · Destylowana i butelkowana w destylarni",
-  nav: ["Whisky", "Rzemiosło", "Nasza historia", "Gdzie kupić"],
+  announce: "Speyside · Zał. 1887 · Destylowana, leżakowana i butelkowana w destylarni",
+  nav: ["Beczka", "Destylarnia", "Degustacja"],
   navCta: "Gdzie kupić",
   railSection: (n: number, total: number) => `Sekcja ${n} z ${total}`,
 
   hero: {
     region: "Speyside",
-    est: "od 1887",
+    est: "Zał. 1887",
     titleA: "Wolny ogień,",
     titleB: "długa ciemność.",
-    lead: "Single malt scotch whisky, osiemnaście zim w ciemności. Czas jest jedynym składnikiem, którego nie da się kupić.",
-    link: "Nasza historia",
-    scroll: "Przewiń — piwnica sama do Ciebie przyjdzie",
+    lead: "Osiemnastoletnia whisky single malt z magazynu nad rzeką Spey, którego nigdy nie ogrzewano. 1200 numerowanych butelek i żadnej drugiej partii.",
+    link: "Poznaj beczkę",
+    scroll: "Przewiń w dół, do magazynu nr 4",
   },
 
-  whisky: {
-    eyebrow: "02 — Whisky",
-    heading: "Jedno zboże i osiemnaście lat cierpliwości.",
-    mash: [
-      {
-        pct: "100%",
-        grain: "Słodowany jęczmień",
-        copy: "Jedno zboże i nic, za czym można się schować. Słodowany na klepisku, torfowany lekko, nigdy mocno.",
-      },
-      {
-        pct: "18",
-        grain: "Zim",
-        copy: "W beczkach z europejskiego dębu pierwszego napełnienia, w magazynie o ciemnej drewnianej podłodze i bez ogrzewania.",
-      },
-      {
-        pct: "9",
-        grain: "Miesięcy",
-        copy: "Finisz: wypalany dąb dziewiczy — dość długo na przyprawę, dość krótko, żeby zachować owoc.",
-      },
+  cask: {
+    eyebrow: "02 — Beczka",
+    heading: "Osiemnaście lat w starym dębie. Dziewięć miesięcy w nowym.",
+    spec: [
+      { label: "Wiek", value: "18 lat" },
+      { label: "Leżakowanie", value: "Dąb europejski, pierwsze napełnienie" },
+      { label: "Finisz", value: "9 miesięcy, wypalany dąb dziewiczy" },
+      { label: "Beczka", value: "Nr 0447" },
+      { label: "Moc", value: "40% obj. · 700 ml" },
+      { label: "Wydanie", value: "1200 butelek" },
     ],
+    body: "Bez barwienia, bez filtracji na zimno. Europejski dąb daje figę i ciemny miód. Nowy, wypalany dąb dokłada cedr i goździk — dostaje dziewięć miesięcy, a nie rok, żeby ich nie przykryć.",
   },
 
-  craft: {
-    eyebrow: "03 — Rzemiosło",
-    heading: "Beczki powstają tutaj, ręcznie.",
-    body: "Nasi bednarze składają każdą beczkę na podwórzu za destylarnią, a potem opalają ją i wypalają nad otwartym ogniem, aż klepki pokryją się pęcherzami. Destylat spędza w jednej z nich osiemnaście lat. Nic w tym nie jest wydajne. I o to właśnie chodzi.",
+  distillery: {
+    eyebrow: "03 — Destylarnia",
+    heading: "Beczki powstają pięćdziesiąt metrów od alembików.",
+    body: "Od 1887 roku słodujemy, destylujemy, robimy beczki i butelkujemy w tym samym zakolu Spey. Nic nie opuszcza destylarni, zanim nie trafi do butelki.",
     items: [
       {
-        label: "Dwa alembiki",
-        copy: "Miedziane, o cebulastych szyjkach, prowadzone wolno, żeby destylat został lekki i kwiatowy.",
+        label: "Słodownia klepiskowa",
+        copy: "Jęczmień namaczamy, rozkładamy na kamiennej posadzce i przez sześć dni przerzucamy ręcznie, zanim trafi do suszarni.",
       },
       {
-        label: "Właśni bednarze",
-        copy: "Każda beczka jest tu składana, opalana i wypalana ręcznie.",
+        label: "Dwa miedziane alembiki",
+        copy: "O cebulastych szyjkach, prowadzone powoli. Dzięki temu destylat jest dość lekki, by wytrzymać osiemnaście lat w drewnie.",
       },
       {
-        label: "Dunnage",
-        copy: "Beczki leżakują w dwóch poziomach na starej drewnianej podłodze, gdzie powietrze jest zimne i wilgotne.",
+        label: "Bednarnia",
+        copy: "Nasi bednarze składają, opalają i wypalają każdą beczkę do finiszu na podwórzu za budynkiem destylacji.",
       },
       {
-        label: "Osiemnaście lat",
-        copy: "Butelkowana w naturalnej mocy. Bez filtracji na zimno, bez dodatku barwnika.",
+        label: "Magazyn nr 4",
+        copy: "Dunnage: ceglane mury, drewniana podłoga, beczki w dwóch rzędach. Zimą chłodno, przez cały rok wilgotno, nigdy nie był ogrzewany.",
       },
     ],
   },
 
-  notes: {
-    eyebrow: "04 — Nuty",
-    heading: "To, co zostaje w kieliszku.",
+  tasting: {
+    eyebrow: "04 — Degustacja",
+    heading: "Dodaj kroplę wody. Odczekaj minutę.",
     items: [
-      { name: "Suszona figa", note: "Europejski dąb — pierwszy i najgłośniejszy." },
       {
-        name: "Miód wrzosowy",
-        note: "Speyside w jednym zdaniu. Miękki, kwiatowy, nigdy mdląco słodki.",
+        stage: "Nos",
+        notes: "Suszona figa, miód wrzosowy, cedrowy dym.",
+        comment: "Figa i miód to europejski dąb. Dym pochodzi z wypalonej beczki, nie z torfu.",
       },
       {
-        name: "Skórka gorzkiej pomarańczy",
-        note: "Wchodzi w środku, gorzko-jasna, z goździkiem w tle.",
+        stage: "Smak",
+        notes: "Toffi, goździk, skórka gorzkiej pomarańczy.",
+        comment: "Pełniejszy, niż zapowiada nos. Pomarańcza przychodzi późno — i gorzko.",
       },
       {
-        name: "Cedrowy dym",
-        note: "Finisz z dębu dziewiczego. To, co zostaje w kieliszku, gdy jest już pusty.",
+        stage: "Finisz",
+        notes: "Długi, wytrawny, lekko słony.",
+        comment: "Najdłużej zostaje cedr. Skąd sól — w destylarni nikt nie jest do końca pewien.",
       },
     ],
   },
 
-  story: {
-    eyebrow: "05 — Nasza historia",
+  voice: {
+    eyebrow: "05 — W magazynie",
     quote:
-      "„Nigdy się nie spieszyliśmy. W styczniu magazyn jest zimny, a wilgotny przez cały rok — i beczka oddycha jednym i drugim. To cała receptura. Reszta polega na tym, żeby nie przeszkadzać.”",
-    attribution: "Destylator czwartego pokolenia",
-  },
-
-  barrel: {
-    eyebrow: "06 — Beczka",
-    heading: "Pięćset litrów europejskiego dębu i osiemnaście zim.",
-    body: "Europejski dąb pierwszego napełnienia daje figę i ciemny miód; dziewięć miesięcy w wypalanym dębie dziewiczym dokłada cedr i goździk. Destylat wchodzi przezroczysty. Osiemnaście lat później wychodzi w kolorze drewna, w którym mieszkał.",
+      "„Ludzie pytają, co z nią robimy przez osiemnaście lat. Głównie zostawiamy ją w spokoju. Sprawdzamy beczki, zimą trzymamy drzwi zamknięte i nie dajemy się nikomu namówić, żeby butelkować wcześniej.”",
+    name: "Morag Innes",
+    role: "Kierowniczka destylarni, czwarte pokolenie w Blackwood",
   },
 
   find: {
-    eyebrow: "07 — Gdzie kupić",
-    heading: "Rozdzielana z przydziału — i warta swojej ceny.",
-    cta: "Gdzie kupić",
+    eyebrow: "06 — Gdzie kupić",
+    heading: "1200 butelek. Drugiej partii nie będzie.",
+    body: "W sprzedaży w kilku specjalistycznych sklepach z whisky i w sklepie przy destylarni. Każda butelka jest numerowana.",
+    cta: "Znajdź sklep",
     disclaimer:
-      "Blackwood to marka fikcyjna, stworzona przez Webcraft jako projekt koncepcyjny · Pij odpowiedzialnie",
+      "Blackwood to fikcyjna marka, stworzona przez Webcraft jako projekt koncepcyjny. Pij odpowiedzialnie.",
   },
 };
 
 /**
  * The demo follows the SITE-WIDE locale rather than holding its own, so a
  * visitor reading the studio page in English does not get a Polish distillery
- * demo on top of it. Requires LanguageProvider above it in the tree;
- * app/layout.tsx wraps the whole app, so that holds for both the grid card and
- * the fullscreen player.
+ * demo on top of it. Requires LanguageProvider above it in the tree.
  */
 export function useBlackwoodCopy() {
   const [locale] = useLocale();
