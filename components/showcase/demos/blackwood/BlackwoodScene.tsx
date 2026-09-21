@@ -63,6 +63,8 @@ const useTier = () => useContext(TierCtx);
 const BW_DEBUG = typeof window !== "undefined" && window.location.search.includes("bwdebug");
 /** ?bwdebug&bwnopost — skip the composer, to isolate post cost in headless runs. */
 const BW_NOPOST = BW_DEBUG && window.location.search.includes("bwnopost");
+/** ?bwdebug&bwmerge — CP4_65 A/B: restore the fused ("auto") effect shaders. */
+const BW_MERGE = BW_DEBUG && window.location.search.includes("bwmerge");
 /** CP4_60 bisect switch for GPU-only artefacts (SwiftShader cannot reproduce
  *  them): ?bwdebug&bwno=ao,dof,bloom,grade,sanitize drops those passes. */
 const BW_NO = new Set(
@@ -563,7 +565,6 @@ const GLASS_POS: [number, number, number] = [-0.155, TABLE_TOP, -0.03];
 const GLASS_ROT = 0.75; // a corner towards the camera catches the rim strips
 
 function Tumbler() {
-  const tier = useTier();
   const { scene } = useGLTF("/models/blackwood_glass.glb", "/draco/");
   const model = useMemo(() => {
     const root = scene.clone(true);
@@ -581,8 +582,8 @@ function Tumbler() {
       // CP4_63 render check: at .9 it read as a dark box — cut crystal only
       // reads through its highlights. Still under the bottle glass's 1.6.
       envMapIntensity: 1.4,
-      // cut-crystal fire; off on phones (extra per-pixel samples)
-      dispersion: tier === "full" ? 0.25 : 0,
+      // CP4_65: dispersion REMOVED — new transmission-shader variant introduced
+      // in the same deploy as the white-islands report; not worth the doubt.
       side: THREE.FrontSide,
     });
     root.traverse((o) => {
@@ -593,25 +594,16 @@ function Tumbler() {
       m.receiveShadow = true;
     });
     return root;
-  }, [scene, tier]);
+  }, [scene]);
   return (
     <>
       <group position={GLASS_POS} rotation-y={GLASS_ROT}>
         <primitive object={model} />
         <Pour />
       </group>
-      {/* A tiny short-range glint light, front-left of the glass: cut crystal
-          only reads through its facet sparkle, and the env strips are aimed at
-          the bottle. distance .45 so it barely touches the bottle or the top. */}
-      {tier !== "preview" && (
-        <pointLight
-          position={[GLASS_POS[0] - 0.18, GLASS_POS[1] + 0.2, GLASS_POS[2] + 0.2]}
-          color="#FFE2C0"
-          intensity={0.5}
-          distance={0.45}
-          decay={2}
-        />
-      )}
+      {/* CP4_65: the glint pointLight is GONE. A scene light is compiled into
+          EVERY lit material's shader (NUM_POINT_LIGHTS), so it changed every
+          program in the scene in the deploy that brought the white islands back. */}
     </>
   );
 }
@@ -1721,7 +1713,10 @@ function Post({ progress, tier }: { progress?: MutableRefObject<number>; tier: T
     // bokehScale is a PIXEL radius, so scale it by the drawing-buffer height:
     // same look at dpr 1 and dpr 2, on a laptop and on a 4K screen
     const frac = THREE.MathUtils.lerp(LOOK.dofBlurWide, LOOK.dofBlurClose, close);
-    if (dof.current) dof.current.bokehScale = frac * gl.domElement.height;
+    // CP4_65: capped. postprocessing also uses bokehScale as a CoC GAIN in its
+    // composite + mask (CP4_60 suspect #1); on a dpr-2 screen the uncapped value
+    // reached ~20. 12 px keeps dpr-1 screens unchanged.
+    if (dof.current) dof.current.bokehScale = Math.min(12, frac * gl.domElement.height);
   });
   return (
     // AO grounds everything, DoF gives the long-lens look (focus locked on the
@@ -1743,7 +1738,14 @@ function Post({ progress, tier }: { progress?: MutableRefObject<number>; tier: T
         <Vignette offset={0.25} darkness={0.72} />
       </EffectComposer>
     ) : (
-      <EffectComposer multisampling={4} ref={exposeComposer}>
+      /* CP4_65 — WHITE ISLANDS, THIRD REPORT (client, AMD/Windows, section 05).
+       * CP4_61's single split was not enough. mergeMode="none" gives EVERY
+       * effect its own small shader, so no fused mega-shader exists for the
+       * ANGLE→D3D compiler to miscompile — the step CP4_61 named as next.
+       * Cost: ~5 extra full-screen passes on desktop only. A/B on the client
+       * GPU with ?bwdebug&bwmerge (restores "auto"). DO NOT switch back to
+       * "auto" to save passes. */
+      <EffectComposer multisampling={4} ref={exposeComposer} mergeMode={BW_MERGE ? "auto" : "none"}>
         {san ? <primitive object={cleanIn} /> : <></>}
         {bwOn("ao") ? <N8AO aoRadius={0.35} distanceFalloff={0.6} intensity={2.2} halfRes /> : <></>}
         {san ? <primitive object={cleanMid} /> : <></>}

@@ -484,6 +484,13 @@
   **Next dials if it disappoints on a real GPU:** meniscus `0.6` (if the top line reads as a white stripe), glow `0.08 + 0.16`, `POUR_H`. The bigger levers from the options list are still open: backlight behind the glass, small sparkle Lightformers in the env, move it ~5 cm forward into focus, MeshTransmissionMaterial (desktop-only, costs a scene render per frame).
   VERIFIED: `tsc` clean, `next build` clean, `/` 235 kB, served chunk matched disk, no shader/page errors.
 
+- [x] CP4_65-blackwood-white-islands-3: **WHITE ISLANDS BACK** on the client's AMD/Windows GPU (section 05, CP4_64 deploy): jagged white patches across bottle, label, table edges and casks — same artefact as CP4_60. CP4_61's single split did not hold. Still NOT reproducible in SwiftShader.
+  (1) **`mergeMode="none"` on the desktop composer** — the step CP4_61 named as next. Every effect is now its own small shader; verified live via `__bwComposer.passes`: RenderPass › Sanitize › N8AO › Sanitize › DoF › Bloom › CA › ToneMapping › Sanitize › BrightnessContrast › HueSaturation › Vignette › Noise › Copy. No fused shader exists for ANGLE→D3D to miscompile. Cost ~5 extra full-screen passes, desktop only. Mobile composer unchanged (never reported).
+  (2) **DoF `bokehScale` capped at 12 px** — postprocessing also uses it as a CoC gain in its composite/mask (CP4_60 suspect #1); uncapped it reached ~20 on dpr-2 screens. dpr-1 screens unchanged.
+  (3) **Removed the two new shader variables from CP4_63** (same deploy as the report): tumbler `dispersion` and the glint `pointLight` (a scene light is compiled into EVERY lit material — NUM_POINT_LIGHTS — so it changed every program in the scene). Small visual loss on the glass.
+  New switch `?bwdebug&bwmerge` restores the fused shaders for A/B. **IF IT PERSISTS on the client GPU, bisect with `?bwdebug&bwno=dof`, `bwno=bloom`, `bwno=ao`, `bwnopost`** — `bwnopost` clean means post; still white means the scene shaders (then suspect the tumbler's transmission / the pour's onBeforeCompile).
+  VERIFIED: `tsc` clean, `next build` clean, `/` 235 kB; section 05 rendered clean in SwiftShader with full post (it always was — this does NOT prove the fix). Awaiting client check.
+
 ## Perf budget
 LCP < 1.8s (static SVG fallback cross-fades to canvas), JS < 300kb gz (current: 197kb first-load), ASSET budget (added CP3.9): a demo's models+textures must be poster-gated so they never load on `/` — Blackwood is ~4.1MB (CP4_63: +197KB glass; CP4_59: table re-cut to 780KB; CP4_47: table 848KB in, stool 676KB out; plank floor 875KB in, stones 857KB out), dpr cap 1.5 mobile, particles 400 desktop / 120 mobile in hero + 150 in Services band (desktop only), env map desktop only, max 2 band canvases mounted at once
 
