@@ -70,13 +70,9 @@ const rise = {
  * to a section count, so the beats still land; each section is just a
  * slightly longer slice of the dolly. */
 const SECTIONS = ["01", "02", "03", "04", "05", "06"];
-/** header nav order → section anchors (copy.nav is in the same order) */
-const NAV_TARGETS = ["cask", "distillery", "tasting"] as const;
-const SECTION_OF: Record<string, number> = { cask: 2, distillery: 3, tasting: 4 };
 
 /** The rail TRACKS the page (CP4_46): current section over the total, with an
- *  amber fill for progress. CP4_63: the section number comes from an
- *  IntersectionObserver on the real sections; the fill is still progress. */
+ *  amber fill for progress. Still computed from progress/N — see plan item 7. */
 function Rail({
   index,
   fill,
@@ -128,46 +124,21 @@ function Body({ children, className = "" }: { children: React.ReactNode; classNa
  * from 13–14px to 16px; that keeps lines at ~50–60 characters. */
 function Band({
   children,
-  id,
-  index,
   first = false,
-  wide = false,
 }: {
   children: React.ReactNode;
-  /** anchor target for the header links — `bw-${id}` */
-  id: string;
-  /** 1-based; the rail's IntersectionObserver reads it (CP4_63) */
-  index: number;
   first?: boolean;
-  /** CP4_63: the quote breaks the column — wider band, the scrim widens with it */
-  wide?: boolean;
 }) {
   return (
     <section
-      id={`bw-${id}`}
-      data-bw-i={index}
-      tabIndex={-1}
-      className={`relative z-10 flex px-8 outline-none lg:min-h-screen lg:items-center lg:pl-24 lg:pr-8 ${
-        /* CP4_63 mobile: the hero copy sits in the LOWER part of the first
-           screen so the bottle keeps the top half; the mobile scrim is
-           darkest at the bottom for the same reason. */
-        first ? "min-h-[82vh] items-end pb-12 lg:pb-0" : "items-center py-24 lg:py-0"
+      className={`relative z-10 flex items-center px-8 lg:min-h-screen lg:pl-24 lg:pr-8 ${
+        first ? "min-h-[86vh] pt-4" : "py-28 lg:py-0"
       }`}
     >
-      <div
-        className={`w-full ${
-          wide ? "lg:w-[40%] lg:min-w-[24rem] lg:max-w-[35rem]" : "lg:w-[28%] lg:min-w-[21rem] lg:max-w-[27rem]"
-        }`}
-      >
-        {children}
-      </div>
+      <div className="w-full lg:w-[28%] lg:min-w-[21rem] lg:max-w-[27rem]">{children}</div>
     </section>
   );
 }
-
-/** Focus ring for every interactive element — amber, offset, keyboard only. */
-const focusCls =
-  "outline-none focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-4 focus-visible:outline-[#D9974A]";
 
 /**
  * Concept site #3 — Blackwood, a Speyside single malt distillery, in its warehouse.
@@ -191,39 +162,6 @@ export default function BlackwoodSite({ preview = false }: { preview?: boolean }
   const progress = useRef(0);
   const [section, setSection] = useState(1);
   const railFill = useRef<HTMLSpanElement | null>(null);
-  const mobileScrim = useRef<HTMLDivElement>(null);
-
-  /* CP4_63 (plan item 6): the header and hero links SCROLL THIS CONTAINER.
-   * Not hash navigation — the demo lives inside the studio page's fullscreen
-   * player, and a #hash would move the studio page (and its URL) instead.
-   * Focus moves to the section so keyboard and screen-reader users land
-   * where sighted users do. */
-  const jump = (id: string) => {
-    const el = scroller.current;
-    const target = el?.querySelector<HTMLElement>(`#bw-${id}`);
-    if (!el || !target) return;
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    el.scrollTo({ top: id === "top" ? 0 : target.offsetTop, behavior: reduce ? "auto" : "smooth" });
-    target.focus({ preventScroll: true });
-  };
-
-  /* CP4_63 (plan item 7): the rail follows the section that actually crosses
-   * the middle of the viewport. It used to be floor(progress × N), which was
-   * wrong whenever sections had different heights — i.e. always. */
-  useEffect(() => {
-    const el = scroller.current;
-    if (!el) return;
-    const io = new IntersectionObserver(
-      (entries) => {
-        for (const e of entries) {
-          if (e.isIntersecting) setSection(Number((e.target as HTMLElement).dataset.bwI) || 1);
-        }
-      },
-      { root: el, rootMargin: "-49% 0px -49% 0px", threshold: 0 },
-    );
-    el.querySelectorAll("section[data-bw-i]").forEach((s) => io.observe(s));
-    return () => io.disconnect();
-  }, []);
 
   useEffect(() => {
     const el = scroller.current;
@@ -238,9 +176,8 @@ export default function BlackwoodSite({ preview = false }: { preview?: boolean }
       // bottom of every render was cropped and the framing sat off-centre.
       el.style.setProperty("--bw-vh", `${el.clientHeight}px`);
       if (railFill.current) railFill.current.style.transform = `scaleY(${p})`;
-      // mobile: the full-screen veil fades in over the first half-screen of scroll
-      if (mobileScrim.current)
-        mobileScrim.current.style.opacity = String(Math.min(1, el.scrollTop / (el.clientHeight * 0.5)));
+      const idx = Math.min(SECTIONS.length, Math.floor(p * SECTIONS.length) + 1);
+      setSection((cur) => (cur === idx ? cur : idx));
     };
     read();
     el.addEventListener("scroll", read, { passive: true });
@@ -283,36 +220,14 @@ export default function BlackwoodSite({ preview = false }: { preview?: boolean }
             scrollRot={scrollRot}
             className="!absolute inset-0"
           />
-          {/* left scrim — the copy column sits on this, not on bare lantern light.
-              CP4_63: widens for the quote (section 5), whose band is wider. */}
+          {/* left scrim — the copy column sits on this, not on bare lantern light */}
           <div
             aria-hidden
-            className="absolute inset-y-0 left-0 hidden transition-[width] duration-700 ease-out lg:block"
+            className="absolute inset-y-0 left-0 hidden w-[40%] lg:block"
             style={{
-              width: section === 5 ? "54%" : "40%",
               background:
                 "linear-gradient(90deg, rgba(6,5,4,0.92) 0%, rgba(6,5,4,0.72) 50%, transparent 100%)",
             }}
-          />
-          {/* CP4_63 (plan item 8) MOBILE SCRIM. Below lg the copy runs full
-              width straight over the scene, lanterns and all. Two layers:
-              a bottom-weighted gradient (the hero copy sits low, the bottle
-              keeps the top), and a flat veil that fades in once the hero is
-              half scrolled away — from then on every line of copy is on
-              ≥ ~0.8 black. */}
-          <div
-            aria-hidden
-            className="absolute inset-0 lg:hidden"
-            style={{
-              background:
-                "linear-gradient(180deg, rgba(6,5,4,0.25) 0%, rgba(6,5,4,0.5) 38%, rgba(6,5,4,0.9) 72%)",
-            }}
-          />
-          <div
-            ref={mobileScrim}
-            aria-hidden
-            className="absolute inset-0 lg:hidden"
-            style={{ background: "rgba(6,5,4,0.72)", opacity: 0 }}
           />
           {!preview && (
             <Rail
@@ -338,63 +253,32 @@ export default function BlackwoodSite({ preview = false }: { preview?: boolean }
 
       <header className="relative z-20 flex items-center justify-between px-8 py-7 lg:px-14">
         {/* Wordmark as on the label: the heaviest thing on it, in gold. */}
-        <a
-          href="#bw-top"
-          onClick={(e) => {
-            e.preventDefault();
-            jump("top");
-          }}
-          className={`text-[21px] font-semibold leading-none tracking-[0.18em] text-[#D9974A] ${focusCls}`}
-          style={{ fontFamily: SERIF }}
+        <span
+          className="text-[21px] font-semibold leading-none tracking-[0.18em]"
+          style={{ fontFamily: SERIF, color: T.amber }}
         >
           BLACKWOOD
-        </a>
-        {/* CP4_63 (plan item 6): real links, with hover + focus states. Colour
-            lives in classes, not inline styles, so :hover can change it. */}
+        </span>
         <nav className="hidden items-center gap-10 md:flex">
-          {c.nav.map((l, i) => {
-            const id = NAV_TARGETS[i];
-            return (
-              <a
-                key={l}
-                href={`#bw-${id}`}
-                onClick={(e) => {
-                  e.preventDefault();
-                  jump(id);
-                }}
-                className={`group relative py-1 text-[#8B8578] transition-colors duration-300 hover:text-[#EDE4D4] ${labelCls} ${focusCls}`}
-                style={LABEL}
-                aria-current={section === SECTION_OF[id] ? "true" : undefined}
-              >
-                {l}
-                <span
-                  aria-hidden
-                  className={`absolute -bottom-0.5 left-0 h-px w-full origin-left bg-[#D9974A] transition-transform duration-500 ${
-                    section === SECTION_OF[id] ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"
-                  }`}
-                />
-              </a>
-            );
-          })}
+          {c.nav.map((l) => (
+            <span key={l} className={labelCls} style={{ ...LABEL, color: T.inkSoft }}>
+              {l}
+            </span>
+          ))}
         </nav>
-        <a
-          href="#bw-find"
-          onClick={(e) => {
-            e.preventDefault();
-            jump("find");
-          }}
-          className={`whitespace-nowrap border border-[#D9974A] px-4 py-2.5 text-[#EDE4D4] transition-colors duration-300 hover:bg-[#D9974A] hover:text-[#07080A] lg:px-5 ${labelCls} ${focusCls}`}
-          style={LABEL}
+        <span
+          className={`whitespace-nowrap border px-4 py-2.5 lg:px-5 ${labelCls}`}
+          style={{ ...LABEL, borderColor: T.amber, color: T.ink }}
         >
           {c.navCta}
-        </a>
+        </span>
       </header>
 
       {/* ————— 01 · hero ————— */}
-      <Band id="top" index={1} first>
+      <Band first>
         <motion.div {...rise}>
           <Eyebrow>
-            01 — {c.hero.region} · {c.hero.est}
+            {c.hero.region} · {c.hero.est}
           </Eyebrow>
           <span className="mt-6 block h-px w-12" style={{ background: T.amber }} />
           <DemoHeading
@@ -411,17 +295,12 @@ export default function BlackwoodSite({ preview = false }: { preview?: boolean }
           >
             {c.hero.lead}
           </p>
-          <a
-            href="#bw-cask"
-            onClick={(e) => {
-              e.preventDefault();
-              jump("cask");
-            }}
-            className={`mt-8 inline-block border-b border-[#D9974A] pb-1.5 text-[#EDE4D4] transition-colors duration-300 hover:text-[#D9974A] ${labelCls} ${focusCls}`}
-            style={LABEL}
+          <span
+            className={`mt-8 inline-block border-b pb-1.5 ${labelCls}`}
+            style={{ ...LABEL, borderColor: T.amber, color: T.ink }}
           >
             {c.hero.link}
-          </a>
+          </span>
           <div className="mt-10 flex items-center gap-3">
             <span aria-hidden className={labelCls} style={{ color: T.inkSoft }}>
               ↓
@@ -434,7 +313,7 @@ export default function BlackwoodSite({ preview = false }: { preview?: boolean }
       </Band>
 
       {/* ————— 02 · the cask ————— */}
-      <Band id="cask" index={2}>
+      <Band>
         <motion.div {...rise}>
           <Eyebrow>{c.cask.eyebrow}</Eyebrow>
           <h2 className={`mt-6 max-w-[16ch] ${h2Cls}`} style={{ fontFamily: SERIF }}>
@@ -475,7 +354,7 @@ export default function BlackwoodSite({ preview = false }: { preview?: boolean }
       </Band>
 
       {/* ————— 03 · the distillery ————— */}
-      <Band id="distillery" index={3}>
+      <Band>
         <motion.div {...rise}>
           <Eyebrow>{c.distillery.eyebrow}</Eyebrow>
           <h2 className={`mt-6 ${h2Cls}`} style={{ fontFamily: SERIF }}>
@@ -504,7 +383,7 @@ export default function BlackwoodSite({ preview = false }: { preview?: boolean }
           CP4_62: the animated "weight" bars are gone. They had no scale and no
           legend — decoration posing as data, on a page whose whole voice is
           now "facts, not adjectives". Structure follows the label. */}
-      <Band id="tasting" index={4}>
+      <Band>
         <motion.div {...rise}>
           <Eyebrow>{c.tasting.eyebrow}</Eyebrow>
           <h2 className={`mt-6 max-w-[16ch] ${h2Cls}`} style={{ fontFamily: SERIF }}>
@@ -535,12 +414,11 @@ export default function BlackwoodSite({ preview = false }: { preview?: boolean }
       </Band>
 
       {/* ————— 05 · in the warehouse ————— */}
-      <Band id="voice" index={5} wide>
+      <Band>
         <motion.figure {...rise}>
           <Eyebrow>{c.voice.eyebrow}</Eyebrow>
-          <span aria-hidden className="mt-8 block h-px w-12" style={{ background: T.amber }} />
           <blockquote
-            className="mt-8 text-[clamp(1.6rem,2.5vw,2.35rem)] italic leading-[1.4]"
+            className="mt-8 text-[clamp(1.45rem,2.1vw,1.9rem)] italic leading-[1.45]"
             style={{ fontFamily: SERIF, color: T.ink, hangingPunctuation: "first" }}
           >
             {c.voice.quote}
@@ -557,28 +435,22 @@ export default function BlackwoodSite({ preview = false }: { preview?: boolean }
       </Band>
 
       {/* ————— 06 · find a bottle ————— */}
-      <Band id="find" index={6}>
+      <Band>
         <motion.div {...rise}>
           <Eyebrow>{c.find.eyebrow}</Eyebrow>
           <h2
-            className="mt-7 text-[clamp(2.6rem,3.9vw,3.5rem)] font-medium leading-[1.04]"
+            className="mt-7 max-w-[14ch] text-[clamp(2.4rem,3.8vw,3.4rem)] leading-[1.05]"
             style={{ fontFamily: SERIF }}
           >
             {c.find.heading}
           </h2>
           <Body className="mt-6">{c.find.body}</Body>
-          <p className={`mt-6 ${labelCls}`} style={{ ...LABEL, color: T.amber }}>
-            {c.find.bottle}
-          </p>
-          {/* CP4_63: the ONE filled button on the page — every other control
-              is outlined or underlined, so the page ends on its strongest note. */}
-          <button
-            type="button"
-            className={`mt-10 inline-block bg-[#D9974A] px-10 py-4 text-[#07080A] transition-colors duration-300 hover:bg-[#EDE4D4] ${labelCls} ${focusCls}`}
-            style={LABEL}
+          <span
+            className={`mt-10 inline-block border px-9 py-4 ${labelCls}`}
+            style={{ ...LABEL, borderColor: T.amber, color: T.ink }}
           >
             {c.find.cta}
-          </button>
+          </span>
           <p className="mt-14 text-[12px] leading-[1.7]" style={{ color: T.inkSoft }}>
             {c.find.disclaimer}
           </p>

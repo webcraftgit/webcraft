@@ -117,6 +117,18 @@ Replaces the author LOD0/LOD1 vertex-colour barrels (deleted). Source: client-su
 - Verified by decoding the final GLB and rendering it in Cycles on the new floor next to the
   bottle and lanterns: textures, orientation, scale and lid height all correct.
 
+### Glass — client model `dublin_cut_whiskey_glass_square_v2.blend` — CP4_63
+Square Dublin-cut crystal tumbler, a supporting prop left of and behind the bottle.
+
+- `public/models/blackwood_glass.glb` **197 KB**, ~51k tris, 1 mesh / 1 material (`Crystal`), no UVs, no textures.
+  0.076 × 0.076 × 0.095 m, +Y up, origin at base centre. Signed volume positive (CP4_44 winding check).
+- Source 548k tris. Collapse-decimated to 10 % — compared side by side in Cycles: the cut pattern survives,
+  slightly softer; invisible at scene distance (~200 px tall). Normals split at 30° (facets stay faceted).
+- Draco q14 position / q12 normal. Pipeline: `scripts/blackwood-glass-export.py` → `gltf-transform weld` → `draco`.
+- Material rebuilt in three.js (transmission 1, IOR 1.52, faint warm attenuation, dispersion .25 desktop only),
+  `castShadow` off. **Never `smoothNormals()` it.**
+- Licence: client-supplied; provenance unconfirmed.
+
 ## Floor — `/public/textures/stone_pathway/` — Poly Haven `stone_pathway` (CC0) — CP4_38
 Replaces `stone_path/` (deleted). Source: client-supplied `stone_pathway_4k_blend.zip`.
 

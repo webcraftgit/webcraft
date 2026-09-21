@@ -125,8 +125,6 @@ export const en = {
     eyebrow: "06 — Find a bottle",
     heading: "1,200 bottles. No second batch.",
     body: "Sold through a handful of specialist whisky shops and at the distillery door. Every bottle is numbered.",
-    /** the bottle on the table in the 3D scene — its label reads 0186 / 1200 */
-    bottle: "The one on the table is bottle 0186.",
     cta: "Find a stockist",
     disclaimer:
       "Blackwood is a fictional brand, built by Webcraft to demonstrate a concept site. Please drink responsibly.",
@@ -221,7 +219,6 @@ export const pl: typeof en = {
     eyebrow: "06 — Gdzie kupić",
     heading: "1200 butelek. Drugiej partii nie będzie.",
     body: "W sprzedaży w kilku specjalistycznych sklepach z whisky i w sklepie przy destylarni. Każda butelka jest numerowana.",
-    bottle: "Ta na stole ma numer 0186.",
     cta: "Znajdź sklep",
     disclaimer:
       "Blackwood to fikcyjna marka, stworzona przez Webcraft jako projekt koncepcyjny. Pij odpowiedzialnie.",

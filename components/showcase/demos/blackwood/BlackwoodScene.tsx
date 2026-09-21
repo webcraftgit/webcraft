@@ -279,8 +279,6 @@ function CameraRig({ progress }: { progress?: MutableRefObject<number> }) {
   const smooth = useRef({ p: progress?.current ?? 0 });
   const pos = useMemo(() => new THREE.Vector3(), []);
   const look = useMemo(() => new THREE.Vector3(), []);
-  const hero = useMemo(() => new THREE.Vector3(...HERO), []);
-  const aim = useMemo(() => new THREE.Vector3(), []);
 
   useFrame((_, rawDt) => {
     const dt = Math.min(rawDt, 1 / 20);
@@ -289,22 +287,9 @@ function CameraRig({ progress }: { progress?: MutableRefObject<number> }) {
     const { u, fov } = curveU(smooth.current.p);
     POS_CURVE.getPoint(u, pos);
     LOOK_CURVE.getPoint(u, look);
-    /* CP4_64 PORTRAIT FRAMING. Every beat aims LEFT of the bottle so it sits
-     * in the right third, clear of the desktop copy column. On a phone the
-     * frame is ~0.46 wide, so the same aim pushed the bottle half off the
-     * right edge. Below ~1.25 aspect the aim slides onto the bottle itself
-     * (f → 0 by 0.7: phones and portrait tablets are fully centred), dropped
-     * by 10% of the visible height so the bottle rides slightly HIGH — the
-     * mobile hero copy sits low. Landscape tablets and desktop are untouched. */
-    const cam = camera as THREE.PerspectiveCamera;
-    const f = THREE.MathUtils.smoothstep(cam.aspect, 0.7, 1.25);
-    if (f < 1) {
-      const visH = 2 * pos.distanceTo(hero) * Math.tan(THREE.MathUtils.degToRad(fov / 2));
-      aim.set(hero.x, hero.y - 0.1 * visH, hero.z);
-      look.lerp(aim, 1 - f);
-    }
     camera.position.copy(pos);
     camera.lookAt(look);
+    const cam = camera as THREE.PerspectiveCamera;
     if (Math.abs(cam.fov - fov) > 0.001) {
       cam.fov = fov;
       cam.updateProjectionMatrix();
@@ -553,6 +538,158 @@ function Bottle() {
   }, [scene]);
 
   return <primitive object={model} />;
+}
+
+/* ————— Dublin-cut tumbler (CP4_63) ——————————————————————————————————
+ * Client model `dublin_cut_whiskey_glass_square_v2.blend`, 548k tris →
+ * collapse-decimated to ~51k (scripts/blackwood-glass-export.py), Draco,
+ * 197 KB, no textures. 76 × 76 × 95 mm, origin at base centre.
+ *
+ * A SUPPORTING PROP: left of the bottle and ~12–15 cm behind it on every
+ * beat, so it fills the empty top without competing. Placement was checked
+ * by projecting both objects through the whole camera path — it only passes
+ * behind the bottle on the raking beat (p ≈ .7–.8), which is intended.
+ *
+ * Transmissive crystal. Rules it relies on:
+ *  - It is BEHIND the bottle, so no opaque object sits between camera and it
+ *    (the CP4_45 ghost rule). The whiskey is transmissive too, so the glass is
+ *    simply absent from the whiskey's refraction — invisible at this size.
+ *  - castShadow OFF: three shadows are binary, a crystal would cast a solid
+ *    black silhouette. N8AO grounds it instead.
+ *  - Writes depth (transmissive default), so DoF treats it as a surface.
+ *  - Never smoothNormals(): the export splits normals at 30° so the cut
+ *    facets stay faceted. */
+const GLASS_POS: [number, number, number] = [-0.155, TABLE_TOP, -0.03];
+const GLASS_ROT = 0.75; // a corner towards the camera catches the rim strips
+
+function Tumbler() {
+  const tier = useTier();
+  const { scene } = useGLTF("/models/blackwood_glass.glb", "/draco/");
+  const model = useMemo(() => {
+    const root = scene.clone(true);
+    const crystal = new THREE.MeshPhysicalMaterial({
+      name: "Crystal",
+      color: "#ffffff",
+      metalness: 0,
+      roughness: 0,
+      transmission: 1,
+      ior: 1.52,
+      thickness: 0.005, // render check: .012 bent the view onto the dark table edge — the glass read as a dark box
+      attenuationColor: new THREE.Color("#fff3e2"),
+      attenuationDistance: 0.25,
+      specularIntensity: 1,
+      // CP4_63 render check: at .9 it read as a dark box — cut crystal only
+      // reads through its highlights. Still under the bottle glass's 1.6.
+      envMapIntensity: 1.4,
+      // cut-crystal fire; off on phones (extra per-pixel samples)
+      dispersion: tier === "full" ? 0.25 : 0,
+      side: THREE.FrontSide,
+    });
+    root.traverse((o) => {
+      const m = o as THREE.Mesh;
+      if (!m.isMesh) return;
+      m.material = crystal;
+      m.castShadow = false;
+      m.receiveShadow = true;
+    });
+    return root;
+  }, [scene, tier]);
+  return (
+    <>
+      <group position={GLASS_POS} rotation-y={GLASS_ROT}>
+        <primitive object={model} />
+        <Pour />
+      </group>
+      {/* A tiny short-range glint light, front-left of the glass: cut crystal
+          only reads through its facet sparkle, and the env strips are aimed at
+          the bottle. distance .45 so it barely touches the bottle or the top. */}
+      {tier !== "preview" && (
+        <pointLight
+          position={[GLASS_POS[0] - 0.18, GLASS_POS[1] + 0.2, GLASS_POS[2] + 0.2]}
+          color="#FFE2C0"
+          intensity={0.5}
+          distance={0.45}
+          decay={2}
+        />
+      )}
+    </>
+  );
+}
+
+/* ————— the pour in the tumbler (CP4_64) ————————————————————————————
+ * Cavity measured by raycasting the exported mesh in bpy: flat interior floor
+ * at y 0.016, inner half-width 0.0317 (0.0304 on the diagonal → ~4.5 mm
+ * corner radius), near-vertical walls up to ~6 cm. The pour is a rounded-
+ * square slab 0.5 mm inside the walls, 22 mm deep — a neat double measure.
+ * Its bottom corners dip into the floor's edge fillet, which is inside the
+ * glass solid and never seen.
+ *
+ * OPAQUE ON PURPOSE. The glass is transmissive and three's transmission pass
+ * only sees opaque objects: an opaque pour is exactly what the crystal then
+ * refracts, so the liquid reads THROUGH the cut walls. A transmissive pour
+ * would be invisible inside it (same limit as the bottle, CP4_41). The
+ * "depth" of the spirit is faked with a view-facing emissive (the CP4_39
+ * trick): centre of the slab glows amber, edges fall to a darker rim. The
+ * surface gets the bottle's meniscus line. No shadow (a black blob is worse
+ * than none; N8AO grounds it). Dials: POUR_H, colour, emissive strength. */
+const POUR_FLOOR = 0.0165;
+const POUR_H = 0.022;
+const POUR_HALF = 0.0312;
+const POUR_CORNER = 0.005;
+
+function Pour() {
+  const { geometry, material } = useMemo(() => {
+    const a = POUR_HALF, r = POUR_CORNER;
+    const sh = new THREE.Shape();
+    sh.moveTo(-a + r, -a);
+    sh.lineTo(a - r, -a);
+    sh.quadraticCurveTo(a, -a, a, -a + r);
+    sh.lineTo(a, a - r);
+    sh.quadraticCurveTo(a, a, a - r, a);
+    sh.lineTo(-a + r, a);
+    sh.quadraticCurveTo(-a, a, -a, a - r);
+    sh.lineTo(-a, -a + r);
+    sh.quadraticCurveTo(-a, -a, -a + r, -a);
+    const g = new THREE.ExtrudeGeometry(sh, { depth: POUR_H, bevelEnabled: false, curveSegments: 6 });
+    g.rotateX(-Math.PI / 2); // extrude +Z → +Y
+    g.translate(0, POUR_FLOOR, 0);
+    g.computeVertexNormals();
+    const top = POUR_FLOOR + POUR_H;
+    const m = new THREE.MeshPhysicalMaterial({
+      name: "Pour",
+      color: "#3a1805", // render check: #6e3510 + .55 glow read as a pale salmon block under AgX
+      roughness: 0.06,
+      metalness: 0,
+      clearcoat: 0.6, // the liquid surface: a sharp second highlight
+      clearcoatRoughness: 0.02,
+      envMapIntensity: 0.5,
+      emissive: "#c9651f",
+      emissiveIntensity: 0.0, // driven in the shader below
+    });
+    m.onBeforeCompile = (shd) => {
+      shd.uniforms.uTop = { value: top };
+      shd.vertexShader = shd.vertexShader
+        .replace("#include <common>", "#include <common>\nvarying vec3 vPwObj; varying vec3 vPwObjN;")
+        .replace("#include <begin_vertex>", "#include <begin_vertex>\nvPwObj = position; vPwObjN = normal;");
+      shd.fragmentShader = shd.fragmentShader
+        .replace("#include <common>", "#include <common>\nuniform float uTop; varying vec3 vPwObj; varying vec3 vPwObjN;")
+        .replace(
+          "#include <emissivemap_fragment>",
+          `#include <emissivemap_fragment>
+          // spirit depth: facing the eye = looking through more whisky = glow
+          float pwFace = pow(clamp(dot(normalize(normal), normalize(vViewPosition)), 0.0, 1.0), 2.0);
+          // deeper at the bottom (more spirit above the eye line), lit near the surface
+          float pwUp = smoothstep(uTop - ${POUR_H.toFixed(4)}, uTop, vPwObj.y);
+          totalEmissiveRadiance += vec3(0.62, 0.26, 0.06) * pwFace * (0.08 + 0.16 * pwUp);
+          // meniscus: a thin bright line where the liquid meets the wall
+          float pwSide = 1.0 - abs(normalize(vPwObjN).y);
+          float pwLine = smoothstep(0.0022, 0.0, uTop - vPwObj.y) * pwSide;
+          totalEmissiveRadiance += vec3(1.0, 0.68, 0.36) * pwLine * 0.6;`,
+        );
+    };
+    return { geometry: g, material: m };
+  }, []);
+  return <mesh geometry={geometry} material={material} castShadow={false} receiveShadow />;
 }
 
 /* ————— barrels ————————————————————————————————————————————————
@@ -1536,82 +1673,6 @@ void mainImage(const in vec4 inputColor, const in vec2 uv, out vec4 outputColor)
   }
 }
 
-/* ————— CP4_64: THE WHITE ISLANDS — ROOT CAUSE ——————————————————————
- * postprocessing's BrightnessContrastEffect declares inputColorSpace = sRGB,
- * so the EffectPass wraps it: sRGBTransferOETF before, and sRGBToLinear after
- * (HueSaturation, Vignette and Noise are linear). Contrast pushes the darkest
- * pixels BELOW ZERO — (x - .5) / .88 + .5 < 0 for sRGB x < .06 — and the
- * conversion back is
- *     mix(pow(c * .9479 + .0521, 2.4), c * .0774, c <= .04045)
- * For c < -.055 the pow() base is negative. HLSL (Windows Chrome = ANGLE →
- * D3D) returns NaN, and mix() keeps it even on the branch it "doesn't pick"
- * (NaN × 0 = NaN). So: the DARKEST parts of the frame — the whiskey body,
- * the wall between the cask rows, the shadow under the table edge — became
- * NaN, and the client's AMD driver writes NaN to the screen as WHITE.
- * SwiftShader never shows it: its pow() of a negative base returns 0, not
- * NaN (tested directly). PROVEN with the `bwnan` probe below, which paints
- * every negative-pow-base pixel magenta: with the stock effect it covers the
- * whiskey body, the neck, the wall between the cask rows and the table edge —
- * the client's screenshot, shape for shape; with the clamp, zero pixels.
- * `?bwno=grade` "fixed"
- * it because no contrast = nothing below zero; the CP4_61 "merged shader"
- * theory was wrong.
- * FIX: the same contrast maths, CLAMPED to [0,1] before the pass converts
- * back. Identical look (the screen clips negatives anyway), no NaN possible.
- * `?bwdebug&bwno=clamp` restores the stock effect for an A/B on real GPUs. */
-class SafeContrastEffect extends Effect {
-  constructor(contrast: number) {
-    super(
-      "SafeContrastEffect",
-      /* glsl */ `
-uniform float uGain;
-void mainImage(const in vec4 inputColor, const in vec2 uv, out vec4 outputColor) {
-  vec3 c = (inputColor.rgb - 0.5) * uGain + 0.5;
-  outputColor = vec4(clamp(c, 0.0, 1.0), inputColor.a);
-}`,
-      {
-        // BrightnessContrastEffect's own gain: /(1-c) above zero, ×(1+c) below
-        uniforms: new Map([["uGain", new THREE.Uniform(contrast > 0 ? 1 / (1 - contrast) : 1 + contrast)]]),
-      },
-    );
-    // same colour space as the stock effect, so the grade looks identical
-    this.inputColorSpace = THREE.SRGBColorSpace;
-  }
-}
-
-/** DEBUG ONLY (`?bwdebug&bwnan`): sits right after the contrast, in sRGB,
- *  and paints magenta every pixel the NEXT conversion (sRGBToLinear) would
- *  turn into NaN on D3D: any channel below -0.055, i.e. a negative pow()
- *  base. SwiftShader's pow() of a negative base is NOT NaN (tested: it
- *  returns 0), so this sandbox can never show the white itself — this probe
- *  shows where it WOULD be. */
-class NanProbeEffect extends Effect {
-  constructor() {
-    super(
-      "NanProbeEffect",
-      /* glsl */ `
-void mainImage(const in vec4 inputColor, const in vec2 uv, out vec4 outputColor) {
-  bool bad = any(lessThan(inputColor.rgb * 0.9478672986 + 0.0521327014, vec3(0.0)));
-  outputColor = bad ? vec4(1.0, 0.0, 1.0, 1.0) : inputColor;
-}`,
-    );
-    this.inputColorSpace = THREE.SRGBColorSpace;
-  }
-}
-const BW_NAN = BW_DEBUG && typeof window !== "undefined" && window.location.search.includes("bwnan");
-
-function NanProbe() {
-  const effect = useMemo(() => new NanProbeEffect(), []);
-  useEffect(() => () => effect.dispose(), [effect]);
-  return <primitive object={effect} />;
-}
-
-function Contrast() {
-  const effect = useMemo(() => new SafeContrastEffect(LOOK.contrast), []);
-  useEffect(() => () => effect.dispose(), [effect]);
-  return bwOn("clamp") ? <primitive object={effect} /> : <BrightnessContrast contrast={LOOK.contrast} />;
-}
-
 /** As its OWN pass, never merged: an Effect sharing an EffectPass with DoF runs
  *  AFTER DoF has already read the raw input in update(). */
 function useSanitizePass(camera: THREE.Camera) {
@@ -1633,11 +1694,7 @@ function Post({ progress, tier }: { progress?: MutableRefObject<number>; tier: T
   // (before DoF / bloom can spread anything AO itself produced)
   const cleanIn = useSanitizePass(camera);
   const cleanMid = useSanitizePass(camera);
-  /* CP4_64 NOTE: the theory below was WRONG — the real cause is NaN from the
-   * contrast step, see SafeContrastEffect. The pass is kept (harmless, one
-   * full-screen pass) until the client confirms CP4_64 on the AMD machine;
-   * after that it can go.
-   * CP4_61 — THE WHITE ISLANDS FIX. The client bisected it on their GPU:
+  /* CP4_61 — THE WHITE ISLANDS FIX. The client bisected it on their GPU:
    * ?bwno=grade removes them. The grade's own maths cannot make white islands
    * (BrightnessContrast is a subtract/divide, HueSaturation ends in min(c,1)),
    * so the grade is not the bug — the MERGE is. Without a Pass between them,
@@ -1681,7 +1738,7 @@ function Post({ progress, tier }: { progress?: MutableRefObject<number>; tier: T
         )}
         <ToneMapping mode={ToneMappingMode.AGX} />
         {bwOn("split") ? <primitive object={cleanOut} /> : <></>}
-        {bwOn("grade") ? <Contrast /> : <></>}
+        {bwOn("grade") ? <BrightnessContrast contrast={LOOK.contrast} /> : <></>}
         {bwOn("grade") ? <HueSaturation saturation={LOOK.saturation} /> : <></>}
         <Vignette offset={0.25} darkness={0.72} />
       </EffectComposer>
@@ -1709,8 +1766,7 @@ function Post({ progress, tier }: { progress?: MutableRefObject<number>; tier: T
         {bwOn("split") ? <primitive object={cleanOut} /> : <></>}
         {/* CP4_59: AgX is flat by design; a touch of contrast and a little
             less saturation after it is the grade, not a second tone map */}
-        {bwOn("grade") ? <Contrast /> : <></>}
-        {BW_NAN ? <NanProbe /> : <></>}
+        {bwOn("grade") ? <BrightnessContrast contrast={LOOK.contrast} /> : <></>}
         {bwOn("grade") ? <HueSaturation saturation={LOOK.saturation} /> : <></>}
         <Vignette offset={0.25} darkness={0.72} />
         <Noise opacity={0.035} />
@@ -1781,6 +1837,8 @@ function Cellar({ tier, progress }: { tier: Tier; progress?: MutableRefObject<nu
           </group>
         </DragSpin>
       </group>
+      {/* CP4_63: supporting prop, left of and behind the bottle */}
+      <Tumbler />
       {lit && <Caustic />}
 
       <Barrel position={[1.38, 0, -1.55]} rotation={-0.6} />
@@ -1909,4 +1967,5 @@ export default function BlackwoodScene({
 useGLTF.preload("/models/blackwood_bottle.glb", "/draco/");
 useGLTF.preload("/models/blackwood_barrel.glb", "/draco/");
 useGLTF.preload("/models/blackwood_table.glb", "/draco/");
+useGLTF.preload("/models/blackwood_glass.glb", "/draco/");
 useGLTF.preload("/models/blackwood_lantern.glb", "/draco/");
