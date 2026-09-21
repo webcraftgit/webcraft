@@ -1666,11 +1666,14 @@ void mainImage(const in vec4 inputColor, const in vec2 uv, out vec4 outputColor)
 }
 
 /** As its OWN pass, never merged: an Effect sharing an EffectPass with DoF runs
- *  AFTER DoF has already read the raw input in update(). */
-function useSanitizePass(camera: THREE.Camera) {
+ *  AFTER DoF has already read the raw input in update().
+ *  `ceil` defaults to 32 (HDR/linear space, above the ×14 flame). Pass 1.0 for a
+ *  pass that runs AFTER tone mapping, where the signal is already [0,1] — see
+ *  cleanOut below for why the post-AgX ceiling must be 1, not 32. */
+function useSanitizePass(camera: THREE.Camera, ceil?: number) {
   const pass = useMemo(
-    () => new EffectPass(camera, new SanitizeEffect(BW_DEBUG ? Number(new URLSearchParams(window.location.search).get("bwceil") || 32) : 32)),
-    [camera],
+    () => new EffectPass(camera, new SanitizeEffect(ceil ?? (BW_DEBUG ? Number(new URLSearchParams(window.location.search).get("bwceil") || 32) : 32))),
+    [camera, ceil],
   );
   useEffect(() => () => pass.dispose(), [pass]);
   return pass;
@@ -1700,7 +1703,13 @@ function Post({ progress, tier }: { progress?: MutableRefObject<number>; tier: T
    * is already in [0,1], so the clamp is a no-op — the pass exists only as the
    * split. DO NOT remove it to "save a pass", and do not grow either half back
    * into one giant merged shader. */
-  const cleanOut = useSanitizePass(camera);
+  /* CP4_66: ceil 1.0, not 32. cleanOut runs AFTER AgX, where the signal is
+   * already [0,1]. The old shared ceil of 32 meant a surviving non-finite pixel
+   * was mapped to 32 here — 32 ≫ 1, i.e. a 32× SUPER-WHITE that clips to a white
+   * island. So the very backstop meant to erase the artefact could paint one.
+   * Post-tone-map the only defensible clamp is [0,1]: Inf → 1 (legit white at
+   * worst), NaN → 0. It can no longer manufacture an island. */
+  const cleanOut = useSanitizePass(camera, 1);
   const san = bwOn("sanitize");
   const exposeComposer = (c: unknown) => {
     if (BW_DEBUG && c) (window as unknown as { __bwComposer?: unknown }).__bwComposer = c;
@@ -1738,14 +1747,30 @@ function Post({ progress, tier }: { progress?: MutableRefObject<number>; tier: T
         <Vignette offset={0.25} darkness={0.72} />
       </EffectComposer>
     ) : (
-      /* CP4_65 — WHITE ISLANDS, THIRD REPORT (client, AMD/Windows, section 05).
-       * CP4_61's single split was not enough. mergeMode="none" gives EVERY
-       * effect its own small shader, so no fused mega-shader exists for the
-       * ANGLE→D3D compiler to miscompile — the step CP4_61 named as next.
-       * Cost: ~5 extra full-screen passes on desktop only. A/B on the client
-       * GPU with ?bwdebug&bwmerge (restores "auto"). DO NOT switch back to
-       * "auto" to save passes. */
-      <EffectComposer multisampling={4} ref={exposeComposer} mergeMode={BW_MERGE ? "auto" : "none"}>
+      /* CP4_66 — WHITE ISLANDS, THE ROOT CAUSE (client, AMD/Windows, section 05).
+       * Four prior fixes (CP4_60 sanitize, CP4_61 split, CP4_65 mergeMode:none)
+       * chased the SYMPTOM downstream and the artefact kept returning. The
+       * source: the composer's DEFAULT frame buffer is HalfFloatType (RGBA16F),
+       * whose max is 65504. The glass shell's near-mirror clearcoat specular
+       * (roughness clamped to ~0.0525, GGX peak in the hundreds) under the hot
+       * spot key (intensity 26), doubled by DoubleSide, overflows 65504 to +Inf.
+       * DoF's max-filter + Bloom's mip chain spread that one Inf into a disc then
+       * a frame-spanning island; AgX maps Inf → white. SwiftShader (float32)
+       * NEVER reproduced it because its buffer cannot overflow at these
+       * magnitudes — which is the whole tell.
+       *
+       * FloatType (RGBA32F, max ~3.4e38) makes the desktop path behave like the
+       * environment that provably never fails: the specular stays finite, rolls
+       * off through AgX as an ordinary highlight, and there is nothing non-finite
+       * for any downstream pass to spread. This removes the MECHANISM, not a
+       * trigger — driver-independent. The sanitize passes + mergeMode:none stay
+       * as a cheap NaN backstop.
+       * Needs EXT_color_buffer_float (renderable) + OES_texture_float_linear
+       * (bloom/DoF filtering) — both universal on desktop WebGL2. Mobile stays
+       * HalfFloat: never the reported platform, no DoF/AO/bloom-spread path, and
+       * some mobile GPUs lack float-linear filtering. DO NOT drop back to
+       * HalfFloat to "save bandwidth" — that is what brought the islands back. */
+      <EffectComposer multisampling={4} ref={exposeComposer} mergeMode={BW_MERGE ? "auto" : "none"} frameBufferType={THREE.FloatType}>
         {san ? <primitive object={cleanIn} /> : <></>}
         {bwOn("ao") ? <N8AO aoRadius={0.35} distanceFalloff={0.6} intensity={2.2} halfRes /> : <></>}
         {san ? <primitive object={cleanMid} /> : <></>}
