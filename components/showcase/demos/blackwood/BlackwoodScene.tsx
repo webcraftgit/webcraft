@@ -77,8 +77,19 @@ const BARREL_TOP = 0.837; // barrel B still carries lantern 2
  *  read as furniture UNDER the product and never as the subject: at 0.62 the
  *  top is ~3 bottle-widths deep instead of 5, and the 2K albedo lands at
  *  ~23 px/cm where the camera gets closest. */
-const TABLE_SCALE = 0.62;
-const TABLE_TOP = 0.5588 * TABLE_SCALE; // 0.3465
+/** CP4_57: a UNIFORM scale could only trade footprint against height — smaller
+ *  meant lower, which is the opposite of what the product needs. The scale is
+ *  now SPLIT: the footprint shrinks (less wood beside the glass) while the top
+ *  rises (the bottle is lifted toward eye level instead of sitting in a pool of
+ *  tabletop). 0.62 uniform → 0.34 across / 0.80 tall: 0.89 m → 0.49 m square,
+ *  top 0.3465 → 0.4470. The model is a COFFEE table; at these numbers it reads
+ *  as a small pedestal/side table, which is the correct furniture for a single
+ *  bottle. Vertical stretch is 2.35× — carved uprights take that well (they are
+ *  vertical forms already); do not push Y/XZ much past ~2.4 or the top slab's
+ *  edge moulding starts to read as a chunky lip. */
+const TABLE_SCALE_XZ = 0.34;
+const TABLE_SCALE_Y = 0.80;
+const TABLE_TOP = 0.5588 * TABLE_SCALE_Y; // 0.4470
 const STOOL_TOP = TABLE_TOP; // legacy name, kept so the Caustic maths reads the same
 const BOTTLE_Y = TABLE_TOP; // base-centre origin → drops straight onto the top
 
@@ -134,8 +145,18 @@ const PATH: Beat[] = [
  * position and target are read from centripetal Catmull-Rom splines at that
  * same value — continuous velocity, no per-beat stops, no relative lag. The
  * camera is SET from the curve, never damped on its own. */
-const POS_CURVE = new THREE.CatmullRomCurve3(PATH.map((b) => new THREE.Vector3(...b.pos)), false, "centripetal");
-const LOOK_CURVE = new THREE.CatmullRomCurve3(PATH.map((b) => new THREE.Vector3(...b.look)), false, "centripetal");
+/** The beats above were authored against a 0.3465 tabletop (CP4_48). They are
+ *  framing on the BOTTLE, so when the plinth's height changes the whole path
+ *  has to ride up with it or the close beats end up looking at the cork — or,
+ *  worse, at the table edge. Every beat's Y (camera AND target) is shifted by
+ *  the difference, so TABLE_SCALE_Y is now a safe dial: raise the table and the
+ *  framing is unchanged, which is exactly what it should be. X/Z are left alone
+ *  — the footprint shrank, so the distances still hold. */
+const BEAT_Y_REF = 0.3465;
+const BEAT_DY = TABLE_TOP - BEAT_Y_REF;
+const liftY = (v: [number, number, number]) => new THREE.Vector3(v[0], v[1] + BEAT_DY, v[2]);
+const POS_CURVE = new THREE.CatmullRomCurve3(PATH.map((b) => liftY(b.pos)), false, "centripetal");
+const LOOK_CURVE = new THREE.CatmullRomCurve3(PATH.map((b) => liftY(b.look)), false, "centripetal");
 
 /** beat progress → curve parameter (each segment gets an equal share of u) */
 function curveU(p: number) {
@@ -532,7 +553,14 @@ function Table({
     });
     return root;
   }, [scene]);
-  return <primitive object={model} position={position} rotation-y={rotation} scale={TABLE_SCALE} />;
+  return (
+    <primitive
+      object={model}
+      position={position}
+      rotation-y={rotation}
+      scale={[TABLE_SCALE_XZ, TABLE_SCALE_Y, TABLE_SCALE_XZ]}
+    />
+  );
 }
 
 /* ————— lantern ————————————————————————————————————————————————
@@ -634,7 +662,10 @@ function Lantern({
  * that draws the glass edge out of the dark, and practicals (the lanterns)
  * for mood only. The key moved up and out (it stands in for a high cellar
  * window) so its dusty beam can be seen crossing the room. */
-const KEY_POS: [number, number, number] = [-1.35, 1.85, 0.35];
+/** Rides up with the tabletop (BEAT_DY) so the angle of incidence on the glass
+ *  — and therefore the shoulder highlight and the shadow length on the top —
+ *  is identical whatever TABLE_SCALE_Y is set to. */
+const KEY_POS: [number, number, number] = [-1.35, 1.85 + BEAT_DY, 0.35];
 const HERO: [number, number, number] = [0.02, BOTTLE_Y + 0.14, 0.015]; // bottle midpoint
 
 function KeyLight() {
@@ -1536,9 +1567,9 @@ function Cellar({ tier, progress }: { tier: Tier; progress?: MutableRefObject<nu
         <Lightformer form="rect" intensity={3} color="#FFD9B0" position={[0.9, 0.9, -0.5]} scale={[0.12, 1.6, 1]} />
         <Lightformer form="rect" intensity={1.2} color="#FFB066" position={[-1.2, 0.7, 0.9]} scale={[1.4, 1.4, 1]} />
         {/* ex-ProductRects: soft key card (label + shoulder) and the two rims */}
-        <Lightformer form="rect" intensity={2.2} color="#FFC48A" position={[-0.75, 0.95, 0.75]} scale={[0.7, 0.9, 1]} target={HERO} />
-        <Lightformer form="rect" intensity={3.2} color="#FFE2BC" position={[0.42, 0.78, -0.55]} scale={[0.08, 0.8, 1]} target={HERO} />
-        <Lightformer form="rect" intensity={2} color="#FFD3A0" position={[-0.45, 0.78, -0.5]} scale={[0.06, 0.7, 1]} target={HERO} />
+        <Lightformer form="rect" intensity={2.2} color="#FFC48A" position={[-0.75, 0.95 + BEAT_DY, 0.75]} scale={[0.7, 0.9, 1]} target={HERO} />
+        <Lightformer form="rect" intensity={3.2} color="#FFE2BC" position={[0.42, 0.78 + BEAT_DY, -0.55]} scale={[0.08, 0.8, 1]} target={HERO} />
+        <Lightformer form="rect" intensity={2} color="#FFD3A0" position={[-0.45, 0.78 + BEAT_DY, -0.5]} scale={[0.06, 0.7, 1]} target={HERO} />
         <Lightformer form="rect" intensity={0.35} color="#6b4a30" position={[0, 1.2, -3]} scale={[6, 2.5, 1]} />
         <Lightformer form="ring" intensity={0.6} color="#FF8A3D" position={[0, -0.6, 0]} rotation-x={Math.PI / 2} scale={3} />
       </Environment>
