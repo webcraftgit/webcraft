@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/supabase/server";
 import { updateInquiry } from "./actions";
 
@@ -28,6 +29,7 @@ export default async function Inquiries({
   searchParams: Promise<{ status?: string }>;
 }) {
   const { db } = await requireAdmin();
+  if (!db) redirect("/admin/login");
   const status = (await searchParams).status;
 
   let q = db.from("inquiries").select("*").order("created_at", { ascending: false }).limit(200);

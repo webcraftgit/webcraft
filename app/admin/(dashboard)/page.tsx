@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/supabase/server";
 import { Bars, Funnel, Panel, Spark, Stat } from "@/components/admin/Primitives";
 
@@ -23,6 +24,7 @@ export default async function Overview({
   searchParams: Promise<{ days?: string }>;
 }) {
   const { db } = await requireAdmin();
+  if (!db) redirect("/admin/login"); // no backend configured on this deployment
   const days = Math.min(Math.max(Number((await searchParams).days ?? 30) || 30, 1), 365);
 
   // Aggregation happens in Postgres (admin_overview), not here. Pulling the raw

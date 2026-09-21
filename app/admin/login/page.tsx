@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabase/client";
 
@@ -25,7 +25,10 @@ export default function AdminLogin() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const supabase = supabaseBrowser();
+  /* Created lazily and allowed to be null: with no Supabase env configured
+     this page still has to RENDER (Next prerenders it at build time), it just
+     cannot sign anyone in. */
+  const supabase = useMemo(() => supabaseBrowser(), []);
 
   // Basic shape check — Supabase does the real validation, but reject the
   // obviously-wrong before the round trip.
@@ -33,6 +36,7 @@ export default function AdminLogin() {
   const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized);
 
   async function sendCode() {
+    if (!supabase) return;
     setBusy(true);
     setError(null);
     const { error } = await supabase.auth.signInWithOtp({
@@ -50,6 +54,7 @@ export default function AdminLogin() {
   }
 
   async function verify() {
+    if (!supabase) return;
     setBusy(true);
     setError(null);
     const { error } = await supabase.auth.verifyOtp({
@@ -80,7 +85,20 @@ export default function AdminLogin() {
             : `Enter the 6-digit code sent to ${normalized}.`}
         </p>
 
-        <div className="mt-6 space-y-4">
+        {!supabase && (
+          /* CP4_56: no Supabase env on this deployment. Say so plainly rather
+             than showing a form that silently does nothing. */
+          <p className="mt-6 rounded-card border border-[var(--glass-border)] bg-[rgba(5,8,15,0.55)] p-4 text-[13.5px] leading-relaxed text-ink-soft">
+            The backend is not configured on this deployment. Set
+            <code className="mx-1 text-brand-300">NEXT_PUBLIC_SUPABASE_URL</code>
+            and
+            <code className="mx-1 text-brand-300">NEXT_PUBLIC_SUPABASE_ANON_KEY</code>
+            (see <code className="text-brand-300">docs/SETUP.md</code>) to enable sign-in.
+            The public site is unaffected.
+          </p>
+        )}
+
+        <div className="mt-6 space-y-4" hidden={!supabase}>
           {stage === "email" ? (
             <>
               <div>

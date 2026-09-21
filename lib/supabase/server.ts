@@ -8,10 +8,16 @@ import { cookies } from "next/headers";
  * permission check lives in the database, not in this file.
  */
 export async function supabaseServer() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  // CP4_56: no backend configured → no client. Callers treat that as
+  // "not an admin", which lands on the login page and its notice.
+  if (!url || !key) return null;
+
   const store = await cookies();
   return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    url,
+    key,
     {
       cookies: {
         getAll: () => store.getAll(),
@@ -30,6 +36,8 @@ export async function supabaseServer() {
 /** True only if the JWT maps to a row in admin_users. "Logged in" != "admin". */
 export async function requireAdmin() {
   const db = await supabaseServer();
+  if (!db) return { db: null, user: null, isAdmin: false as const };
+
   const { data: { user } } = await db.auth.getUser();
   if (!user) return { db, user: null, isAdmin: false as const };
 

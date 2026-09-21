@@ -14,7 +14,7 @@ const STATUSES = ["new", "contacted", "quoted", "won", "lost", "spam"] as const;
  */
 export async function updateInquiry(formData: FormData) {
   const { db, isAdmin } = await requireAdmin();
-  if (!isAdmin) throw new Error("forbidden");
+  if (!isAdmin || !db) throw new Error("forbidden");
 
   const id = str(formData.get("id"), 36);
   const status = oneOf(formData.get("status"), STATUSES);

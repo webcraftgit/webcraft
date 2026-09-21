@@ -8,7 +8,7 @@ export default function SignOutButton() {
     <button
       type="button"
       onClick={async () => {
-        await supabaseBrowser().auth.signOut();
+        await supabaseBrowser()?.auth.signOut();
         router.replace("/admin/login");
         router.refresh();
       }}

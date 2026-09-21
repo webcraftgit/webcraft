@@ -16,9 +16,17 @@ import { createServerClient, type CookieOptions } from "@supabase/ssr";
 export async function middleware(req: NextRequest) {
   let res = NextResponse.next({ request: req });
 
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  /* CP4_56: with no backend configured there is no session to refresh and no
+     one to gate. Pass through — /admin's own layout still refuses to render
+     anything, and the login page explains why. Constructing the client with
+     `undefined!` would throw on EVERY request to /admin instead. */
+  if (!url || !key) return res;
+
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    url,
+    key,
     {
       cookies: {
         getAll: () => req.cookies.getAll(),
