@@ -5,9 +5,11 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Environment, Lightformer, PerformanceMonitor, useGLTF, useTexture } from "@react-three/drei";
 import {
   Bloom,
+  BrightnessContrast,
   ChromaticAberration,
   DepthOfField,
   EffectComposer,
+  HueSaturation,
   N8AO,
   Noise,
   ToneMapping,
@@ -77,19 +79,20 @@ const BARREL_TOP = 0.837; // barrel B still carries lantern 2
  *  read as furniture UNDER the product and never as the subject: at 0.62 the
  *  top is ~3 bottle-widths deep instead of 5, and the 2K albedo lands at
  *  ~23 px/cm where the camera gets closest. */
-/** CP4_57: a UNIFORM scale could only trade footprint against height — smaller
- *  meant lower, which is the opposite of what the product needs. The scale is
- *  now SPLIT: the footprint shrinks (less wood beside the glass) while the top
- *  rises (the bottle is lifted toward eye level instead of sitting in a pool of
- *  tabletop). 0.62 uniform → 0.34 across / 0.80 tall: 0.89 m → 0.49 m square,
- *  top 0.3465 → 0.4470. The model is a COFFEE table; at these numbers it reads
- *  as a small pedestal/side table, which is the correct furniture for a single
- *  bottle. Vertical stretch is 2.35× — carved uprights take that well (they are
- *  vertical forms already); do not push Y/XZ much past ~2.4 or the top slab's
- *  edge moulding starts to read as a chunky lip. */
-const TABLE_SCALE_XZ = 0.34;
-const TABLE_SCALE_Y = 0.80;
-const TABLE_TOP = 0.5588 * TABLE_SCALE_Y; // 0.4470
+/** CP4_59: the proportions now live IN THE GEOMETRY, not in a non-uniform
+ *  scale. `blackwood_table.glb` was re-cut (scripts/blackwood-table-recut.mjs):
+ *  the 28 carved foliage PENDANTS hanging under the arches are deleted (they
+ *  read as sharp icicles and cluttered the silhouette under the bottle), and
+ *  the LEGS are lengthened +1.247 m native through their plain tapered shaft
+ *  only — the one span of the model with no vertices (0.02–0.16 native), so
+ *  no carving, collar, arch or roundel is distorted. Native height 0.5588 →
+ *  1.8058. CP4_57's 2.35x vertical stretch squashed every carved detail; the
+ *  scale is UNIFORM again. 0.36 → 0.52 m square, top 0.650 = three quarters
+ *  of a barrel (rim 0.872), per the client. Change the height by re-running
+ *  the script, NOT by un-uniforming this scale. */
+const TABLE_SCALE = 0.36;
+const TABLE_NATIVE_H = 1.8058;
+const TABLE_TOP = TABLE_NATIVE_H * TABLE_SCALE; // 0.650
 const STOOL_TOP = TABLE_TOP; // legacy name, kept so the Caustic maths reads the same
 const BOTTLE_Y = TABLE_TOP; // base-centre origin → drops straight onto the top
 
@@ -131,8 +134,13 @@ const PATH: Beat[] = [
   { p: 0.55, pos: [-0.02, 0.47, 0.46], look: [-0.02, 0.46, 0.0], fov: 34 },
   // swung right, raking light across the shoulder
   { p: 0.75, pos: [0.4, 0.52, 0.22], look: [0.0, 0.47, -0.02], fov: 36 },
-  // and only now the room: the warehouse, the rack, both lanterns
-  { p: 1.0, pos: [1.15, 1.15, 2.2], look: [-0.25, 0.42, -0.9], fov: 44 },
+  // and only now the room — CP4_59: pulled IN from 2.5 m to ~1.2 m (client).
+  // At 2.5 m the bottle was ~15% of frame height and dead centre, under a wall
+  // of casks. Now ~35%, and the look target is swung ~10° LEFT of the bottle so
+  // it holds the right third like every other beat, clear of the copy column.
+  // The rack is still the whole background — it is the room reveal — but it
+  // is backdrop now, not subject.
+  { p: 1.0, pos: [0.62, 0.86, 1.05], look: [-0.68, 0.3, -0.5], fov: 40 },
 ];
 
 
@@ -149,7 +157,7 @@ const PATH: Beat[] = [
  *  framing on the BOTTLE, so when the plinth's height changes the whole path
  *  has to ride up with it or the close beats end up looking at the cork — or,
  *  worse, at the table edge. Every beat's Y (camera AND target) is shifted by
- *  the difference, so TABLE_SCALE_Y is now a safe dial: raise the table and the
+ *  the difference, so the table height is now a safe dial: raise the table and the
  *  framing is unchanged, which is exactly what it should be. X/Z are left alone
  *  — the footprint shrank, so the distances still hold. */
 const BEAT_Y_REF = 0.3465;
@@ -193,12 +201,29 @@ const LOOK = {
   dustOpacity: 0.32, //        drifting motes (CP4_46: fewer, larger, softer, beam only)
   haloOpacity: 0.28, //        glow in the dusty air around each lantern flame
   causticOpacity: 0.22, //     warm light the whiskey throws onto the seat (was .55: read as a sticker)
-  floorEnv: 0.55, //           CP4_46 floor env strength (replaces the planar reflector)
-  rackLight: 3.2, //           grazing light along the barrel rack
+  floorEnv: 0.4, //            CP4_46 floor env strength (replaces the planar reflector)
+  rackLight: 1.2, //           grazing light along the barrel rack (CP4_59: 3.2 → 1.2, backdrop)
   rackBack: 0.24, //           CP4_45 brightness at the BACK of the rack (1 = no depth shading)
   rackEnds: 0.5, //            …and at the far left/right ends
   rackWall: 0.3, //            brick behind the rack (in its shadow)
   webOpacity: 0.55, //         CP4_45 cobwebs
+  /* CP4_59 GRADE — warm subject, cool room. Before: bottle, casks, brick,
+   * floor and fog all sat in one amber band, so the product separated by
+   * highlight alone and the room had no depth. Now warmth is RESERVED for the
+   * bottle and the lantern flames; everything that recedes goes darker, less
+   * saturated and cooler (atmospheric perspective). */
+  fog: "#07090c", //           was #0a0806 (warm). Cool slate: distance reads as depth
+  fogDensity: 0.13, //         was .12
+  hemiSky: "#4a5a70", //       cool bounce on every shadow side
+  hemiIntensity: 0.2,
+  keyColor: "#FFC896", //      was #FFB06A: the whiskey supplies the amber
+  rimCool: "#CFE0FF", //       one of the two glass rims goes cool — edge vs body
+  roomTint: "#8a8a8f", //      floor albedo multiplier (was white): below the casks
+  brickTint: "#77736c", //     was #9a8a7c
+  rackColorA: "#E0A06C", //    rack grazers, desaturated (were #FF9A4A / #FF8A3D)
+  rackColorB: "#D4966A",
+  contrast: 0.12, //           after AgX, which is flat by design
+  saturation: -0.1, //         global, after tone mapping
 } as const;
 
 
@@ -343,7 +368,7 @@ function Floor({ full }: { full: boolean }) {
         envMapIntensity={full ? LOOK.floorEnv : 0.35}
         /* 1 = the roughness MAP is authoritative (it multiplies). */
         roughness={1}
-        color="#ffffff"
+        color={LOOK.roomTint}
       />
     </mesh>
   );
@@ -592,7 +617,7 @@ function Table({
       object={model}
       position={position}
       rotation-y={rotation}
-      scale={[TABLE_SCALE_XZ, TABLE_SCALE_Y, TABLE_SCALE_XZ]}
+      scale={TABLE_SCALE}
     />
   );
 }
@@ -698,7 +723,7 @@ function Lantern({
  * window) so its dusty beam can be seen crossing the room. */
 /** Rides up with the tabletop (BEAT_DY) so the angle of incidence on the glass
  *  — and therefore the shoulder highlight and the shadow length on the top —
- *  is identical whatever TABLE_SCALE_Y is set to. */
+ *  is identical whatever height the table is. */
 const KEY_POS: [number, number, number] = [-1.35, 1.85 + BEAT_DY, 0.35];
 const HERO: [number, number, number] = [0.02, BOTTLE_Y + 0.14, 0.015]; // bottle midpoint
 
@@ -714,7 +739,7 @@ function KeyLight() {
     <spotLight
       ref={light}
       position={KEY_POS}
-      color="#FFB06A"
+      color={LOOK.keyColor}
       intensity={LOOK.keyIntensity}
       distance={8}
       decay={2}
@@ -778,7 +803,7 @@ function BrickWall({
         normalMap={nor}
         roughnessMap={rough}
         roughness={1}
-        color="#9a8a7c"
+        color={LOOK.brickTint}
         envMapIntensity={0.15}
         onBeforeCompile={
           behindRack
@@ -1476,6 +1501,8 @@ function Post({ progress, tier }: { progress?: MutableRefObject<number>; tier: T
       <EffectComposer multisampling={0}>
         <Bloom mipmapBlur luminanceThreshold={1} luminanceSmoothing={0.2} intensity={0.9} radius={0.75} />
         <ToneMapping mode={ToneMappingMode.AGX} />
+        <BrightnessContrast contrast={LOOK.contrast} />
+        <HueSaturation saturation={LOOK.saturation} />
         <Vignette offset={0.25} darkness={0.72} />
       </EffectComposer>
     ) : (
@@ -1492,6 +1519,10 @@ function Post({ progress, tier }: { progress?: MutableRefObject<number>; tier: T
           blendFunction={BlendFunction.NORMAL}
         />
         <ToneMapping mode={ToneMappingMode.AGX} />
+        {/* CP4_59: AgX is flat by design; a touch of contrast and a little
+            less saturation after it is the grade, not a second tone map */}
+        <BrightnessContrast contrast={LOOK.contrast} />
+        <HueSaturation saturation={LOOK.saturation} />
         <Vignette offset={0.25} darkness={0.72} />
         <Noise opacity={0.035} />
       </EffectComposer>
@@ -1544,9 +1575,9 @@ function Cellar({ tier, progress }: { tier: Tier; progress?: MutableRefObject<nu
   return (
     <>
       {/* lighter than CP4_41 (.16): the room behind has to survive the fog */}
-      <fogExp2 attach="fog" args={["#0a0806", 0.12]} />
-      <hemisphereLight args={["#3d4a5c", "#0d0a08", 0.16]} />
-      <ambientLight color="#3a2c22" intensity={0.08} />
+      <fogExp2 attach="fog" args={[LOOK.fog, LOOK.fogDensity]} />
+      <hemisphereLight args={[LOOK.hemiSky, "#0d0a08", LOOK.hemiIntensity]} />
+      <ambientLight color="#24262b" intensity={0.06} />
 
       <Floor full={lit} />
 
@@ -1573,8 +1604,8 @@ function Cellar({ tier, progress }: { tier: Tier; progress?: MutableRefObject<nu
           {full && <Cobwebs />}
           {/* grazing along the rack from above-left: hoops and heads catch an
               edge, the bellies stay dark */}
-          <pointLight position={[-3.1, 2.3, -1.9]} color="#FF9A4A" intensity={LOOK.rackLight} distance={5.5} decay={2} />
-          <pointLight position={[2.9, 1.8, -2.0]} color="#FF8A3D" intensity={LOOK.rackLight * 0.55} distance={4.5} decay={2} />
+          <pointLight position={[-3.1, 2.3, -1.9]} color={LOOK.rackColorA} intensity={LOOK.rackLight} distance={5.5} decay={2} />
+          <pointLight position={[2.9, 1.8, -2.0]} color={LOOK.rackColorB} intensity={LOOK.rackLight * 0.55} distance={4.5} decay={2} />
         </>
       )}
 
@@ -1589,7 +1620,7 @@ function Cellar({ tier, progress }: { tier: Tier; progress?: MutableRefObject<nu
           <Dust count={full ? 220 : 90} />
         </>
       ) : (
-        <pointLight position={[-0.62, 0.93, 0.72]} color="#FFA455" intensity={5.5} distance={6} decay={2} />
+        <pointLight position={[-0.62, 0.93 + BEAT_DY, 0.72]} color="#FFA455" intensity={5.5} distance={6} decay={2} />
       )}
       {/* low warm fill from behind-right on the stool body */}
       <pointLight position={[0.85, 0.72, -0.9]} color="#FF7A28" intensity={2.5} distance={4} decay={2} />
@@ -1607,9 +1638,9 @@ function Cellar({ tier, progress }: { tier: Tier; progress?: MutableRefObject<nu
         <Lightformer form="rect" intensity={1.2} color="#FFB066" position={[-1.2, 0.7, 0.9]} scale={[1.4, 1.4, 1]} />
         {/* ex-ProductRects: soft key card (label + shoulder) and the two rims */}
         <Lightformer form="rect" intensity={2.2} color="#FFC48A" position={[-0.75, 0.95 + BEAT_DY, 0.75]} scale={[0.7, 0.9, 1]} target={HERO} />
-        <Lightformer form="rect" intensity={3.2} color="#FFE2BC" position={[0.42, 0.78 + BEAT_DY, -0.55]} scale={[0.08, 0.8, 1]} target={HERO} />
+        <Lightformer form="rect" intensity={3.2} color={LOOK.rimCool} position={[0.42, 0.78 + BEAT_DY, -0.55]} scale={[0.08, 0.8, 1]} target={HERO} />
         <Lightformer form="rect" intensity={2} color="#FFD3A0" position={[-0.45, 0.78 + BEAT_DY, -0.5]} scale={[0.06, 0.7, 1]} target={HERO} />
-        <Lightformer form="rect" intensity={0.35} color="#6b4a30" position={[0, 1.2, -3]} scale={[6, 2.5, 1]} />
+        <Lightformer form="rect" intensity={0.35} color="#3a3c42" position={[0, 1.2, -3]} scale={[6, 2.5, 1]} />
         <Lightformer form="ring" intensity={0.6} color="#FF8A3D" position={[0, -0.6, 0]} rotation-x={Math.PI / 2} scale={3} />
       </Environment>
 
@@ -1650,13 +1681,13 @@ export default function BlackwoodScene({
       dpr={dpr}
       gl={{ antialias: !lit, // MSAA lives in the composer when lit
          alpha: false, powerPreference: "high-performance" }}
-      camera={{ position: [0.52, 0.55, 0.7], fov: 32, near: 0.05, far: 40 }}
+      camera={{ position: [0.52, 0.55 + BEAT_DY, 0.7], fov: 32, near: 0.05, far: 40 }}
       onCreated={({ gl, scene, camera }) => {
         // lit: tone mapping is done ONCE, in the composer (AgX). Leaving it on
         // the renderer too would tone-map twice.
         gl.toneMapping = lit ? THREE.NoToneMapping : THREE.ACESFilmicToneMapping;
         gl.toneMappingExposure = 1.1;
-        scene.background = new THREE.Color("#0a0907");
+        scene.background = new THREE.Color(LOOK.fog); // CP4_59: matches the fog, or the horizon shows a seam
         if (BW_DEBUG) Object.assign(window, { __bw: { gl, scene, camera, tier } });
       }}
     >
