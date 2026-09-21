@@ -180,8 +180,13 @@ function curveU(p: number) {
  * sandbox). If something reads wrong, it is almost certainly one of these. */
 const LOOK = {
   camDamp: 0.6, //             scroll spring (s) on PROGRESS — higher = smoother, laggier
-  dofBokehClose: 2.6, //       background blur on the close beats (0 = off)
-  dofBokehWide: 0.6, //        …and on the wide ones
+  /* CP4_58: max background blur RADIUS as a FRACTION OF FRAME HEIGHT. The old
+   * dofBokehClose 2.6 / Wide 0.6 were fed straight to bokehScale, which in
+   * postprocessing 6.39 is a radius in DRAWING-BUFFER PIXELS (step = texelSize
+   * × coc × scale, kernel on the unit disc) — 2.6 px on a 2880×1800 buffer,
+   * ~1.3 CSS px. Invisible. That is the whole "DoF does nothing" bug. */
+  dofBlurClose: 0.011, //      close beats: casks become soft shapes, hoops go to bokeh
+  dofBlurWide: 0.0035, //      wide beat: a hint of lens, the room must still read
   chroma: 0.0007, //           chromatic fringe at the frame edge
   keyIntensity: 26, //         CP4_48 hotter + tighter: the bottle must out-light the wood
   shaftOpacity: 0.035, //      dusty key-light beam
@@ -469,6 +474,35 @@ function Bottle() {
         src.envMapIntensity = 0.9;
       }
     });
+    /* CP4_58 DEPTH PROXY. The glass shell has depthWrite:false (it must not
+     * hide the whiskey), so between the fill line and the capsule — the empty
+     * shoulder — the depth buffer held the RACK, 3 m behind. Once DoF actually
+     * blurred (same pass), that patch of glass was blurred as background and
+     * the shoulder highlights smeared into bokeh blobs. A second, colourless
+     * copy of the glass writes DEPTH ONLY, drawn LAST (renderOrder 10, after
+     * the whiskey, the glass and the label at 2), so it can occlude nothing
+     * that is already on screen but DoF/N8AO now see the glass surface.
+     * FrontSide: the near wall is the one in focus. Not in the transmission
+     * copy (transparent queue), casts no shadow. Collected first, added after
+     * the traverse, so the traverse never visits (and restyles) the proxy. */
+    const glass: THREE.Mesh[] = [];
+    root.traverse((o) => {
+      const m = o as THREE.Mesh;
+      if (m.isMesh && (m.material as THREE.Material).name.toLowerCase().includes("glass")) glass.push(m);
+    });
+    const depthOnly = new THREE.MeshBasicMaterial({
+      colorWrite: false,
+      depthWrite: true,
+      transparent: true,
+      side: THREE.FrontSide,
+    });
+    for (const g of glass) {
+      const proxy = new THREE.Mesh(g.geometry, depthOnly);
+      proxy.renderOrder = 10;
+      proxy.castShadow = false;
+      proxy.receiveShadow = false;
+      g.add(proxy);
+    }
     return root;
   }, [scene]);
 
@@ -1423,12 +1457,15 @@ function Post({ progress, tier }: { progress?: MutableRefObject<number>; tier: T
   const dof = useRef<DepthOfFieldEffect>(null);
   const chroma = useMemo(() => new THREE.Vector2(LOOK.chroma, LOOK.chroma), []);
   const target = useMemo(() => new THREE.Vector3(...HERO), []);
-  useFrame(() => {
+  useFrame(({ gl }) => {
     void progress;
     // by DISTANCE to the bottle, not by scroll: blur follows what is on screen
     const d = camera.position.distanceTo(target);
     const close = 1 - THREE.MathUtils.smoothstep(d, 0.7, 2.6);
-    if (dof.current) dof.current.bokehScale = THREE.MathUtils.lerp(LOOK.dofBokehWide, LOOK.dofBokehClose, close);
+    // bokehScale is a PIXEL radius, so scale it by the drawing-buffer height:
+    // same look at dpr 1 and dpr 2, on a laptop and on a 4K screen
+    const frac = THREE.MathUtils.lerp(LOOK.dofBlurWide, LOOK.dofBlurClose, close);
+    if (dof.current) dof.current.bokehScale = frac * gl.domElement.height;
   });
   return (
     // AO grounds everything, DoF gives the long-lens look (focus locked on the
@@ -1444,7 +1481,9 @@ function Post({ progress, tier }: { progress?: MutableRefObject<number>; tier: T
     ) : (
       <EffectComposer multisampling={4}>
         <N8AO aoRadius={0.35} distanceFalloff={0.6} intensity={2.2} halfRes />
-        <DepthOfField ref={dof} target={target} worldFocusRange={0.45} bokehScale={LOOK.dofBokehWide} />
+        {/* no bokehScale prop: it is set every frame above, and a prop would be
+            re-applied over it on any re-render */}
+        <DepthOfField ref={dof} target={target} worldFocusRange={0.45} />
         <Bloom mipmapBlur luminanceThreshold={1} luminanceSmoothing={0.2} intensity={0.9} radius={0.75} />
         <ChromaticAberration
           offset={chroma}
