@@ -5,13 +5,10 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Environment, Lightformer, PerformanceMonitor, useGLTF, useTexture } from "@react-three/drei";
 import {
   Bloom,
-  BrightnessContrast,
   ChromaticAberration,
   DepthOfField,
   EffectComposer,
-  HueSaturation,
   N8AO,
-  Noise,
   ToneMapping,
   Vignette,
 } from "@react-three/postprocessing";
@@ -1493,6 +1490,9 @@ function Caustic() {
  * at ~20 px it becomes a disc, bloom's mip chain turns the disc into an island,
  * and AgX maps it to white. So the input is cleaned BEFORE anything can spread
  * it: Inf → CEIL, NaN → 0, and anything negative → 0.
+ * CP4_62 STATUS: this was NOT the fix for the white islands (see GradeEffect —
+ * that was a colour-dodge NaN). It stays as cheap insurance against any real
+ * non-finite pixel reaching bloom/DoF, which would spread it screen-wide.
  * CEIL 32: the brightest legitimate value in the scene is the flame (colour
  * ×14), so bloom keeps everything it keys on.
  * NaN/Inf are detected on the float's BITS (floatBitsToUint, GLSL ES 3.00 —
@@ -1532,6 +1532,80 @@ function useSanitizePass(camera: THREE.Camera) {
   return pass;
 }
 
+/* ————— CP4_62 GRADE + GRAIN — THE WHITE-ISLANDS FIX ————————————————————
+ * Client (AMD, Windows): large jagged WHITE islands in the DARKEST areas only
+ * (cask gaps, black label paper, shadowed table legs). Their bisect on the GPU:
+ * ?bwno=grade removes them. Cause, found by reading the library shaders:
+ *  - postprocessing's <Noise> grain blends with COLOR_DODGE:
+ *      c = step(0,a) * min(1, a / max(1 - noise, 1e-9))
+ *  - CP4_59's BrightnessContrast pushes near-black pixels BELOW ZERO
+ *    ((a - .5) / .88 + .5 → a = 0 gives -0.068), and nothing clamped them.
+ *  - at reduced precision 1e-9 is 0, so where the noise reaches 1 the divide
+ *    is a/0 = -Inf, and step(0,a) = 0 times -Inf is NaN → white on that driver.
+ *    Without the grade `a` is never negative, so the same divide gives +Inf,
+ *    which min(1,·) tames — that is why the grade "caused" it.
+ *  - the grain's rand() is fract(sin(dot(uv,…)) * 43758), which at low
+ *    precision degenerates into large coherent patches: the ISLAND shape.
+ *  SwiftShader always runs full precision, so none of it reproduces here.
+ * Fix, both halves: (1) the grade CLAMPS to [0,1], so nothing negative ever
+ * reaches a later effect; (2) the grain is our own — additive, integer (PCG)
+ * hash on the pixel coordinate, no division and no trig anywhere.
+ * GradeEffect reproduces BrightnessContrast(contrast) then HueSaturation
+ * (saturation < 0 = mix toward the channel AVERAGE) exactly, plus the clamp.
+ * Never reintroduce postprocessing's <Noise> here: its COLOR_DODGE blend is
+ * the half of this bug that does not need our grade to be present. */
+class GradeEffect extends Effect {
+  constructor(contrast: number, saturation: number) {
+    super(
+      "GradeEffect",
+      /* glsl */ `
+uniform float uContrast;
+uniform float uSaturation;
+void mainImage(const in vec4 inputColor, const in vec2 uv, out vec4 outputColor) {
+  vec3 c = (inputColor.rgb - 0.5) / (1.0 - uContrast) + 0.5;
+  float avg = (c.r + c.g + c.b) / 3.0;
+  c += (avg - c) * -uSaturation;
+  outputColor = vec4(clamp(c, 0.0, 1.0), inputColor.a);
+}`,
+      {
+        uniforms: new Map([
+          ["uContrast", new THREE.Uniform(contrast)],
+          ["uSaturation", new THREE.Uniform(saturation)],
+        ]),
+      },
+    );
+    // like postprocessing's own BrightnessContrastEffect: contrast pivots on
+    // 0.5 in DISPLAY (sRGB) space. On linear values the same maths crushes
+    // every dark tone to black and over-saturates the rest.
+    this.inputColorSpace = THREE.SRGBColorSpace;
+  }
+}
+
+class GrainEffect extends Effect {
+  constructor(amount: number) {
+    super(
+      "GrainEffect",
+      /* glsl */ `
+uniform float uAmount;
+uint bwPcg(uint v) {
+  uint st = v * 747796405u + 2891336453u;
+  uint w = ((st >> ((st >> 28u) + 4u)) ^ st) * 277803737u;
+  return (w >> 22u) ^ w;
+}
+void mainImage(const in vec4 inputColor, const in vec2 uv, out vec4 outputColor) {
+  uvec2 px = uvec2(gl_FragCoord.xy);
+  uint seed = px.x * 1973u + px.y * 9277u + uint(time * 24.0) * 26699u; // 24 fps grain, like film
+  float n = float(bwPcg(seed) >> 8u) / 16777215.0; // 24 bits: exact in any float
+  outputColor = vec4(clamp(inputColor.rgb + (n - 0.5) * uAmount, 0.0, 1.0), inputColor.a);
+}`,
+      { uniforms: new Map([["uAmount", new THREE.Uniform(amount)]]) },
+    );
+    // grain belongs in perceptual (sRGB) space: added to LINEAR values, ±2%
+    // near black becomes a large jump once encoded for the display
+    this.inputColorSpace = THREE.SRGBColorSpace;
+  }
+}
+
 /* ————— post (CP4_43: lens) ————————————————————————————————————————— */
 function Post({ progress, tier }: { progress?: MutableRefObject<number>; tier: Tier }) {
   const { camera } = useThree();
@@ -1542,21 +1616,9 @@ function Post({ progress, tier }: { progress?: MutableRefObject<number>; tier: T
   // (before DoF / bloom can spread anything AO itself produced)
   const cleanIn = useSanitizePass(camera);
   const cleanMid = useSanitizePass(camera);
-  /* CP4_61 — THE WHITE ISLANDS FIX. The client bisected it on their GPU:
-   * ?bwno=grade removes them. The grade's own maths cannot make white islands
-   * (BrightnessContrast is a subtract/divide, HueSaturation ends in min(c,1)),
-   * so the grade is not the bug — the MERGE is. Without a Pass between them,
-   * the composer fuses CA + DoF + Bloom + ToneMapping + grade + Vignette +
-   * Noise into ONE fragment shader; removing the grade shrinks it, and the
-   * artefact goes. Windows Chrome translates that shader to D3D (ANGLE), and a
-   * driver-side miscompile of one very large merged shader fits every
-   * observation: GPU-specific, never in SwiftShader, and "fixed" by removing
-   * mathematically harmless code. A Pass here splits it in two: lens + tone
-   * map | grade + finish. It is a sanitize pass because after AgX every value
-   * is already in [0,1], so the clamp is a no-op — the pass exists only as the
-   * split. DO NOT remove it to "save a pass", and do not grow either half back
-   * into one giant merged shader. */
-  const cleanOut = useSanitizePass(camera);
+  const grade = useMemo(() => new GradeEffect(LOOK.contrast, LOOK.saturation), []);
+  const grain = useMemo(() => new GrainEffect(0.035), []);
+  useEffect(() => () => { grade.dispose(); grain.dispose(); }, [grade, grain]);
   const san = bwOn("sanitize");
   const exposeComposer = (c: unknown) => {
     if (BW_DEBUG && c) (window as unknown as { __bwComposer?: unknown }).__bwComposer = c;
@@ -1585,9 +1647,7 @@ function Post({ progress, tier }: { progress?: MutableRefObject<number>; tier: T
           <></>
         )}
         <ToneMapping mode={ToneMappingMode.AGX} />
-        {bwOn("split") ? <primitive object={cleanOut} /> : <></>}
-        {bwOn("grade") ? <BrightnessContrast contrast={LOOK.contrast} /> : <></>}
-        {bwOn("grade") ? <HueSaturation saturation={LOOK.saturation} /> : <></>}
+        {bwOn("grade") ? <primitive object={grade} /> : <></>}
         <Vignette offset={0.25} darkness={0.72} />
       </EffectComposer>
     ) : (
@@ -1610,14 +1670,10 @@ function Post({ progress, tier }: { progress?: MutableRefObject<number>; tier: T
           blendFunction={BlendFunction.NORMAL}
         />
         <ToneMapping mode={ToneMappingMode.AGX} />
-        {/* CP4_61: splits the merged shader — see cleanOut above */}
-        {bwOn("split") ? <primitive object={cleanOut} /> : <></>}
-        {/* CP4_59: AgX is flat by design; a touch of contrast and a little
-            less saturation after it is the grade, not a second tone map */}
-        {bwOn("grade") ? <BrightnessContrast contrast={LOOK.contrast} /> : <></>}
-        {bwOn("grade") ? <HueSaturation saturation={LOOK.saturation} /> : <></>}
+        {/* CP4_59 grade, CP4_62 rebuilt: see GradeEffect */}
+        {bwOn("grade") ? <primitive object={grade} /> : <></>}
         <Vignette offset={0.25} darkness={0.72} />
-        <Noise opacity={0.035} />
+        {bwOn("grain") ? <primitive object={grain} /> : <></>}
       </EffectComposer>
     )
   );
