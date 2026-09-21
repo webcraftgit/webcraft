@@ -15,7 +15,7 @@ import {
   ToneMapping,
   Vignette,
 } from "@react-three/postprocessing";
-import { BlendFunction, ToneMappingMode, type DepthOfFieldEffect } from "postprocessing";
+import { BlendFunction, Effect, EffectPass, ToneMappingMode, type DepthOfFieldEffect } from "postprocessing";
 import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeometry.js";
 import { damp, damp3 } from "maath/easing";
 import * as THREE from "three";
@@ -63,6 +63,12 @@ const useTier = () => useContext(TierCtx);
 const BW_DEBUG = typeof window !== "undefined" && window.location.search.includes("bwdebug");
 /** ?bwdebug&bwnopost — skip the composer, to isolate post cost in headless runs. */
 const BW_NOPOST = BW_DEBUG && window.location.search.includes("bwnopost");
+/** CP4_60 bisect switch for GPU-only artefacts (SwiftShader cannot reproduce
+ *  them): ?bwdebug&bwno=ao,dof,bloom,grade,sanitize drops those passes. */
+const BW_NO = new Set(
+  BW_DEBUG ? (new URLSearchParams(window.location.search).get("bwno") ?? "").split(",").filter(Boolean) : [],
+);
+const bwOn = (k: string) => !BW_NO.has(k);
 
 /** Top of the LID, not the barrel. The head is recessed 35mm inside the chime
  *  (rim 0.872, lid 0.837 — measured from the source .blend), so anything
@@ -1476,12 +1482,85 @@ function Caustic() {
   );
 }
 
+/* ————— CP4_60 SANITIZE ———————————————————————————————————————————————
+ * The client's GPU (AMD, Windows/ANGLE) showed large jagged WHITE islands —
+ * over the table, walls, floor, even across the label — that SwiftShader never
+ * reproduces. Signature of NON-FINITE pixels: a near-mirror specular (glass
+ * clearcoat roughness .04 → three clamps to .0525, GGX peak ~4e4) times a hot
+ * key overflows the HALF-FLOAT frame buffers (max 65504) to Inf, and Inf/NaN
+ * behaviour is driver-specific. It was invisible until CP4_58: the DoF fill pass
+ * is a MAX filter, and at the old 2.6 px radius one bad pixel stayed a speck;
+ * at ~20 px it becomes a disc, bloom's mip chain turns the disc into an island,
+ * and AgX maps it to white. So the input is cleaned BEFORE anything can spread
+ * it: Inf → CEIL, NaN → 0, and anything negative → 0.
+ * CEIL 32: the brightest legitimate value in the scene is the flame (colour
+ * ×14), so bloom keeps everything it keys on.
+ * NaN/Inf are detected on the float's BITS (floatBitsToUint, GLSL ES 3.00 —
+ * three r174 compiles every ShaderMaterial as 300 es). The first version used
+ * the "NaN fails every comparison" trick; SwiftShader let NaN through it. */
+class SanitizeEffect extends Effect {
+  constructor(ceil = 32) {
+    super(
+      "SanitizeEffect",
+      /* glsl */ `
+uniform float uCeil;
+// exponent bits all ones = Inf (mantissa 0) or NaN (mantissa != 0). Tested on
+// the BITS: comparison tricks (x != x, !(x <= c)) and isnan() are folded away
+// or mis-evaluated by some drivers — SwiftShader let a NaN through the
+// comparison version, and one NaN is enough to kill the frame via bloom.
+float bwClean(float x) {
+  uint u = floatBitsToUint(x);
+  if ((u & 0x7F800000u) == 0x7F800000u) return ((u & 0x007FFFFFu) == 0u && x > 0.0) ? uCeil : 0.0;
+  return clamp(x, 0.0, uCeil);
+}
+void mainImage(const in vec4 inputColor, const in vec2 uv, out vec4 outputColor) {
+  outputColor = vec4(bwClean(inputColor.r), bwClean(inputColor.g), bwClean(inputColor.b), inputColor.a);
+}`,
+      { uniforms: new Map([["uCeil", new THREE.Uniform(ceil)]]) },
+    );
+  }
+}
+
+/** As its OWN pass, never merged: an Effect sharing an EffectPass with DoF runs
+ *  AFTER DoF has already read the raw input in update(). */
+function useSanitizePass(camera: THREE.Camera) {
+  const pass = useMemo(
+    () => new EffectPass(camera, new SanitizeEffect(BW_DEBUG ? Number(new URLSearchParams(window.location.search).get("bwceil") || 32) : 32)),
+    [camera],
+  );
+  useEffect(() => () => pass.dispose(), [pass]);
+  return pass;
+}
+
 /* ————— post (CP4_43: lens) ————————————————————————————————————————— */
 function Post({ progress, tier }: { progress?: MutableRefObject<number>; tier: Tier }) {
   const { camera } = useThree();
   const dof = useRef<DepthOfFieldEffect>(null);
   const chroma = useMemo(() => new THREE.Vector2(LOOK.chroma, LOOK.chroma), []);
   const target = useMemo(() => new THREE.Vector3(...HERO), []);
+  // first thing after the render (before AO reads colour), and again after AO
+  // (before DoF / bloom can spread anything AO itself produced)
+  const cleanIn = useSanitizePass(camera);
+  const cleanMid = useSanitizePass(camera);
+  /* CP4_61 — THE WHITE ISLANDS FIX. The client bisected it on their GPU:
+   * ?bwno=grade removes them. The grade's own maths cannot make white islands
+   * (BrightnessContrast is a subtract/divide, HueSaturation ends in min(c,1)),
+   * so the grade is not the bug — the MERGE is. Without a Pass between them,
+   * the composer fuses CA + DoF + Bloom + ToneMapping + grade + Vignette +
+   * Noise into ONE fragment shader; removing the grade shrinks it, and the
+   * artefact goes. Windows Chrome translates that shader to D3D (ANGLE), and a
+   * driver-side miscompile of one very large merged shader fits every
+   * observation: GPU-specific, never in SwiftShader, and "fixed" by removing
+   * mathematically harmless code. A Pass here splits it in two: lens + tone
+   * map | grade + finish. It is a sanitize pass because after AgX every value
+   * is already in [0,1], so the clamp is a no-op — the pass exists only as the
+   * split. DO NOT remove it to "save a pass", and do not grow either half back
+   * into one giant merged shader. */
+  const cleanOut = useSanitizePass(camera);
+  const san = bwOn("sanitize");
+  const exposeComposer = (c: unknown) => {
+    if (BW_DEBUG && c) (window as unknown as { __bwComposer?: unknown }).__bwComposer = c;
+  };
   useFrame(({ gl }) => {
     void progress;
     // by DISTANCE to the bottle, not by scroll: blur follows what is on screen
@@ -1498,20 +1577,32 @@ function Post({ progress, tier }: { progress?: MutableRefObject<number>; tier: T
     tier === "mobile" ? (
       // CP4_46 mobile: same grade (AgX + bloom + vignette) so the look matches
       // desktop, but no AO, no DoF, no chroma, no MSAA (dpr 1 carries it).
-      <EffectComposer multisampling={0}>
-        <Bloom mipmapBlur luminanceThreshold={1} luminanceSmoothing={0.2} intensity={0.9} radius={0.75} />
+      <EffectComposer multisampling={0} ref={exposeComposer}>
+        {san ? <primitive object={cleanIn} /> : <></>}
+        {bwOn("bloom") ? (
+          <Bloom mipmapBlur luminanceThreshold={1} luminanceSmoothing={0.2} intensity={0.9} radius={0.75} />
+        ) : (
+          <></>
+        )}
         <ToneMapping mode={ToneMappingMode.AGX} />
-        <BrightnessContrast contrast={LOOK.contrast} />
-        <HueSaturation saturation={LOOK.saturation} />
+        {bwOn("split") ? <primitive object={cleanOut} /> : <></>}
+        {bwOn("grade") ? <BrightnessContrast contrast={LOOK.contrast} /> : <></>}
+        {bwOn("grade") ? <HueSaturation saturation={LOOK.saturation} /> : <></>}
         <Vignette offset={0.25} darkness={0.72} />
       </EffectComposer>
     ) : (
-      <EffectComposer multisampling={4}>
-        <N8AO aoRadius={0.35} distanceFalloff={0.6} intensity={2.2} halfRes />
+      <EffectComposer multisampling={4} ref={exposeComposer}>
+        {san ? <primitive object={cleanIn} /> : <></>}
+        {bwOn("ao") ? <N8AO aoRadius={0.35} distanceFalloff={0.6} intensity={2.2} halfRes /> : <></>}
+        {san ? <primitive object={cleanMid} /> : <></>}
         {/* no bokehScale prop: it is set every frame above, and a prop would be
             re-applied over it on any re-render */}
-        <DepthOfField ref={dof} target={target} worldFocusRange={0.45} />
-        <Bloom mipmapBlur luminanceThreshold={1} luminanceSmoothing={0.2} intensity={0.9} radius={0.75} />
+        {bwOn("dof") ? <DepthOfField ref={dof} target={target} worldFocusRange={0.45} /> : <></>}
+        {bwOn("bloom") ? (
+          <Bloom mipmapBlur luminanceThreshold={1} luminanceSmoothing={0.2} intensity={0.9} radius={0.75} />
+        ) : (
+          <></>
+        )}
         <ChromaticAberration
           offset={chroma}
           radialModulation
@@ -1519,10 +1610,12 @@ function Post({ progress, tier }: { progress?: MutableRefObject<number>; tier: T
           blendFunction={BlendFunction.NORMAL}
         />
         <ToneMapping mode={ToneMappingMode.AGX} />
+        {/* CP4_61: splits the merged shader — see cleanOut above */}
+        {bwOn("split") ? <primitive object={cleanOut} /> : <></>}
         {/* CP4_59: AgX is flat by design; a touch of contrast and a little
             less saturation after it is the grade, not a second tone map */}
-        <BrightnessContrast contrast={LOOK.contrast} />
-        <HueSaturation saturation={LOOK.saturation} />
+        {bwOn("grade") ? <BrightnessContrast contrast={LOOK.contrast} /> : <></>}
+        {bwOn("grade") ? <HueSaturation saturation={LOOK.saturation} /> : <></>}
         <Vignette offset={0.25} darkness={0.72} />
         <Noise opacity={0.035} />
       </EffectComposer>
@@ -1644,6 +1737,14 @@ function Cellar({ tier, progress }: { tier: Tier; progress?: MutableRefObject<nu
         <Lightformer form="ring" intensity={0.6} color="#FF8A3D" position={[0, -0.6, 0]} rotation-x={Math.PI / 2} scale={3} />
       </Environment>
 
+      {/* CP4_60 ?bwdebug&bwinf — plants a speck whose colour overflows the
+          half-float buffer to Inf, to prove the sanitize pass in headless runs */}
+      {BW_DEBUG && window.location.search.includes("bwinf") && (
+        <mesh position={[HERO[0] + 0.07, HERO[1] + 0.05, HERO[2] + 0.02]}>
+          <sphereGeometry args={[0.003, 8, 8]} />
+          <meshBasicMaterial color={new THREE.Color(1, 1, 1).multiplyScalar(Number(new URLSearchParams(window.location.search).get("bwinf") || 1e6))} toneMapped={false} />
+        </mesh>
+      )}
       <CameraRig progress={progress} />
       {lit && <ShadowGate watch={bottleRef} />}
 
