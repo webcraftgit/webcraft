@@ -9,13 +9,12 @@ import {
   ChromaticAberration,
   DepthOfField,
   EffectComposer,
-  HueSaturation,
   N8AO,
   Noise,
   ToneMapping,
   Vignette,
 } from "@react-three/postprocessing";
-import { BlendFunction, ToneMappingMode, type DepthOfFieldEffect } from "postprocessing";
+import { BlendFunction, Effect, EffectPass, ToneMappingMode, type DepthOfFieldEffect } from "postprocessing";
 import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeometry.js";
 import { damp, damp3 } from "maath/easing";
 import * as THREE from "three";
@@ -439,40 +438,35 @@ function Bottle() {
         m.castShadow = false;
         m.receiveShadow = false;
       } else if (name.includes("whiskey") || name.includes("whisky")) {
-        /* CP4_67 — THE WHITE ISLANDS, ROOT CAUSE (proven on the client's GPU:
-         * ANGLE + AMD Radeon + Direct3D11). The "islands" were never NaN/Inf —
-         * six prior fixes chased a phantom (toggling the sanitize passes changes
-         * the white pixel count by 0.0000). Bisected live on the real GPU by
-         * hiding each bottle sub-mesh: the WHISKEY is the source (white 3.0% →
-         * 0.6%), and it is driven by `thickness` — three's VOLUMETRIC transmission
-         * (`getIBLVolumeRefraction`, gated on thickness>0) miscompiles to a
-         * blown-white blob on D3D11. thickness sweep on the real GPU: 0 → 0.008,
-         * 0.07 → 0.030, monotonic. It was invisible in development because the
-         * build sandbox only has SwiftShader, which renders the volume path fine.
+        /* CP4_67 — THE WHITE ISLANDS, ROOT CAUSE, proven live on the client's GPU
+         * (ANGLE + AMD Radeon RX 7700 XT + Direct3D11). The "islands" were never
+         * NaN/Inf: six prior fixes chased a phantom — toggling every sanitize pass
+         * changed the white-pixel count by 0.0000. Bisected on the real GPU (with
+         * working camera control): hiding the WHISKEY drops white 5.0% → 1.2% at
+         * the close beat, and the ONLY lever is `transmission` itself
+         * (transmission 0 → 1.7%; thickness / ior / env / specular do nothing).
+         * three's screen-space TRANSMISSION blows the liquid out to solid white on
+         * D3D11 — it was invisible in dev because the build sandbox only has
+         * SwiftShader, which renders transmission correctly.
          *
-         * Fix: THIN transmission (thickness 0 → no volume refraction, no D3D
-         * blowout), and the amber that `attenuationColor` used to give through the
-         * volume is moved onto the base colour (three tints transmission by the
-         * base colour) plus a cheap, finite depth gradient in the shader below.
-         * This renders identically on every driver. DO NOT re-introduce
-         * `thickness`/`attenuationDistance` on a transmissive material here — that
-         * is the exact code path that blows out on D3D. */
+         * Fix: the whiskey is now OPAQUE (no transmission → nothing for the D3D
+         * transmission sampler to blow out), shaded like the Pour in the tumbler
+         * (which uses the same recipe and never blew out): an amber body, a
+         * view-facing emissive that deepens toward the bottom to read as spirit,
+         * and the meniscus line. Renders identically on every driver. DO NOT put
+         * `transmission` back on this material. */
         m.material = new THREE.MeshPhysicalMaterial({
           name: src.name,
-          color: new THREE.Color("#c9823b"), // amber now tints the (thin) transmission
-          transmission: 1,
-          ior: 1.36, // ethanol/water — from the .blend
-          roughness: 0.06,
+          color: new THREE.Color("#5a2508"), // deep amber body; the emissive below lifts it
+          roughness: 0.2,
           metalness: 0,
-          thickness: 0, // MUST stay 0 — see comment above (D3D volume-refraction bug)
-          specularIntensity: 0.35, // the liquid surface sits behind glass — no double glare
-          envMapIntensity: 0.4,
+          clearcoat: 0.7, // the liquid surface: a sharp second highlight
+          clearcoatRoughness: 0.06,
+          envMapIntensity: 0.5,
+          emissive: new THREE.Color("#c9651f"),
+          emissiveIntensity: 0, // driven in the shader below
         });
-        // CP4_43 MENISCUS: the liquid climbs the glass and catches light in a
-        // thin bright line — the detail that says "liquid", not "orange solid".
-        // CP4_67 adds a depth gradient (deeper in the pour = richer amber) to
-        // stand in for the Beer-Lambert tint the removed volume path gave.
-        // Fill-line height from the .blend (0.1327). Side walls only.
+        // CP4_43 MENISCUS + CP4_67 spirit depth. Fill-line height from the .blend.
         const liquid = m.material as THREE.MeshPhysicalMaterial;
         const fill = (m.geometry.boundingBox ?? (m.geometry.computeBoundingBox(), m.geometry.boundingBox))!.max.y;
         liquid.onBeforeCompile = (sh) => {
@@ -483,16 +477,14 @@ function Bottle() {
           sh.fragmentShader = sh.fragmentShader
             .replace("#include <common>", "#include <common>\nuniform float uFill; varying vec3 vBwObj; varying vec3 vBwObjN;")
             .replace(
-              "#include <color_fragment>",
-              `#include <color_fragment>
-              // fake the volume tint (deeper = richer amber). All finite: no
-              // thickness, no refraction ray, so nothing to blow out on D3D.
-              float bwDepth = clamp((uFill - vBwObj.y) / max(uFill, 1e-4), 0.0, 1.0);
-              diffuseColor.rgb *= mix(1.12, 0.66, bwDepth);`,
-            )
-            .replace(
               "#include <emissivemap_fragment>",
               `#include <emissivemap_fragment>
+              // spirit depth: facing the eye = looking through more whisky = glow;
+              // deeper down the bottle (less light from above) = richer. All finite.
+              float bwFace = pow(clamp(dot(normalize(normal), normalize(vViewPosition)), 0.0, 1.0), 2.0);
+              float bwUp = clamp(vBwObj.y / max(uFill, 1e-4), 0.0, 1.0);
+              totalEmissiveRadiance += vec3(0.62, 0.26, 0.06) * bwFace * (0.10 + 0.22 * (1.0 - bwUp));
+              // meniscus: the liquid climbs the glass in a thin bright line
               float bwSide = 1.0 - abs(normalize(vBwObjN).y);
               float bwLine = smoothstep(0.0028, 0.0, uFill - vBwObj.y) * bwSide;
               totalEmissiveRadiance += vec3(1.0, 0.72, 0.42) * bwLine * 0.9;`,
@@ -587,24 +579,27 @@ function Tumbler() {
   const { scene } = useGLTF("/models/blackwood_glass.glb", "/draco/");
   const model = useMemo(() => {
     const root = scene.clone(true);
+    /* CP4_67 — NO transmission. three's screen-space transmission blows out to
+     * white on ANGLE/D3D11 (proven live on the client GPU; it is the same bug
+     * that turned the whiskey into a white blob — the crystal was a smaller
+     * ~1% blob on the tumbler). An empty cut-crystal tumbler can't go opaque, so
+     * it is an ALPHA-blended reflective glass instead: no transmission sampler to
+     * blow out, and a MODERATE env (bright reflections on the cut facets clip
+     * too — envMapIntensity 2 measured worse than transmission) so the corners
+     * sparkle without clipping. The amber Pour behind shows through the alpha. */
     const crystal = new THREE.MeshPhysicalMaterial({
       name: "Crystal",
-      color: "#ffffff",
+      color: "#d8cdba",
       metalness: 0,
-      roughness: 0,
-      transmission: 1,
+      roughness: 0.06,
+      transparent: true,
+      opacity: 0.28,
       ior: 1.52,
-      // CP4_67: thickness 0 — the volume-refraction path (thickness>0) blows out
-      // to white on ANGLE/D3D11, the same bug fixed on the whiskey. Cut crystal
-      // reads through its highlights + reflections, not volume tint, so a thin
-      // transmissive shell loses nothing here. Do NOT restore thickness.
-      thickness: 0,
+      clearcoat: 1,
+      clearcoatRoughness: 0.04,
       specularIntensity: 1,
-      // CP4_63 render check: at .9 it read as a dark box — cut crystal only
-      // reads through its highlights. Still under the bottle glass's 1.6.
-      envMapIntensity: 1.4,
-      // CP4_65: dispersion REMOVED — new transmission-shader variant introduced
-      // in the same deploy as the white-islands report; not worth the doubt.
+      envMapIntensity: 0.7,
+      depthWrite: false, // thin shell, must not hide the Pour behind it
       side: THREE.FrontSide,
     });
     root.traverse((o) => {
@@ -1650,18 +1645,54 @@ function Caustic() {
 /* ————— post (CP4_43: lens) —————————————————————————————————————————
  * CP4_67 — the CP4_60→65 SANITIZE apparatus is GONE (3 clean* passes,
  * mergeMode="none", the Inf-injector, the bwceil/bwno=sanitize|split flags).
- * The "white islands" it fought were never NaN/Inf: bisected live on the actual
- * client GPU (ANGLE + AMD Radeon RX 7700 XT + D3D11) they are the whiskey's
- * VOLUMETRIC transmission blowing out — a finite, opaque bug fixed at the
- * material (see the Whiskey branch, CP4_67). Toggling every sanitize pass
- * changed the white-pixel count by 0.0000, proving they did nothing but cost
- * ~5 full-screen passes a frame. The composer is back to the standard merged
- * pipeline. */
+ * The "white islands" it fought were never NaN/Inf overflow. Bisected live on
+ * the actual client GPU (ANGLE + AMD Radeon RX 7700 XT + D3D11), there were TWO
+ * separate causes, both invisible in the SwiftShader-only build sandbox:
+ *   1. The bottle/tumbler blobs: three's screen-space TRANSMISSION blows out to
+ *      white on D3D11. Fixed at the materials (Whiskey → opaque, Crystal → alpha;
+ *      see those branches, CP4_67).
+ *   2. The scattered table/rack/wall islands: the GRADE. postprocessing's
+ *      HueSaturation does an RGB→HSL round-trip whose divisions yield NaN for
+ *      near-black / achromatic pixels, and D3D renders NaN WHITE. That is why the
+ *      client's own bisect found `?bwno=grade` removed them, and why DIMMING the
+ *      scene made them WORSE (more near-black pixels → more NaN). It is replaced
+ *      below with SaturationEffect: a division-free, NaN-safe luminance
+ *      desaturation. BrightnessContrast is pure arithmetic and stays.
+ * Toggling the old sanitize passes changed the white count by 0.0000 — they
+ * never addressed either cause. The composer is back to the standard pipeline. */
+
+/* CP4_67: NaN-safe replacement for postprocessing's HueSaturation. No HSL, no
+ * division — desaturation is a lerp toward luminance, so it can never emit NaN
+ * (the D3D→white bug). Input is clamped to [0,1] first as a belt: it runs after
+ * AgX where the signal is already LDR, and clamp turns any stray non-finite into
+ * a finite value on D3D (min/max semantics). uSat = 1 + saturation. */
+class SaturationEffect extends Effect {
+  constructor(saturation: number) {
+    super(
+      "SaturationEffect",
+      /* glsl */ `
+uniform float uSat;
+void mainImage(const in vec4 inputColor, const in vec2 uv, out vec4 outputColor) {
+  vec3 c = clamp(inputColor.rgb, 0.0, 1.0);
+  float luma = dot(c, vec3(0.2126, 0.7152, 0.0722));
+  outputColor = vec4(mix(vec3(luma), c, uSat), inputColor.a);
+}`,
+      { uniforms: new Map([["uSat", new THREE.Uniform(1.0 + saturation)]]) },
+    );
+  }
+}
+function useSaturationPass(camera: THREE.Camera, saturation: number) {
+  const pass = useMemo(() => new EffectPass(camera, new SaturationEffect(saturation)), [camera, saturation]);
+  useEffect(() => () => pass.dispose(), [pass]);
+  return pass;
+}
+
 function Post({ progress, tier }: { progress?: MutableRefObject<number>; tier: Tier }) {
   const { camera } = useThree();
   const dof = useRef<DepthOfFieldEffect>(null);
   const chroma = useMemo(() => new THREE.Vector2(LOOK.chroma, LOOK.chroma), []);
   const target = useMemo(() => new THREE.Vector3(...HERO), []);
+  const sat = useSaturationPass(camera, LOOK.saturation);
   useFrame(({ gl }) => {
     void progress;
     // by DISTANCE to the bottle, not by scroll: blur follows what is on screen
@@ -1689,7 +1720,7 @@ function Post({ progress, tier }: { progress?: MutableRefObject<number>; tier: T
         )}
         <ToneMapping mode={ToneMappingMode.AGX} />
         {bwOn("grade") ? <BrightnessContrast contrast={LOOK.contrast} /> : <></>}
-        {bwOn("grade") ? <HueSaturation saturation={LOOK.saturation} /> : <></>}
+        {bwOn("grade") ? <primitive object={sat} /> : <></>}
         <Vignette offset={0.25} darkness={0.72} />
       </EffectComposer>
     ) : (
@@ -1716,7 +1747,7 @@ function Post({ progress, tier }: { progress?: MutableRefObject<number>; tier: T
         {/* CP4_59: AgX is flat by design; a touch of contrast and a little
             less saturation after it is the grade, not a second tone map */}
         {bwOn("grade") ? <BrightnessContrast contrast={LOOK.contrast} /> : <></>}
-        {bwOn("grade") ? <HueSaturation saturation={LOOK.saturation} /> : <></>}
+        {bwOn("grade") ? <primitive object={sat} /> : <></>}
         <Vignette offset={0.25} darkness={0.72} />
         <Noise opacity={0.035} />
       </EffectComposer>
