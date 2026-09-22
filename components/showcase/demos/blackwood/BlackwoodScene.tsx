@@ -15,7 +15,7 @@ import {
   ToneMapping,
   Vignette,
 } from "@react-three/postprocessing";
-import { BlendFunction, Effect, EffectPass, ToneMappingMode, type DepthOfFieldEffect } from "postprocessing";
+import { BlendFunction, ToneMappingMode, type DepthOfFieldEffect } from "postprocessing";
 import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeometry.js";
 import { damp, damp3 } from "maath/easing";
 import * as THREE from "three";
@@ -63,10 +63,8 @@ const useTier = () => useContext(TierCtx);
 const BW_DEBUG = typeof window !== "undefined" && window.location.search.includes("bwdebug");
 /** ?bwdebug&bwnopost — skip the composer, to isolate post cost in headless runs. */
 const BW_NOPOST = BW_DEBUG && window.location.search.includes("bwnopost");
-/** ?bwdebug&bwmerge — CP4_65 A/B: restore the fused ("auto") effect shaders. */
-const BW_MERGE = BW_DEBUG && window.location.search.includes("bwmerge");
-/** CP4_60 bisect switch for GPU-only artefacts (SwiftShader cannot reproduce
- *  them): ?bwdebug&bwno=ao,dof,bloom,grade,sanitize drops those passes. */
+/** Bisect switch for GPU-only artefacts (SwiftShader cannot reproduce them):
+ *  ?bwdebug&bwno=ao,dof,bloom,grade drops those passes. */
 const BW_NO = new Set(
   BW_DEBUG ? (new URLSearchParams(window.location.search).get("bwno") ?? "").split(",").filter(Boolean) : [],
 );
@@ -441,26 +439,39 @@ function Bottle() {
         m.castShadow = false;
         m.receiveShadow = false;
       } else if (name.includes("whiskey") || name.includes("whisky")) {
-        // Real transmission: refracts the barrel head, floor and far label
-        // behind it. Tint is attenuation, not colour — light loses blue/green
-        // over distance, so the thin edges stay pale ginger and the centre goes
-        // amber, like the reference. Dials: attenuationDistance (lower = darker),
-        // attenuationColor (hue).
+        /* CP4_67 — THE WHITE ISLANDS, ROOT CAUSE (proven on the client's GPU:
+         * ANGLE + AMD Radeon + Direct3D11). The "islands" were never NaN/Inf —
+         * six prior fixes chased a phantom (toggling the sanitize passes changes
+         * the white pixel count by 0.0000). Bisected live on the real GPU by
+         * hiding each bottle sub-mesh: the WHISKEY is the source (white 3.0% →
+         * 0.6%), and it is driven by `thickness` — three's VOLUMETRIC transmission
+         * (`getIBLVolumeRefraction`, gated on thickness>0) miscompiles to a
+         * blown-white blob on D3D11. thickness sweep on the real GPU: 0 → 0.008,
+         * 0.07 → 0.030, monotonic. It was invisible in development because the
+         * build sandbox only has SwiftShader, which renders the volume path fine.
+         *
+         * Fix: THIN transmission (thickness 0 → no volume refraction, no D3D
+         * blowout), and the amber that `attenuationColor` used to give through the
+         * volume is moved onto the base colour (three tints transmission by the
+         * base colour) plus a cheap, finite depth gradient in the shader below.
+         * This renders identically on every driver. DO NOT re-introduce
+         * `thickness`/`attenuationDistance` on a transmissive material here — that
+         * is the exact code path that blows out on D3D. */
         m.material = new THREE.MeshPhysicalMaterial({
           name: src.name,
-          color: "#ffffff",
+          color: new THREE.Color("#c9823b"), // amber now tints the (thin) transmission
           transmission: 1,
           ior: 1.36, // ethanol/water — from the .blend
-          roughness: 0.04,
+          roughness: 0.06,
           metalness: 0,
-          thickness: 0.07, // bottle interior is ~74 mm across
-          attenuationColor: new THREE.Color("#e59a4a"),
-          attenuationDistance: 0.09,
+          thickness: 0, // MUST stay 0 — see comment above (D3D volume-refraction bug)
           specularIntensity: 0.35, // the liquid surface sits behind glass — no double glare
           envMapIntensity: 0.4,
         });
         // CP4_43 MENISCUS: the liquid climbs the glass and catches light in a
         // thin bright line — the detail that says "liquid", not "orange solid".
+        // CP4_67 adds a depth gradient (deeper in the pour = richer amber) to
+        // stand in for the Beer-Lambert tint the removed volume path gave.
         // Fill-line height from the .blend (0.1327). Side walls only.
         const liquid = m.material as THREE.MeshPhysicalMaterial;
         const fill = (m.geometry.boundingBox ?? (m.geometry.computeBoundingBox(), m.geometry.boundingBox))!.max.y;
@@ -471,6 +482,14 @@ function Bottle() {
             .replace("#include <begin_vertex>", "#include <begin_vertex>\nvBwObj = position; vBwObjN = normal;");
           sh.fragmentShader = sh.fragmentShader
             .replace("#include <common>", "#include <common>\nuniform float uFill; varying vec3 vBwObj; varying vec3 vBwObjN;")
+            .replace(
+              "#include <color_fragment>",
+              `#include <color_fragment>
+              // fake the volume tint (deeper = richer amber). All finite: no
+              // thickness, no refraction ray, so nothing to blow out on D3D.
+              float bwDepth = clamp((uFill - vBwObj.y) / max(uFill, 1e-4), 0.0, 1.0);
+              diffuseColor.rgb *= mix(1.12, 0.66, bwDepth);`,
+            )
             .replace(
               "#include <emissivemap_fragment>",
               `#include <emissivemap_fragment>
@@ -575,9 +594,11 @@ function Tumbler() {
       roughness: 0,
       transmission: 1,
       ior: 1.52,
-      thickness: 0.005, // render check: .012 bent the view onto the dark table edge — the glass read as a dark box
-      attenuationColor: new THREE.Color("#fff3e2"),
-      attenuationDistance: 0.25,
+      // CP4_67: thickness 0 — the volume-refraction path (thickness>0) blows out
+      // to white on ANGLE/D3D11, the same bug fixed on the whiskey. Cut crystal
+      // reads through its highlights + reflections, not volume tint, so a thin
+      // transmissive shell loses nothing here. Do NOT restore thickness.
+      thickness: 0,
       specularIntensity: 1,
       // CP4_63 render check: at .9 it read as a dark box — cut crystal only
       // reads through its highlights. Still under the bottle glass's 1.6.
@@ -1626,98 +1647,21 @@ function Caustic() {
   );
 }
 
-/* ————— CP4_60 SANITIZE ———————————————————————————————————————————————
- * The client's GPU (AMD, Windows/ANGLE) showed large jagged WHITE islands —
- * over the table, walls, floor, even across the label — that SwiftShader never
- * reproduces. Signature of NON-FINITE pixels: a near-mirror specular (glass
- * clearcoat roughness .04 → three clamps to .0525, GGX peak ~4e4) times a hot
- * key overflows the HALF-FLOAT frame buffers (max 65504) to Inf, and Inf/NaN
- * behaviour is driver-specific. It was invisible until CP4_58: the DoF fill pass
- * is a MAX filter, and at the old 2.6 px radius one bad pixel stayed a speck;
- * at ~20 px it becomes a disc, bloom's mip chain turns the disc into an island,
- * and AgX maps it to white. So the input is cleaned BEFORE anything can spread
- * it: Inf → CEIL, NaN → 0, and anything negative → 0.
- * CEIL 32: the brightest legitimate value in the scene is the flame (colour
- * ×14), so bloom keeps everything it keys on.
- * NaN/Inf are detected on the float's BITS (floatBitsToUint, GLSL ES 3.00 —
- * three r174 compiles every ShaderMaterial as 300 es). The first version used
- * the "NaN fails every comparison" trick; SwiftShader let NaN through it. */
-class SanitizeEffect extends Effect {
-  constructor(ceil = 32) {
-    super(
-      "SanitizeEffect",
-      /* glsl */ `
-uniform float uCeil;
-// exponent bits all ones = Inf (mantissa 0) or NaN (mantissa != 0). Tested on
-// the BITS: comparison tricks (x != x, !(x <= c)) and isnan() are folded away
-// or mis-evaluated by some drivers — SwiftShader let a NaN through the
-// comparison version, and one NaN is enough to kill the frame via bloom.
-float bwClean(float x) {
-  uint u = floatBitsToUint(x);
-  if ((u & 0x7F800000u) == 0x7F800000u) return ((u & 0x007FFFFFu) == 0u && x > 0.0) ? uCeil : 0.0;
-  return clamp(x, 0.0, uCeil);
-}
-void mainImage(const in vec4 inputColor, const in vec2 uv, out vec4 outputColor) {
-  outputColor = vec4(bwClean(inputColor.r), bwClean(inputColor.g), bwClean(inputColor.b), inputColor.a);
-}`,
-      { uniforms: new Map([["uCeil", new THREE.Uniform(ceil)]]) },
-    );
-  }
-}
-
-/** As its OWN pass, never merged: an Effect sharing an EffectPass with DoF runs
- *  AFTER DoF has already read the raw input in update().
- *  `ceil` defaults to 32 (HDR/linear space, above the ×14 flame). Pass 1.0 for a
- *  pass that runs AFTER tone mapping, where the signal is already [0,1] — see
- *  cleanOut below for why the post-AgX ceiling must be 1, not 32. */
-function useSanitizePass(camera: THREE.Camera, ceil?: number) {
-  const pass = useMemo(
-    () => new EffectPass(camera, new SanitizeEffect(ceil ?? (BW_DEBUG ? Number(new URLSearchParams(window.location.search).get("bwceil") || 32) : 32))),
-    [camera, ceil],
-  );
-  useEffect(() => () => pass.dispose(), [pass]);
-  return pass;
-}
-
-/* ————— post (CP4_43: lens) ————————————————————————————————————————— */
+/* ————— post (CP4_43: lens) —————————————————————————————————————————
+ * CP4_67 — the CP4_60→65 SANITIZE apparatus is GONE (3 clean* passes,
+ * mergeMode="none", the Inf-injector, the bwceil/bwno=sanitize|split flags).
+ * The "white islands" it fought were never NaN/Inf: bisected live on the actual
+ * client GPU (ANGLE + AMD Radeon RX 7700 XT + D3D11) they are the whiskey's
+ * VOLUMETRIC transmission blowing out — a finite, opaque bug fixed at the
+ * material (see the Whiskey branch, CP4_67). Toggling every sanitize pass
+ * changed the white-pixel count by 0.0000, proving they did nothing but cost
+ * ~5 full-screen passes a frame. The composer is back to the standard merged
+ * pipeline. */
 function Post({ progress, tier }: { progress?: MutableRefObject<number>; tier: Tier }) {
   const { camera } = useThree();
   const dof = useRef<DepthOfFieldEffect>(null);
   const chroma = useMemo(() => new THREE.Vector2(LOOK.chroma, LOOK.chroma), []);
   const target = useMemo(() => new THREE.Vector3(...HERO), []);
-  // first thing after the render (before AO reads colour), and again after AO
-  // (before DoF / bloom can spread anything AO itself produced)
-  const cleanIn = useSanitizePass(camera);
-  const cleanMid = useSanitizePass(camera);
-  /* CP4_66: the missing pass. Sits BETWEEN DoF and Bloom (see the composer note
-   * below). DoF's bokeh divide can emit ±Inf/NaN on D3D; without this, Bloom
-   * spreads that speck into a white island. HDR/linear space here, so ceil 32. */
-  const cleanDof = useSanitizePass(camera);
-  /* CP4_61 — THE WHITE ISLANDS FIX. The client bisected it on their GPU:
-   * ?bwno=grade removes them. The grade's own maths cannot make white islands
-   * (BrightnessContrast is a subtract/divide, HueSaturation ends in min(c,1)),
-   * so the grade is not the bug — the MERGE is. Without a Pass between them,
-   * the composer fuses CA + DoF + Bloom + ToneMapping + grade + Vignette +
-   * Noise into ONE fragment shader; removing the grade shrinks it, and the
-   * artefact goes. Windows Chrome translates that shader to D3D (ANGLE), and a
-   * driver-side miscompile of one very large merged shader fits every
-   * observation: GPU-specific, never in SwiftShader, and "fixed" by removing
-   * mathematically harmless code. A Pass here splits it in two: lens + tone
-   * map | grade + finish. It is a sanitize pass because after AgX every value
-   * is already in [0,1], so the clamp is a no-op — the pass exists only as the
-   * split. DO NOT remove it to "save a pass", and do not grow either half back
-   * into one giant merged shader. */
-  /* CP4_66: ceil 1.0, not 32. cleanOut runs AFTER AgX, where the signal is
-   * already [0,1]. The old shared ceil of 32 meant a surviving non-finite pixel
-   * was mapped to 32 here — 32 ≫ 1, i.e. a 32× SUPER-WHITE that clips to a white
-   * island. So the very backstop meant to erase the artefact could paint one.
-   * Post-tone-map the only defensible clamp is [0,1]: Inf → 1 (legit white at
-   * worst), NaN → 0. It can no longer manufacture an island. */
-  const cleanOut = useSanitizePass(camera, 1);
-  const san = bwOn("sanitize");
-  const exposeComposer = (c: unknown) => {
-    if (BW_DEBUG && c) (window as unknown as { __bwComposer?: unknown }).__bwComposer = c;
-  };
   useFrame(({ gl }) => {
     void progress;
     // by DISTANCE to the bottle, not by scroll: blur follows what is on screen
@@ -1737,47 +1681,26 @@ function Post({ progress, tier }: { progress?: MutableRefObject<number>; tier: T
     tier === "mobile" ? (
       // CP4_46 mobile: same grade (AgX + bloom + vignette) so the look matches
       // desktop, but no AO, no DoF, no chroma, no MSAA (dpr 1 carries it).
-      <EffectComposer multisampling={0} ref={exposeComposer}>
-        {san ? <primitive object={cleanIn} /> : <></>}
+      <EffectComposer multisampling={0}>
         {bwOn("bloom") ? (
           <Bloom mipmapBlur luminanceThreshold={1} luminanceSmoothing={0.2} intensity={0.9} radius={0.75} />
         ) : (
           <></>
         )}
         <ToneMapping mode={ToneMappingMode.AGX} />
-        {bwOn("split") ? <primitive object={cleanOut} /> : <></>}
         {bwOn("grade") ? <BrightnessContrast contrast={LOOK.contrast} /> : <></>}
         {bwOn("grade") ? <HueSaturation saturation={LOOK.saturation} /> : <></>}
         <Vignette offset={0.25} darkness={0.72} />
       </EffectComposer>
     ) : (
-      /* CP4_66 — WHITE ISLANDS, THE ACTUAL GAP (client, AMD/Windows, section 05).
-       * CP4_66a tried a FloatType (RGBA32F) buffer on the overflow theory; the
-       * client confirmed the islands SURVIVED it, which rules overflow out — a
-       * 3.4e38 ceiling cannot overflow at these magnitudes. So the bad pixels are
-       * non-finite from a DIVISION, not a magnitude, and buffer precision is
-       * irrelevant. (FloatType reverted: it did nothing here and MSAA + RGBA32F
-       * is not reliably multisample-renderable on ANGLE/D3D, i.e. a new risk for
-       * no gain.)
-       *
-       * The real gap: sanitize ran after the render (cleanIn) and after N8AO
-       * (cleanMid), but NOT between DoF and Bloom. DepthOfField's bokeh
-       * accumulation divides by a per-pixel weight; where that weight rounds to
-       * exactly 0 on D3D (not on SwiftShader — the whole reason headless never
-       * saw it) the pixel is ±Inf/NaN. Bloom is the very next pass: its mip chain
-       * smears that one speck into a frame-spanning blob and AgX maps it to white.
-       * cleanDof below cleans DoF's output BEFORE Bloom can spread it, so the
-       * spread — the island — can never form. DO NOT remove cleanDof, and do not
-       * reorder Bloom before it. */
-      <EffectComposer multisampling={4} ref={exposeComposer} mergeMode={BW_MERGE ? "auto" : "none"}>
-        {san ? <primitive object={cleanIn} /> : <></>}
+      /* CP4_67: standard merged pipeline. AO grounds everything, DoF gives the
+       * long-lens look (focus locked on the bottle), bloom glows the flames, AgX
+       * keeps the amber from clipping, then a light grade + vignette + grain. */
+      <EffectComposer multisampling={4}>
         {bwOn("ao") ? <N8AO aoRadius={0.35} distanceFalloff={0.6} intensity={2.2} halfRes /> : <></>}
-        {san ? <primitive object={cleanMid} /> : <></>}
         {/* no bokehScale prop: it is set every frame above, and a prop would be
             re-applied over it on any re-render */}
         {bwOn("dof") ? <DepthOfField ref={dof} target={target} worldFocusRange={0.45} /> : <></>}
-        {/* CP4_66: clean DoF's output before Bloom can spread a non-finite speck */}
-        {san ? <primitive object={cleanDof} /> : <></>}
         {bwOn("bloom") ? (
           <Bloom mipmapBlur luminanceThreshold={1} luminanceSmoothing={0.2} intensity={0.9} radius={0.75} />
         ) : (
@@ -1790,8 +1713,6 @@ function Post({ progress, tier }: { progress?: MutableRefObject<number>; tier: T
           blendFunction={BlendFunction.NORMAL}
         />
         <ToneMapping mode={ToneMappingMode.AGX} />
-        {/* CP4_61: splits the merged shader — see cleanOut above */}
-        {bwOn("split") ? <primitive object={cleanOut} /> : <></>}
         {/* CP4_59: AgX is flat by design; a touch of contrast and a little
             less saturation after it is the grade, not a second tone map */}
         {bwOn("grade") ? <BrightnessContrast contrast={LOOK.contrast} /> : <></>}
@@ -1919,14 +1840,6 @@ function Cellar({ tier, progress }: { tier: Tier; progress?: MutableRefObject<nu
         <Lightformer form="ring" intensity={0.6} color="#FF8A3D" position={[0, -0.6, 0]} rotation-x={Math.PI / 2} scale={3} />
       </Environment>
 
-      {/* CP4_60 ?bwdebug&bwinf — plants a speck whose colour overflows the
-          half-float buffer to Inf, to prove the sanitize pass in headless runs */}
-      {BW_DEBUG && window.location.search.includes("bwinf") && (
-        <mesh position={[HERO[0] + 0.07, HERO[1] + 0.05, HERO[2] + 0.02]}>
-          <sphereGeometry args={[0.003, 8, 8]} />
-          <meshBasicMaterial color={new THREE.Color(1, 1, 1).multiplyScalar(Number(new URLSearchParams(window.location.search).get("bwinf") || 1e6))} toneMapped={false} />
-        </mesh>
-      )}
       <CameraRig progress={progress} />
       {lit && <ShadowGate watch={bottleRef} />}
 
