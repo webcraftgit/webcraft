@@ -1689,6 +1689,10 @@ function Post({ progress, tier }: { progress?: MutableRefObject<number>; tier: T
   // (before DoF / bloom can spread anything AO itself produced)
   const cleanIn = useSanitizePass(camera);
   const cleanMid = useSanitizePass(camera);
+  /* CP4_66: the missing pass. Sits BETWEEN DoF and Bloom (see the composer note
+   * below). DoF's bokeh divide can emit ±Inf/NaN on D3D; without this, Bloom
+   * spreads that speck into a white island. HDR/linear space here, so ceil 32. */
+  const cleanDof = useSanitizePass(camera);
   /* CP4_61 — THE WHITE ISLANDS FIX. The client bisected it on their GPU:
    * ?bwno=grade removes them. The grade's own maths cannot make white islands
    * (BrightnessContrast is a subtract/divide, HueSaturation ends in min(c,1)),
@@ -1747,36 +1751,33 @@ function Post({ progress, tier }: { progress?: MutableRefObject<number>; tier: T
         <Vignette offset={0.25} darkness={0.72} />
       </EffectComposer>
     ) : (
-      /* CP4_66 — WHITE ISLANDS, THE ROOT CAUSE (client, AMD/Windows, section 05).
-       * Four prior fixes (CP4_60 sanitize, CP4_61 split, CP4_65 mergeMode:none)
-       * chased the SYMPTOM downstream and the artefact kept returning. The
-       * source: the composer's DEFAULT frame buffer is HalfFloatType (RGBA16F),
-       * whose max is 65504. The glass shell's near-mirror clearcoat specular
-       * (roughness clamped to ~0.0525, GGX peak in the hundreds) under the hot
-       * spot key (intensity 26), doubled by DoubleSide, overflows 65504 to +Inf.
-       * DoF's max-filter + Bloom's mip chain spread that one Inf into a disc then
-       * a frame-spanning island; AgX maps Inf → white. SwiftShader (float32)
-       * NEVER reproduced it because its buffer cannot overflow at these
-       * magnitudes — which is the whole tell.
+      /* CP4_66 — WHITE ISLANDS, THE ACTUAL GAP (client, AMD/Windows, section 05).
+       * CP4_66a tried a FloatType (RGBA32F) buffer on the overflow theory; the
+       * client confirmed the islands SURVIVED it, which rules overflow out — a
+       * 3.4e38 ceiling cannot overflow at these magnitudes. So the bad pixels are
+       * non-finite from a DIVISION, not a magnitude, and buffer precision is
+       * irrelevant. (FloatType reverted: it did nothing here and MSAA + RGBA32F
+       * is not reliably multisample-renderable on ANGLE/D3D, i.e. a new risk for
+       * no gain.)
        *
-       * FloatType (RGBA32F, max ~3.4e38) makes the desktop path behave like the
-       * environment that provably never fails: the specular stays finite, rolls
-       * off through AgX as an ordinary highlight, and there is nothing non-finite
-       * for any downstream pass to spread. This removes the MECHANISM, not a
-       * trigger — driver-independent. The sanitize passes + mergeMode:none stay
-       * as a cheap NaN backstop.
-       * Needs EXT_color_buffer_float (renderable) + OES_texture_float_linear
-       * (bloom/DoF filtering) — both universal on desktop WebGL2. Mobile stays
-       * HalfFloat: never the reported platform, no DoF/AO/bloom-spread path, and
-       * some mobile GPUs lack float-linear filtering. DO NOT drop back to
-       * HalfFloat to "save bandwidth" — that is what brought the islands back. */
-      <EffectComposer multisampling={4} ref={exposeComposer} mergeMode={BW_MERGE ? "auto" : "none"} frameBufferType={THREE.FloatType}>
+       * The real gap: sanitize ran after the render (cleanIn) and after N8AO
+       * (cleanMid), but NOT between DoF and Bloom. DepthOfField's bokeh
+       * accumulation divides by a per-pixel weight; where that weight rounds to
+       * exactly 0 on D3D (not on SwiftShader — the whole reason headless never
+       * saw it) the pixel is ±Inf/NaN. Bloom is the very next pass: its mip chain
+       * smears that one speck into a frame-spanning blob and AgX maps it to white.
+       * cleanDof below cleans DoF's output BEFORE Bloom can spread it, so the
+       * spread — the island — can never form. DO NOT remove cleanDof, and do not
+       * reorder Bloom before it. */
+      <EffectComposer multisampling={4} ref={exposeComposer} mergeMode={BW_MERGE ? "auto" : "none"}>
         {san ? <primitive object={cleanIn} /> : <></>}
         {bwOn("ao") ? <N8AO aoRadius={0.35} distanceFalloff={0.6} intensity={2.2} halfRes /> : <></>}
         {san ? <primitive object={cleanMid} /> : <></>}
         {/* no bokehScale prop: it is set every frame above, and a prop would be
             re-applied over it on any re-render */}
         {bwOn("dof") ? <DepthOfField ref={dof} target={target} worldFocusRange={0.45} /> : <></>}
+        {/* CP4_66: clean DoF's output before Bloom can spread a non-finite speck */}
+        {san ? <primitive object={cleanDof} /> : <></>}
         {bwOn("bloom") ? (
           <Bloom mipmapBlur luminanceThreshold={1} luminanceSmoothing={0.2} intensity={0.9} radius={0.75} />
         ) : (
