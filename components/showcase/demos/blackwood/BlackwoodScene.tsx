@@ -458,7 +458,8 @@ function Bottle() {
         m.material = new THREE.MeshPhysicalMaterial({
           name: src.name,
           // CP4_68: darker, browner whisky (was #5a2508, a bright red-amber).
-          color: new THREE.Color("#3d1f0a"),
+          // CP4_69: darkened further per client (#3d1f0a → #281405).
+          color: new THREE.Color("#281405"),
           roughness: 0.2,
           metalness: 0,
           clearcoat: 0.7, // the liquid surface: a sharp second highlight
@@ -688,7 +689,8 @@ function Pour() {
     const m = new THREE.MeshPhysicalMaterial({
       name: "Pour",
       // CP4_68: darker, browner whisky, matched to the bottle (was #3a1805).
-      color: "#331a0a",
+      // CP4_69: darkened further per client (#331a0a → #211004).
+      color: "#211004",
       roughness: 0.06,
       metalness: 0,
       clearcoat: 0.6, // the liquid surface: a sharp second highlight
