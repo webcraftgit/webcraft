@@ -198,7 +198,7 @@ const LOOK = {
    * postprocessing 6.39 is a radius in DRAWING-BUFFER PIXELS (step = texelSize
    * × coc × scale, kernel on the unit disc) — 2.6 px on a 2880×1800 buffer,
    * ~1.3 CSS px. Invisible. That is the whole "DoF does nothing" bug. */
-  dofBlurClose: 0.011, //      close beats: casks become soft shapes, hoops go to bokeh
+  dofBlurClose: 0.009, //      close beats: casks become soft shapes, hoops go to bokeh (CP4_68: 0.011 → 0.009, eased per client — the tumbler behind the bottle was reading too soft)
   dofBlurWide: 0.0035, //      wide beat: a hint of lens, the room must still read
   chroma: 0.0007, //           chromatic fringe at the frame edge
   keyIntensity: 26, //         CP4_48 hotter + tighter: the bottle must out-light the wood
@@ -457,7 +457,8 @@ function Bottle() {
          * `transmission` back on this material. */
         m.material = new THREE.MeshPhysicalMaterial({
           name: src.name,
-          color: new THREE.Color("#5a2508"), // deep amber body; the emissive below lifts it
+          // CP4_68: darker, browner whisky (was #5a2508, a bright red-amber).
+          color: new THREE.Color("#3d1f0a"),
           roughness: 0.2,
           metalness: 0,
           clearcoat: 0.7, // the liquid surface: a sharp second highlight
@@ -465,6 +466,15 @@ function Bottle() {
           envMapIntensity: 0.5,
           emissive: new THREE.Color("#c9651f"),
           emissiveIntensity: 0, // driven in the shader below
+          // CP4_68 A+B — TRANSLUCENCY WITHOUT TRANSMISSION. `transmission` is the
+          // white-island bug on the client's AMD/D3D11 GPU (CP4_67), so the body
+          // is made see-through with ALPHA BLENDING instead — never the screen-
+          // space transmission sampler. opacity stays 1 here; the Fresnel profile
+          // in the shader below owns the alpha so the body reads see-through and
+          // the rim stays dense: liquid, not a solid block.
+          transparent: true,
+          opacity: 1,
+          depthWrite: true,
         });
         // CP4_43 MENISCUS + CP4_67 spirit depth. Fill-line height from the .blend.
         const liquid = m.material as THREE.MeshPhysicalMaterial;
@@ -487,7 +497,14 @@ function Bottle() {
               // meniscus: the liquid climbs the glass in a thin bright line
               float bwSide = 1.0 - abs(normalize(vBwObjN).y);
               float bwLine = smoothstep(0.0028, 0.0, uFill - vBwObj.y) * bwSide;
-              totalEmissiveRadiance += vec3(1.0, 0.72, 0.42) * bwLine * 0.9;`,
+              totalEmissiveRadiance += vec3(1.0, 0.72, 0.42) * bwLine * 0.9;
+              // CP4_68 B — Fresnel translucency. Facing the eye = looking through
+              // the body of the spirit = more see-through; grazing edges stay dense
+              // and catch a warm rim glint, so the volume reads as liquid in glass
+              // rather than a solid block. Alpha only, no transmission.
+              float bwFres = pow(1.0 - clamp(dot(normalize(normal), normalize(vViewPosition)), 0.0, 1.0), 3.0);
+              diffuseColor.a *= mix(0.66, 0.95, bwFres);
+              totalEmissiveRadiance += vec3(0.5, 0.28, 0.12) * bwFres * 0.2;`,
             );
         };
         liquid.needsUpdate = true;
@@ -608,6 +625,11 @@ function Tumbler() {
       m.material = crystal;
       m.castShadow = false;
       m.receiveShadow = true;
+      // CP4_68: the Pour is now alpha-blended too (A+B), so it can no longer rely
+      // on the opaque pass drawing it first. The crystal shell must composite OVER
+      // the liquid — a higher renderOrder guarantees it draws after the Pour (0)
+      // regardless of camera-distance sorting.
+      m.renderOrder = 2;
     });
     return root;
   }, [scene]);
@@ -665,7 +687,8 @@ function Pour() {
     const top = POUR_FLOOR + POUR_H;
     const m = new THREE.MeshPhysicalMaterial({
       name: "Pour",
-      color: "#3a1805", // render check: #6e3510 + .55 glow read as a pale salmon block under AgX
+      // CP4_68: darker, browner whisky, matched to the bottle (was #3a1805).
+      color: "#331a0a",
       roughness: 0.06,
       metalness: 0,
       clearcoat: 0.6, // the liquid surface: a sharp second highlight
@@ -673,6 +696,12 @@ function Pour() {
       envMapIntensity: 0.5,
       emissive: "#c9651f",
       emissiveIntensity: 0.0, // driven in the shader below
+      // CP4_68 A+B — same alpha translucency as the bottle whisky (NOT
+      // transmission: that is the white-island bug). Kept a touch denser than
+      // the bottle so the glass floor/table never shows through the measure.
+      transparent: true,
+      opacity: 1,
+      depthWrite: true,
     });
     m.onBeforeCompile = (shd) => {
       shd.uniforms.uTop = { value: top };
@@ -692,7 +721,12 @@ function Pour() {
           // meniscus: a thin bright line where the liquid meets the wall
           float pwSide = 1.0 - abs(normalize(vPwObjN).y);
           float pwLine = smoothstep(0.0022, 0.0, uTop - vPwObj.y) * pwSide;
-          totalEmissiveRadiance += vec3(1.0, 0.68, 0.36) * pwLine * 0.6;`,
+          totalEmissiveRadiance += vec3(1.0, 0.68, 0.36) * pwLine * 0.6;
+          // CP4_68 B — Fresnel translucency, matched to the bottle. Center see-
+          // through, edges dense with a warm rim glint. Alpha only, no transmission.
+          float pwFres = pow(1.0 - clamp(dot(normalize(normal), normalize(vViewPosition)), 0.0, 1.0), 3.0);
+          diffuseColor.a *= mix(0.78, 1.0, pwFres);
+          totalEmissiveRadiance += vec3(0.5, 0.28, 0.12) * pwFres * 0.18;`,
         );
     };
     return { geometry: g, material: m };
