@@ -4,6 +4,7 @@ import { useRef, type ReactNode, type MouseEvent } from "react";
 import { motion, useMotionValue, useSpring } from "framer-motion";
 import { usePrefersReducedMotion } from "@/hooks/useMediaQuery";
 import { cn } from "@/lib/utils";
+import { scrollToHash } from "@/lib/scroll-to";
 
 const SPRING = { stiffness: 300, damping: 24 }; // spring-ui token
 const PULL_RADIUS = 80;
@@ -56,6 +57,11 @@ export default function MagneticButton({
     x.set(0); y.set(0); tx.set(0); ty.set(0);
   };
 
+  const handleClick = (e: MouseEvent) => {
+    if (href && scrollToHash(href)) e.preventDefault();
+    onClick?.();
+  };
+
   const styles =
     variant === "primary"
       ? "bg-brand-400 text-[#05080F] hover:bg-brand-300"
@@ -67,7 +73,7 @@ export default function MagneticButton({
     <div ref={ref} onMouseMove={onMove} onMouseLeave={reset} className="inline-block">
       <Tag
         href={href}
-        onClick={onClick}
+        onClick={handleClick}
         style={{ x, y }}
         whileTap={{ scale: 0.97 }}
         className={cn(

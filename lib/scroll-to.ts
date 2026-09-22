@@ -43,3 +43,38 @@ export function scrollWindowTo(
   }
   window.scrollTo({ top: y, behavior: jump ? "auto" : "smooth" });
 }
+
+// fixed navbar (~64px) + a little breathing room, kept in sync with FAQSection's own constant
+const NAV_CLEARANCE = 96;
+
+/**
+ * Smooth-scroll to an in-page anchor ("#contact", "/#contact") through the
+ * same Lenis-aware path as scrollWindowTo, instead of letting the browser's
+ * default anchor jump fight the Lenis-driven scroll position.
+ *
+ * Returns true if `href` pointed at an in-page section that was found (and
+ * scrolling was handled), so callers know whether to preventDefault.
+ */
+export function scrollToHash(href: string, opts: { duration?: number } = {}): boolean {
+  if (typeof window === "undefined" || typeof document === "undefined") return false;
+  const hashIndex = href.indexOf("#");
+  if (hashIndex === -1) return false;
+
+  const path = href.slice(0, hashIndex);
+  const id = href.slice(hashIndex + 1);
+  if (!id) return false;
+  // only handle same-page anchors, not "/other-page#section"
+  if (path && path !== "/" && path !== window.location.pathname) return false;
+
+  const el = document.getElementById(id);
+  if (!el) return false;
+
+  const top = el.getBoundingClientRect().top + window.scrollY - NAV_CLEARANCE;
+  scrollWindowTo(top, { duration: opts.duration ?? 0.6 });
+
+  if (window.location.hash !== `#${id}`) {
+    window.history.pushState(null, "", `#${id}`);
+  }
+
+  return true;
+}
