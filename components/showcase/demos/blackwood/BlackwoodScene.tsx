@@ -200,6 +200,7 @@ const LOOK = {
    * ~1.3 CSS px. Invisible. That is the whole "DoF does nothing" bug. */
   dofBlurClose: 0.009, //      close beats: casks become soft shapes, hoops go to bokeh (CP4_68: 0.011 → 0.009, eased per client — the tumbler behind the bottle was reading too soft)
   dofBlurWide: 0.0035, //      wide beat: a hint of lens, the room must still read
+  dofScrollFloor: 0.12, //     CP5_01: DoF blur multiplier at the LAST section (1.0 at the top). The glass/room ease into focus as the visitor scrolls; 0.12 keeps a whisper of lens at the end (set 0 for fully sharp)
   chroma: 0.0007, //           chromatic fringe at the frame edge
   keyIntensity: 26, //         CP4_48 hotter + tighter: the bottle must out-light the wood
   shaftOpacity: 0.035, //      dusty key-light beam
@@ -1730,17 +1731,23 @@ function Post({ progress, tier }: { progress?: MutableRefObject<number>; tier: T
   const target = useMemo(() => new THREE.Vector3(...HERO), []);
   const sat = useSaturationPass(camera, LOOK.saturation);
   useFrame(({ gl }) => {
-    void progress;
     // by DISTANCE to the bottle, not by scroll: blur follows what is on screen
     const d = camera.position.distanceTo(target);
     const close = 1 - THREE.MathUtils.smoothstep(d, 0.7, 2.6);
     // bokehScale is a PIXEL radius, so scale it by the drawing-buffer height:
     // same look at dpr 1 and dpr 2, on a laptop and on a 4K screen
     const frac = THREE.MathUtils.lerp(LOOK.dofBlurWide, LOOK.dofBlurClose, close);
+    // CP5_01: the glass comes into focus as you read. The bottle is always the
+    // DoF focus (sharp); this blur lands on the tumbler behind it and the room.
+    // Ease it from full at the top down to a whisper by the last section, so each
+    // section scrolled sharpens the scene a little more. Linear in scroll = the
+    // "slow, steady" feel. Floor keeps a hint of lens so it never reads flat/CG.
+    const p = THREE.MathUtils.clamp(progress?.current ?? 0, 0, 1);
+    const scrollSharpen = THREE.MathUtils.lerp(1, LOOK.dofScrollFloor, p);
     // CP4_65: capped. postprocessing also uses bokehScale as a CoC GAIN in its
     // composite + mask (CP4_60 suspect #1); on a dpr-2 screen the uncapped value
     // reached ~20. 12 px keeps dpr-1 screens unchanged.
-    if (dof.current) dof.current.bokehScale = Math.min(12, frac * gl.domElement.height);
+    if (dof.current) dof.current.bokehScale = Math.min(12, frac * gl.domElement.height * scrollSharpen);
   });
   return (
     // AO grounds everything, DoF gives the long-lens look (focus locked on the
