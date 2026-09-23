@@ -206,9 +206,14 @@ export default function BlackwoodSite({ preview = false }: { preview?: boolean }
     }
     const from = el.scrollTop;
     const dist = to - from;
-    const dur = 780;
+    // Long, gentle glide: the previous 780ms over ~4000px moved ~90px/frame at
+    // the midpoint, which the camera damp could not track without jerking. A
+    // slower easeInOutCubic keeps each frame small; the camera stays with it (or
+    // catches up a beat later, which is fine). CTA-only — manual scroll is Lenis.
+    const dur = 2000;
     const start = performance.now();
-    const ease = (t: number) => 1 - Math.pow(1 - t, 3); // easeOutCubic
+    const ease = (t: number) =>
+      t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; // easeInOutCubic
     const step = (now: number) => {
       const t = Math.min(1, (now - start) / dur);
       el.scrollTop = from + dist * ease(t);
