@@ -89,13 +89,10 @@ export default function ProcessSection() {
       </div>
 
       <div ref={reveal} className="container-x relative py-[clamp(96px,12vw,160px)]">
-        <p data-reveal className="eyebrow mb-4">
-          {t.process.eyebrow}
-        </p>
         <h2 data-reveal id="process-heading" className="heading-2 max-w-[20ch]">
           {t.process.heading}
         </h2>
-        <p data-reveal className="mt-5 max-w-[56ch] text-lg text-ink-soft">
+        <p data-reveal className="mt-5 max-w-[56ch] text-body text-ink-soft">
           {t.process.introPre}
           <span className="text-ink">{t.process.introStrong}</span>
           {t.process.introPost}
@@ -135,7 +132,7 @@ export default function ProcessSection() {
                     }}
                   >
                     <span
-                      className="font-display text-[15px] font-medium transition-colors duration-500"
+                      className="font-display text-ui font-medium transition-colors duration-500"
                       style={{ color: lit ? "#A5F3FC" : "#8FA3BF" }}
                     >
                       {String(i + 1).padStart(2, "0")}
@@ -146,19 +143,19 @@ export default function ProcessSection() {
                     <h3 className="font-display text-[clamp(1.25rem,2vw,1.6rem)] font-medium leading-tight text-ink">
                       {s.title}
                     </h3>
-                    <span className="rounded-full border border-[var(--glass-border)] bg-[rgba(14,24,41,0.55)] px-3 py-1 text-[12.5px] font-medium text-ink-soft">
+                    <span className="rounded-full border border-[var(--glass-border)] bg-[rgba(14,24,41,0.55)] px-3 py-1 text-small font-medium text-ink-soft">
                       {s.time}
                     </span>
                   </div>
                   <p className="mt-2.5 max-w-[52ch] leading-relaxed text-ink-soft">{s.body}</p>
 
-                  <p className="mt-4 flex items-center gap-2 text-[13px] font-medium text-brand-300">
+                  <p className="mt-4 flex items-center gap-2 text-small font-medium text-brand-300">
                     <span className="h-1 w-1 rounded-full bg-brand-400" aria-hidden />
                     {s.deliverable}
                   </p>
 
                   {/* mobile-only funnel chip — the sticky panel is desktop-only */}
-                  <p className="mt-3 inline-flex items-center gap-2 rounded-input border border-[var(--glass-border)] bg-[rgba(14,24,41,0.55)] px-3 py-1.5 text-[13px] text-ink-soft lg:hidden">
+                  <p className="mt-3 inline-flex items-center gap-2 rounded-input border border-[var(--glass-border)] bg-[rgba(14,24,41,0.55)] px-3 py-1.5 text-small text-ink-soft lg:hidden">
                     <span className="text-ink">{tier.count.toLocaleString(numLocale)}</span>
                     <span aria-hidden>·</span>
                     {t.process.funnel.tiers[i]}
@@ -167,7 +164,7 @@ export default function ProcessSection() {
               );
             })}
             </ol>
-            <p className="mt-8 pl-16 text-[12.5px] text-ink-soft/70 md:pl-20">
+            <p className="mt-8 pl-16 text-small text-ink-soft/70 md:pl-20">
               {t.process.footnote}
             </p>
           </div>

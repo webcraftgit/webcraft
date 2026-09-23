@@ -133,7 +133,7 @@ function LivePreview({ demo }: { demo: Demo }) {
       )}
       {lite && (
         <span
-          className="absolute inset-0 flex items-center justify-center font-display text-[22px] font-medium text-ink/90"
+          className="absolute inset-0 flex items-center justify-center font-display text-title font-medium text-ink/90"
         >
           {demo.name.split(" — ")[0]}
         </span>
@@ -255,12 +255,12 @@ export default function ShowcaseGallery() {
               <LivePreview demo={d} />
               {/* hover veil + CTA */}
               <span className="absolute inset-0 flex items-center justify-center bg-bg/0 transition-colors duration-300 group-hover:bg-bg/40">
-                <span className="touch-show translate-y-2 rounded-full bg-brand-400 px-6 py-2.5 text-[13.5px] font-semibold text-[#05080F] opacity-0 shadow-[0_0_30px_rgba(56,189,248,0.45)] transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+                <span className="touch-show translate-y-2 rounded-full bg-brand-400 px-6 py-2.5 text-small font-semibold text-[#05080F] opacity-0 shadow-[0_0_30px_rgba(56,189,248,0.45)] transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
                   {t.showcase.openBadge}
                 </span>
               </span>
               {/* live badge */}
-              <span className="absolute left-4 top-4 flex items-center gap-1.5 rounded-full bg-bg/70 px-3 py-1 text-[10.5px] font-semibold uppercase tracking-[0.1em] text-ink backdrop-blur-sm">
+              <span className="absolute left-4 top-4 flex items-center gap-1.5 rounded-full bg-bg/70 px-3 py-1 text-label font-semibold uppercase tracking-[0.1em] text-ink backdrop-blur-sm">
                 <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-accent-green" aria-hidden />
                 {t.showcase.live}
               </span>
@@ -271,12 +271,12 @@ export default function ShowcaseGallery() {
               <h3 className="font-display text-[clamp(1.2rem,1.8vw,1.5rem)] font-medium text-ink">
                 {d.name}
               </h3>
-              <p className="mt-1.5 text-[14px] leading-relaxed text-ink-soft">{d.tagline}</p>
+              <p className="mt-1.5 text-ui leading-relaxed text-ink-soft">{d.tagline}</p>
               <ul className="mt-4 flex flex-wrap gap-2">
                 {d.facts.map((f) => (
                   <li
                     key={f}
-                    className="rounded-full border border-brand-400/20 bg-bg-soft/60 px-3 py-1 text-[11.5px] font-medium uppercase tracking-[0.06em] text-brand-300"
+                    className="rounded-full border border-brand-400/20 bg-bg-soft/60 px-3 py-1 text-label font-medium uppercase tracking-[0.06em] text-brand-300"
                   >
                     {f}
                   </li>
@@ -302,7 +302,7 @@ export default function ShowcaseGallery() {
             className="fixed inset-0 z-[100] flex flex-col bg-bg"
           >
             <div className="flex shrink-0 items-center justify-between border-b border-brand-400/15 bg-bg px-4 py-2.5 md:px-6">
-              <p className="flex items-center gap-3 text-[13px] text-ink-soft">
+              <p className="flex items-center gap-3 text-small text-ink-soft">
                 <span className="hidden items-center gap-1.5 md:flex" aria-hidden>
                   {["#F87171", "#FBBF24", "#34D399"].map((c) => (
                     <span key={c} className="h-2.5 w-2.5 rounded-full" style={{ background: c, opacity: 0.8 }} />
@@ -315,10 +315,10 @@ export default function ShowcaseGallery() {
                 ref={closeBtn}
                 type="button"
                 onClick={close}
-                className="glass flex min-h-[44px] items-center gap-2 rounded-full px-5 py-2 text-[13px] font-medium text-ink transition-colors hover:border-[var(--glass-border-hover)]"
+                className="glass flex min-h-[44px] items-center gap-2 rounded-full px-5 py-2 text-small font-medium text-ink transition-colors hover:border-[var(--glass-border-hover)]"
               >
                 {t.showcase.close}
-                <kbd className="hidden rounded-[5px] border border-brand-400/25 px-1.5 text-[10.5px] text-ink-soft md:inline">esc</kbd>
+                <kbd className="hidden rounded-[5px] border border-brand-400/25 px-1.5 text-label text-ink-soft md:inline">esc</kbd>
               </button>
             </div>
             <div className="min-h-0 flex-1">

@@ -94,10 +94,10 @@ export default function ServiceCard({ service, active, index }: Props) {
          inside it clears the rim at every height, whatever the language. */
       className="mt-3 w-full max-w-[72%] md:mt-7 md:max-w-none"
     >
-      <h3 className="font-display text-[16.5px] font-medium leading-tight text-ink md:text-[clamp(1.25rem,2vw,1.7rem)]">
+      <h3 className="font-display text-body font-medium leading-tight text-ink md:text-[clamp(1.25rem,2vw,1.7rem)]">
         {service.title}
       </h3>
-      <p className="mx-auto mt-2 text-[12.5px] leading-[1.5] text-ink-soft md:mt-3 md:max-w-[34ch] md:text-[14.5px] md:leading-relaxed">
+      <p className="mx-auto mt-2 text-small leading-[1.5] text-ink-soft md:mt-3 md:max-w-[34ch] md:text-ui md:leading-relaxed">
         {/* ONE node, chosen in JS — not two spans with `md:hidden`, which
             would put both versions of the copy in the DOM for screen readers
             and for the crawler. */}
@@ -105,7 +105,7 @@ export default function ServiceCard({ service, active, index }: Props) {
       </p>
       {/* The blue line. `items-baseline` + a `shrink-0` dot so a long Polish
           outcome wraps as a block instead of being clipped by the rim. */}
-      <p className="mx-auto mt-3 inline-flex max-w-[30ch] items-baseline justify-center gap-2 text-balance text-[12.5px] font-medium text-brand-300 md:mt-4 md:text-sm">
+      <p className="mx-auto mt-3 inline-flex max-w-[30ch] items-baseline justify-center gap-2 text-balance text-small font-medium text-brand-300 md:mt-4 md:text-ui">
         <span
           className="mt-[0.45em] h-1 w-1 shrink-0 rounded-full bg-accent-green"
           aria-hidden

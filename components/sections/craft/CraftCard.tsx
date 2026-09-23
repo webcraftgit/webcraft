@@ -40,7 +40,7 @@ export default function CraftCard({ title, caption, proof, children, className }
         <h3 className="font-display text-[clamp(1.15rem,1.6vw,1.4rem)] font-medium leading-tight text-ink">
           {title}
         </h3>
-        <p className="mt-1.5 max-w-[46ch] text-[14px] leading-relaxed text-ink-soft">
+        <p className="mt-1.5 max-w-[46ch] text-ui leading-relaxed text-ink-soft">
           {caption}
         </p>
       </header>
@@ -48,7 +48,7 @@ export default function CraftCard({ title, caption, proof, children, className }
       {/* live demo slot */}
       <div className="min-h-0 flex-1">{children}</div>
 
-      <footer className="mt-5 flex items-center gap-2 text-[13px] font-medium text-brand-300">
+      <footer className="mt-5 flex items-center gap-2 text-small font-medium text-brand-300">
         <span className="h-1 w-1 rounded-full bg-accent-green" aria-hidden />
         {proof}
       </footer>

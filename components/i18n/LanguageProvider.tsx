@@ -16,6 +16,15 @@ import {
   type Locale,
 } from "@/lib/i18n/config";
 import { DICTS, type Dictionary } from "@/lib/i18n/dictionaries";
+import { typeset } from "@/lib/i18n/typography";
+
+/** What the UI renders: the dictionaries with no-break spaces applied (see
+ *  lib/i18n/typography.ts). Built once — DICTS itself stays plain for the
+ *  JSON-LD and llms.txt consumers. */
+const TYPESET: Record<Locale, Dictionary> = {
+  en: typeset(DICTS.en, "en"),
+  pl: typeset(DICTS.pl, "pl"),
+};
 
 type Ctx = {
   locale: Locale;
@@ -62,7 +71,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo<Ctx>(
-    () => ({ locale, setLocale, t: DICTS[locale] }),
+    () => ({ locale, setLocale, t: TYPESET[locale] }),
     [locale, setLocale]
   );
 

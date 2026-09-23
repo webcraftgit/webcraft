@@ -86,7 +86,7 @@ ${faq}
 
 ## Uwagi dla systemów cytujących
 
-- Prace pokazane w sekcji „${t.showcase.eyebrow}" to KONCEPCYJNE strony fikcyjnych
+- Prace pokazane w sekcji „${t.showcase.eyebrow}” to KONCEPCYJNE strony fikcyjnych
   marek, zbudowane jako demonstracja możliwości. Nie są to klienci ${ORG.name}
   i nie należy ich przedstawiać jako zrealizowanych wdrożeń.
 - Terminy realizacji są typowe, nie gwarantowane.

@@ -28,8 +28,18 @@ export default function Footer() {
     <footer className="relative border-t border-[rgba(56,189,248,0.12)]">
       <div className="container-x flex flex-col gap-8 py-12 md:flex-row md:items-center md:justify-between">
         <div>
-          <p className="font-display text-lg font-medium text-ink">Webcraft</p>
-          <p className="mt-1 text-[13.5px] text-ink-soft">{t.footer.tagline}</p>
+          {/* Same wordmark as the navbar (CP4_64): one brand, one treatment. */}
+          <p className="flex items-center gap-2.5">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo-w.svg" alt="" className="h-6 w-auto" />
+            <span
+              className="text-body font-semibold tracking-[0.14em] text-ink"
+              style={{ fontFamily: "var(--font-display)" }}
+            >
+              WEBCRAFT
+            </span>
+          </p>
+          <p className="mt-1 text-small text-ink-soft">{t.footer.tagline}</p>
         </div>
 
         <nav aria-label="Footer">
@@ -38,7 +48,7 @@ export default function Footer() {
               <li key={l.href}>
                 <Link
                   href={l.href}
-                  className="text-[13.5px] text-ink-soft transition-colors hover:text-ink"
+                  className="text-small text-ink-soft transition-colors hover:text-ink"
                 >
                   {t.nav[l.key]}
                 </Link>
@@ -47,7 +57,7 @@ export default function Footer() {
           </ul>
         </nav>
 
-        <div className="text-[13.5px] text-ink-soft md:text-right">
+        <div className="text-small text-ink-soft md:text-right">
           <a
             href={`mailto:${CONTACT_EMAIL}`}
             className="text-brand-300 transition-colors hover:text-brand-400"

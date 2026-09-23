@@ -551,7 +551,7 @@ export const pl: Dictionary = {
       design: {
         title: `Projekt`,
         time: `4–6 dni`,
-        body: `Pierwszy ekran, który zasługuje na kolejne przewinięcie. Hierarchia, ruch i tekst dostrojone tak, by pierwsze trzy sekundy odpowiadały: „czy jestem we właściwym miejscu?" — bo większość decyduje właśnie tam.`,
+        body: `Pierwszy ekran, który zasługuje na kolejne przewinięcie. Hierarchia, ruch i tekst dostrojone tak, by pierwsze trzy sekundy odpowiadały: „czy jestem we właściwym miejscu?” — bo większość decyduje właśnie tam.`,
         deliverable: `Interaktywny prototyp projektu`,
       },
       build: {
@@ -652,7 +652,7 @@ export const pl: Dictionary = {
     items: [
       {
         q: `Ile trwa stworzenie strony?`,
-        a: `Większość projektów trafia z briefu na start w od dwóch do czterech tygodni. Pierwsza połowa to odkrywanie i projekt; druga — budowa, treści i testy. Zwięzły one-pager może być szybszy, strona z autorskim 3D lub większą strukturą — wolniejsza. Realny harmonogram dostajesz po analizie, nie zgadujemy go wcześniej.`,
+        a: `Większość projektów trafia z briefu na start w dwa do czterech tygodni. Pierwsza połowa to odkrywanie i projekt; druga — budowa, treści i testy. Zwięzły one-pager może być szybszy, strona z autorskim 3D lub większą strukturą — wolniejsza. Realny harmonogram dostajesz po analizie, nie zgadujemy go wcześniej.`,
       },
       {
         q: `Ile kosztuje projekt?`,
@@ -691,7 +691,7 @@ export const pl: Dictionary = {
   contact: {
     eyebrow: `Kontakt`,
     heading: `Powiedz nam, co strona ma osiągnąć.`,
-    intro: `Trzy pola, bez wymaganego numeru telefonu, bez zobowiązań po naciśnięciu „Wyślij" — dostaniesz uczciwą odpowiedź, nawet jeśli brzmi ona, że jeszcze nas nie potrzebujesz.`,
+    intro: `Trzy pola, bez wymaganego numeru telefonu, bez zobowiązań po naciśnięciu „Wyślij” — dostaniesz uczciwą odpowiedź, nawet jeśli brzmi ona, że jeszcze nas nie potrzebujesz.`,
     replyPromise: `Odpowiadamy w ciągu jednego dnia roboczego.`,
     preferEmailPre: `Wolisz e-mail? `,
     sentTitle: `Odebraliśmy — dziękujemy.`,

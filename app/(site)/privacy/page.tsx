@@ -109,12 +109,12 @@ export default function PrivacyPage() {
       <div className="max-w-[70ch]">
         <p className="eyebrow">{c.updated}</p>
         <h1 className="heading-2 mt-3">{c.title}</h1>
-        <p className="mt-5 text-lg text-ink-soft">{c.intro}</p>
+        <p className="mt-5 text-body text-ink-soft">{c.intro}</p>
 
         <div className="mt-12 space-y-10">
           {c.sections.map((s) => (
             <section key={s.h}>
-              <h2 className="font-display text-[22px] font-medium text-ink">{s.h}</h2>
+              <h2 className="font-display text-title font-medium text-ink">{s.h}</h2>
               <p className="mt-3 leading-relaxed text-ink-soft">{s.p}</p>
             </section>
           ))}
@@ -124,13 +124,13 @@ export default function PrivacyPage() {
           <button
             type="button"
             onClick={reopen}
-            className="min-h-[48px] rounded-full bg-brand-400 px-7 text-[15px] font-semibold text-[#05080F] hover:bg-brand-300"
+            className="min-h-[48px] rounded-full bg-brand-400 px-7 text-ui font-semibold text-[#05080F] hover:bg-brand-300"
           >
             {c.manage}
           </button>
           <Link
             href="/"
-            className="inline-flex min-h-[48px] items-center rounded-full border border-[var(--glass-border-hover)] px-7 text-[15px] font-medium text-ink hover:bg-[rgba(56,189,248,0.08)]"
+            className="inline-flex min-h-[48px] items-center rounded-full border border-[var(--glass-border-hover)] px-7 text-ui font-medium text-ink hover:bg-[rgba(56,189,248,0.08)]"
           >
             {c.home}
           </Link>

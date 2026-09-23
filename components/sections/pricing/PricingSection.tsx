@@ -36,13 +36,10 @@ export default function PricingSection() {
       </div>
 
       <div ref={reveal} className="container-x relative py-[clamp(96px,12vw,160px)]">
-        <p data-reveal className="eyebrow mb-4">
-          {t.pricing.eyebrow}
-        </p>
         <h2 data-reveal id="pricing-heading" className="heading-2 max-w-[20ch]">
           {t.pricing.heading}
         </h2>
-        <p data-reveal className="mt-5 max-w-[58ch] text-lg text-ink-soft">
+        <p data-reveal className="mt-5 max-w-[58ch] text-body text-ink-soft">
           {t.pricing.introPre}
           {FOUNDING_SLOTS}
           {t.pricing.introPost}
@@ -67,7 +64,7 @@ export default function PricingSection() {
                 }}
               />
               {tier.highlight && (
-                <span className="absolute -top-3 left-7 rounded-full bg-brand-400 px-3 py-1 text-[11.5px] font-semibold uppercase tracking-[0.06em] text-[#05080F]">
+                <span className="absolute -top-3 left-7 rounded-full bg-brand-400 px-3 py-1 text-label font-semibold uppercase tracking-[0.06em] text-[#05080F]">
                   {t.pricing.mostProjects}
                 </span>
               )}
@@ -75,22 +72,22 @@ export default function PricingSection() {
               <h3 className="font-display text-[clamp(1.3rem,1.8vw,1.6rem)] font-medium text-ink">
                 {t.pricing.tiers[tier.id].name}
               </h3>
-              <p className="mt-1.5 min-h-[2.6em] text-[14.5px] leading-snug text-ink-soft">
+              <p className="mt-1.5 min-h-[2.6em] text-ui leading-snug text-ink-soft">
                 {t.pricing.tiers[tier.id].tagline}
               </p>
 
               <p className="mt-5">
-                <span className="text-[13px] text-ink-soft">{t.pricing.from} </span>
+                <span className="text-small text-ink-soft">{t.pricing.from}&nbsp;</span>
                 <span className="font-display text-[clamp(1.7rem,2.4vw,2.1rem)] font-medium text-brand-300">
                   {price(tier.from)}
                 </span>
               </p>
-              <p className="mt-1 text-[13px] text-ink-soft">
+              <p className="mt-1 text-small text-ink-soft">
                 {t.pricing.upToPre} {price(tier.upTo)} · {t.pricing.tiers[tier.id].weeks}
               </p>
 
               {/* split payment — lowers felt commitment, not the price (CP4.4) */}
-              <p className="mt-3 inline-flex items-center gap-2 rounded-full border border-[var(--glass-border)] bg-[rgba(5,8,15,0.4)] px-3 py-1 text-[12.5px] text-ink-soft">
+              <p className="mt-3 inline-flex items-center gap-2 rounded-full border border-[var(--glass-border)] bg-[rgba(5,8,15,0.4)] px-3 py-1 text-small text-ink-soft">
                 <svg
                   className="h-3.5 w-3.5 shrink-0 text-brand-400"
                   viewBox="0 0 24 24"
@@ -109,7 +106,7 @@ export default function PricingSection() {
 
               <ul className="mt-6 flex-1 space-y-2.5">
                 {t.pricing.tiers[tier.id].includes.map((line) => (
-                  <li key={line} className="flex gap-2.5 text-[14px] leading-snug text-ink-soft">
+                  <li key={line} className="flex gap-2.5 text-ui leading-snug text-ink-soft">
                     <svg
                       className="mt-0.5 h-4 w-4 shrink-0 text-brand-400"
                       viewBox="0 0 24 24"
@@ -131,7 +128,7 @@ export default function PricingSection() {
                 href="#contact"
                 onClick={() => prefillContact(tier.id)}
                 className={cn(
-                  "mt-7 inline-flex min-h-[44px] items-center justify-center rounded-full px-6 py-2.5 text-[14.5px] font-semibold transition-colors",
+                  "mt-7 inline-flex min-h-[44px] items-center justify-center rounded-full px-6 py-2.5 text-ui font-semibold transition-colors",
                   tier.highlight
                     ? "bg-brand-400 text-[#05080F] hover:bg-brand-300"
                     : "glass text-ink hover:border-[var(--glass-border-hover)]"
@@ -166,19 +163,19 @@ export default function PricingSection() {
               >
                 {t.pricing.care.title}
               </h3>
-              <p className="mt-1.5 text-[14.5px] leading-snug text-ink-soft">
+              <p className="mt-1.5 text-ui leading-snug text-ink-soft">
                 {t.pricing.care.tagline}
               </p>
               <p className="mt-4">
                 <span className="font-display text-[clamp(1.5rem,2vw,1.8rem)] font-medium text-brand-300">
                   {price(CARE_PLAN.monthly)}
                 </span>
-                <span className="text-[13px] text-ink-soft">{t.pricing.care.perMonth}</span>
+                <span className="text-small text-ink-soft">{t.pricing.care.perMonth}</span>
               </p>
             </div>
             <ul className="grid flex-1 gap-2.5 sm:grid-cols-2">
               {t.pricing.care.includes.map((line) => (
-                <li key={line} className="flex gap-2.5 text-[14px] leading-snug text-ink-soft">
+                <li key={line} className="flex gap-2.5 text-ui leading-snug text-ink-soft">
                   <svg
                     className="mt-0.5 h-4 w-4 shrink-0 text-brand-400"
                     viewBox="0 0 24 24"
@@ -196,12 +193,12 @@ export default function PricingSection() {
               ))}
             </ul>
           </div>
-          <p className="mt-5 text-[13px] leading-relaxed text-ink-soft/85">
+          <p className="mt-5 text-small leading-relaxed text-ink-soft/85">
             {t.pricing.care.note}
           </p>
         </aside>
 
-        <p data-reveal className="mt-8 max-w-[64ch] text-[13.5px] leading-relaxed text-ink-soft/85">
+        <p data-reveal className="mt-8 max-w-[64ch] text-small leading-relaxed text-ink-soft/85">
           {t.pricing.footnote}
         </p>
       </div>

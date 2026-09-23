@@ -51,7 +51,7 @@ export default function StickyCta() {
         >
           <a
             href="#contact"
-            className="glass flex min-h-[48px] w-full max-w-[420px] items-center justify-center gap-2 rounded-full border-brand-400/40 px-6 py-3 text-[15px] font-semibold text-ink shadow-[0_12px_40px_-12px_rgba(56,189,248,0.5)]"
+            className="glass flex min-h-[48px] w-full max-w-[420px] items-center justify-center gap-2 rounded-full border-brand-400/40 px-6 py-3 text-ui font-semibold text-ink shadow-[0_12px_40px_-12px_rgba(56,189,248,0.5)]"
           >
             {t.sticky.cta}
             <span className="text-brand-300" aria-hidden>

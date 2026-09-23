@@ -77,7 +77,7 @@ export default function MagneticButton({
         style={{ x, y }}
         whileTap={{ scale: 0.97 }}
         className={cn(
-          "inline-flex items-center gap-2 rounded-full px-7 py-3.5 text-[15px] font-medium transition-colors duration-300",
+          "inline-flex items-center gap-2 rounded-full px-7 py-3.5 text-ui font-medium transition-colors duration-300",
           styles,
           className
         )}

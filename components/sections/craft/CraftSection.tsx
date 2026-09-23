@@ -35,13 +35,10 @@ export default function CraftSection() {
       </div>
 
       <div ref={reveal} className="container-x relative py-[clamp(96px,12vw,160px)]">
-        <p data-reveal className="eyebrow mb-4">
-          {t.craft.eyebrow}
-        </p>
         <h2 data-reveal id="craft-heading" className="heading-2 max-w-[18ch]">
           {t.craft.heading}
         </h2>
-        <p data-reveal className="mt-5 max-w-[54ch] text-lg text-ink-soft">
+        <p data-reveal className="mt-5 max-w-[54ch] text-body text-ink-soft">
           {t.craft.intro}
         </p>
 

@@ -35,6 +35,28 @@ body {
   overflow-x: clip;
 }
 
+/* CP4_64 — wrapping. Headings are balanced so a two-line heading does not
+ * end on one short word; running text avoids one-word last lines. */
+@layer base {
+  h1, h2, h3, h4 { text-wrap: balance; }
+  p, li, dd, blockquote { text-wrap: pretty; }
+}
+
+/* CP4_64 — TEXT SCALE. The marketing site had 17 sizes between 10 and 22px
+ * (10, 10.5, 11, 11.5, 12, 12.5, 13, 13.5, 14, 14.5 …); every text size below
+ * the headings is now one of these five. Headings use .heading-* below.
+ * In @layer components (not tailwind.config, not utilities) so a line-height
+ * utility on the same element (leading-snug…) still overrides the default
+ * here. The craft demos' mock UIs keep their own miniature sizes on purpose —
+ * they imitate a shrunken client site. */
+@layer components {
+  .text-label { font-size: 12px; line-height: 1.5; }  /* badges, chips, tiny meta */
+  .text-small { font-size: 13px; line-height: 1.55; } /* footnotes, captions, form labels */
+  .text-ui    { font-size: 15px; line-height: 1.55; } /* card copy, lists, buttons, nav */
+  .text-body  { font-size: 17px; line-height: 1.65; } /* intros, hero lead, running text */
+  .text-title { font-size: 20px; line-height: 1.3; }  /* small headings */
+}
+
 /* Lenis recommended styles */
 html.lenis, html.lenis body { height: auto; }
 .lenis.lenis-smooth { scroll-behavior: auto !important; }
@@ -54,16 +76,36 @@ html.lenis, html.lenis body { height: auto; }
     box-shadow: var(--shadow-soft);
   }
 
+  /* CP4_64: word-spacing. Clash Display's space is narrow, and the negative
+   * tracking narrows it further, so "Nie wierz nam na słowo" ran together.
+   * Opening the space (not the letters) keeps the tight, heavy colour. */
   .heading-display {
     font-family: var(--font-display);
     @apply font-semibold leading-[1.05] tracking-[-0.02em] text-ink;
     font-size: clamp(2.75rem, 7vw, 6rem);
+    word-spacing: 0.08em;
   }
 
   .heading-2 {
     font-family: var(--font-display);
     @apply font-semibold leading-[1.1] tracking-[-0.01em] text-ink;
     font-size: clamp(2.5rem, 4.5vw, 3.5rem);
+    word-spacing: 0.06em;
+  }
+
+  /* Clash is a DISPLAY face: below ~24px its fitting is too tight to read
+   * (FAQ questions, card titles, the consent title). Slightly open letters
+   * and words for every other font-display use. :where() keeps this at the
+   * specificity of one class, so an explicit tracking-* utility still wins. */
+  .font-display:where(:not(.heading-display):not(.heading-2)) {
+    letter-spacing: 0.005em;
+    word-spacing: 0.1em;
+  }
+
+  /* hero lead sits on the 3D W: a soft dark halo lifts it off the glass
+   * without a visible box */
+  .hero-lead {
+    text-shadow: 0 1px 2px rgba(5, 8, 15, 0.9), 0 0 18px rgba(5, 8, 15, 0.85);
   }
 
   .text-gradient-brand {

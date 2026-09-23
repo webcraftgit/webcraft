@@ -76,7 +76,7 @@ export default function Navbar() {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo-w.svg" alt="" className="h-7 w-auto" />
           <span
-            className="text-[17px] font-semibold tracking-[0.14em] text-ink"
+            className="text-body font-semibold tracking-[0.14em] text-ink"
             style={{ fontFamily: "var(--font-display)" }}
           >
             WEBCRAFT
@@ -92,7 +92,7 @@ export default function Navbar() {
                 href={l.href}
                 aria-current={isActive ? "true" : undefined}
                 className={cn(
-                  "relative text-[15px] font-medium transition-colors hover:text-ink",
+                  "relative text-ui font-medium transition-colors hover:text-ink",
                   isActive ? "text-ink" : "text-ink-soft"
                 )}
               >
@@ -108,7 +108,7 @@ export default function Navbar() {
             );
           })}
           <LangToggle />
-          <MagneticButton href="/#contact" className="px-6 py-2.5 text-[14px]">
+          <MagneticButton href="/#contact" className="px-6 py-2.5 text-ui">
             {t.nav.cta}
           </MagneticButton>
         </div>
@@ -157,7 +157,7 @@ export default function Navbar() {
                     onClick={() => setOpen(false)}
                     aria-current={isActive ? "true" : undefined}
                     className={cn(
-                      "text-lg font-medium transition-colors",
+                      "text-body font-medium transition-colors",
                       isActive ? "text-brand-300" : "text-ink"
                     )}
                   >

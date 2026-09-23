@@ -27,7 +27,7 @@ export default function ConsentBanner() {
   const [analytics, setAnalytics] = useState(false);
 
   const btn =
-    "min-h-[44px] flex-1 rounded-full px-5 py-2.5 text-[14px] font-semibold transition-colors";
+    "min-h-[44px] flex-1 rounded-full px-5 py-2.5 text-ui font-semibold transition-colors";
 
   return (
     <AnimatePresence>
@@ -42,13 +42,13 @@ export default function ConsentBanner() {
           transition={{ type: "spring", stiffness: 260, damping: 30 }}
           className="glass fixed bottom-4 left-4 right-4 z-[90] max-w-[440px] rounded-panel p-5 md:bottom-6 md:left-6 md:right-auto md:p-6"
         >
-          <p className="font-display text-[19px] font-medium leading-snug text-ink">
+          <p className="font-display text-title font-medium leading-snug text-ink">
             {t.consent.title}
           </p>
 
           {!managing ? (
             <>
-              <p className="mt-2.5 text-[14px] leading-relaxed text-ink-soft">{t.consent.body}</p>
+              <p className="mt-2.5 text-ui leading-relaxed text-ink-soft">{t.consent.body}</p>
 
               <div className="mt-5 flex flex-col gap-2.5 sm:flex-row">
                 {/* equal prominence — deliberate */}
@@ -68,7 +68,7 @@ export default function ConsentBanner() {
                 </button>
               </div>
 
-              <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-[13px]">
+              <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-small">
                 <button
                   type="button"
                   onClick={() => setManaging(true)}
@@ -89,19 +89,19 @@ export default function ConsentBanner() {
               <ul className="mt-4 space-y-3">
                 <li className="rounded-input border border-[var(--glass-border)] p-3.5">
                   <div className="flex items-center justify-between gap-3">
-                    <span className="text-[14px] font-medium text-ink">{t.consent.necessaryLabel}</span>
-                    <span className="text-[12px] uppercase tracking-wide text-ink-soft">
+                    <span className="text-ui font-medium text-ink">{t.consent.necessaryLabel}</span>
+                    <span className="text-label uppercase tracking-wide text-ink-soft">
                       {t.consent.always}
                     </span>
                   </div>
-                  <p className="mt-1.5 text-[13px] leading-relaxed text-ink-soft">
+                  <p className="mt-1.5 text-small leading-relaxed text-ink-soft">
                     {t.consent.necessaryDesc}
                   </p>
                 </li>
 
                 <li className="rounded-input border border-[var(--glass-border)] p-3.5">
                   <label className="flex cursor-pointer items-center justify-between gap-3">
-                    <span className="text-[14px] font-medium text-ink">{t.consent.analyticsLabel}</span>
+                    <span className="text-ui font-medium text-ink">{t.consent.analyticsLabel}</span>
                     <input
                       type="checkbox"
                       checked={analytics}
@@ -109,7 +109,7 @@ export default function ConsentBanner() {
                       className="h-5 w-5 accent-[var(--brand-400)]"
                     />
                   </label>
-                  <p className="mt-1.5 text-[13px] leading-relaxed text-ink-soft">
+                  <p className="mt-1.5 text-small leading-relaxed text-ink-soft">
                     {t.consent.analyticsDesc}
                   </p>
                 </li>

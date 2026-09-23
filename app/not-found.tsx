@@ -128,7 +128,7 @@ export default function NotFound() {
         <Link
           href="/"
           aria-label={t.nav.home}
-          className="font-display text-lg font-medium text-ink transition-colors hover:text-brand-300"
+          className="font-display text-body font-medium text-ink transition-colors hover:text-brand-300"
         >
           Webcraft
         </Link>
@@ -152,7 +152,7 @@ export default function NotFound() {
 
         <motion.p
           variants={revealItem}
-          className="mt-6 max-w-[46ch] text-lg text-ink-soft"
+          className="mt-6 max-w-[46ch] text-body text-ink-soft"
         >
           {t.notFound.body}
         </motion.p>
@@ -179,7 +179,7 @@ export default function NotFound() {
               <li key={s.href}>
                 <Link
                   href={s.href}
-                  className="text-[14px] text-ink-soft transition-colors hover:text-ink"
+                  className="text-ui text-ink-soft transition-colors hover:text-ink"
                 >
                   {t.nav[s.key]}
                 </Link>

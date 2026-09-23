@@ -94,14 +94,14 @@ export default function ContactSection() {
 
   const chipCls = (selected: boolean) =>
     cn(
-      "min-h-[40px] rounded-full border px-4 py-1.5 text-[13.5px] font-medium transition-colors",
+      "min-h-[40px] rounded-full border px-4 py-1.5 text-small font-medium transition-colors",
       selected
         ? "border-brand-400 bg-brand-400/15 text-brand-300"
         : "border-[var(--glass-border)] bg-[rgba(14,24,41,0.45)] text-ink-soft hover:border-[var(--glass-border-hover)] hover:text-ink"
     );
 
   const inputCls =
-    "w-full rounded-input border border-[var(--glass-border)] bg-[rgba(5,8,15,0.55)] px-4 py-3 text-[15px] text-ink placeholder:text-ink-soft/60 outline-none transition-colors focus:border-brand-400";
+    "w-full rounded-input border border-[var(--glass-border)] bg-[rgba(5,8,15,0.55)] px-4 py-3 text-ui text-ink placeholder:text-ink-soft/60 outline-none transition-colors focus:border-brand-400";
 
   return (
     <section id="contact" aria-labelledby="contact-heading" className="relative">
@@ -115,24 +115,22 @@ export default function ContactSection() {
       >
         {/* ——— pitch ——— */}
         {/* CP4_54 — MOBILE FRICTION. Arriving here from "Rozpocznij projekt",
-            the whole first screen was the eyebrow + heading + a paragraph of
+            the whole first screen was a label + heading + a paragraph of
             supporting copy: the visitor landed on a headline with no visible
-            way to act. On phones the eyebrow and the intro are hidden, so the
+            way to act. On phones the intro is hidden (CP4_64 removed the
+            section label on every breakpoint), so the
             reply promise and the email address are on the first screen with
-            the heading. Both stay in the DOM (display:none, not removed), so
+            the heading. The intro stays in the DOM (display:none, not removed), so
             the crawler and the desktop layout are unchanged. */}
         <div>
-          <p data-reveal className="eyebrow mb-4 hidden md:block">
-            {t.contact.eyebrow}
-          </p>
           <h2 data-reveal id="contact-heading" className="heading-2 max-w-[16ch]">
             {t.contact.heading}
           </h2>
-          <p data-reveal className="mt-5 hidden max-w-[46ch] text-lg text-ink-soft md:block">
+          <p data-reveal className="mt-5 hidden max-w-[46ch] text-body text-ink-soft md:block">
             {t.contact.intro}
           </p>
 
-          <p data-reveal className="mt-6 flex items-center gap-2.5 text-[15px] font-medium text-ink md:mt-8">
+          <p data-reveal className="mt-6 flex items-center gap-2.5 text-ui font-medium text-ink md:mt-8">
             <span className="relative flex h-2.5 w-2.5" aria-hidden>
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent-green opacity-60" />
               <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-accent-green" />
@@ -140,7 +138,7 @@ export default function ContactSection() {
             {t.contact.replyPromise}
           </p>
 
-          <p data-reveal className="mt-4 text-[14px] text-ink-soft md:mt-6">
+          <p data-reveal className="mt-4 text-ui text-ink-soft md:mt-6">
             {/* CP4_55: the lead-in ("Wolisz e-mail?") is the last of the small
                 supporting copy the client asked to lose on phones — on mobile
                 the address stands on its own. */}
@@ -180,8 +178,8 @@ export default function ContactSection() {
             <form onSubmit={onSubmit} noValidate={false}>
               {/* the 3-question estimate — optional, zero typing */}
               <fieldset>
-                <legend className="text-[13px] font-medium uppercase tracking-[0.06em] text-ink-soft">
-                  {t.contact.whatBuilding} <span className="normal-case">{t.contact.optional}</span>
+                <legend className="text-small text-ink-soft">
+                  {t.contact.whatBuilding} <span className="text-ink-soft/60">{t.contact.optional}</span>
                 </legend>
                 <div className="mt-3 flex flex-wrap gap-2.5">
                   {TIERS.map((projectTier) => (
@@ -202,7 +200,7 @@ export default function ContactSection() {
 
               {tier && (
                 <fieldset className="mt-5">
-                  <legend className="text-[13px] font-medium uppercase tracking-[0.06em] text-ink-soft">
+                  <legend className="text-small text-ink-soft">
                     {t.contact.contentQ}
                   </legend>
                   <div className="mt-3 flex flex-wrap gap-2.5">
@@ -224,8 +222,8 @@ export default function ContactSection() {
               )}
 
               <fieldset className="mt-5">
-                <legend className="text-[13px] font-medium uppercase tracking-[0.06em] text-ink-soft">
-                  {t.contact.budgetQ} <span className="normal-case">{t.contact.optional}</span>
+                <legend className="text-small text-ink-soft">
+                  {t.contact.budgetQ} <span className="text-ink-soft/60">{t.contact.optional}</span>
                 </legend>
                 <div className="mt-3 flex flex-wrap gap-2.5">
                   {BUDGET_IDS.map((b) => (
@@ -246,11 +244,11 @@ export default function ContactSection() {
 
               {range && (
                 <p
-                  className="mt-5 rounded-input border border-brand-400/25 bg-brand-400/8 px-4 py-3 text-[14px] leading-relaxed text-ink-soft"
+                  className="mt-5 rounded-input border border-brand-400/25 bg-brand-400/8 px-4 py-3 text-ui leading-relaxed text-ink-soft"
                   role="status"
                 >
                   {t.contact.estPre}
-                  <span className="font-medium text-brand-300">
+                  <span className="font-medium tabular-nums text-brand-300">
                     {price(range.low)}–{price(range.high)}
                   </span>
                   {t.contact.estOver}{t.pricing.tiers[range.tierId].weeks}
@@ -260,20 +258,20 @@ export default function ContactSection() {
 
               <div className="mt-6 grid gap-4 sm:grid-cols-2">
                 <div>
-                  <label htmlFor="c-name" className="mb-1.5 block text-[13.5px] text-ink-soft">
+                  <label htmlFor="c-name" className="mb-1.5 block text-small text-ink-soft">
                     {t.contact.nameLabel}
                   </label>
                   <input id="c-name" name="name" required maxLength={120} autoComplete="name" className={inputCls} />
                 </div>
                 <div>
-                  <label htmlFor="c-email" className="mb-1.5 block text-[13.5px] text-ink-soft">
+                  <label htmlFor="c-email" className="mb-1.5 block text-small text-ink-soft">
                     {t.contact.emailLabel}
                   </label>
                   <input id="c-email" name="email" type="email" required maxLength={200} autoComplete="email" className={inputCls} />
                 </div>
               </div>
               <div className="mt-4">
-                <label htmlFor="c-msg" className="mb-1.5 block text-[13.5px] text-ink-soft">
+                <label htmlFor="c-msg" className="mb-1.5 block text-small text-ink-soft">
                   {t.contact.msgLabel}
                 </label>
                 <textarea id="c-msg" name="message" required minLength={10} maxLength={4000} rows={4} className={cn(inputCls, "resize-y")} />
@@ -291,17 +289,17 @@ export default function ContactSection() {
                 <button
                   type="submit"
                   disabled={status === "sending"}
-                  className="inline-flex min-h-[48px] items-center rounded-full bg-brand-400 px-8 py-3 text-[15px] font-semibold text-[#05080F] transition-colors hover:bg-brand-300 disabled:opacity-60"
+                  className="inline-flex min-h-[48px] items-center rounded-full bg-brand-400 px-8 py-3 text-ui font-semibold text-[#05080F] transition-colors hover:bg-brand-300 disabled:opacity-60"
                 >
                   {status === "sending" ? t.contact.sending : t.contact.submit}
                 </button>
-                <p className="text-[12.5px] text-ink-soft/80">
+                <p className="text-small text-ink-soft/80">
                   {t.contact.microcopy}
                 </p>
               </div>
 
               {status === "fallback" && (
-                <p className="mt-4 text-[14px] text-ink-soft" role="alert">
+                <p className="mt-4 text-ui text-ink-soft" role="alert">
                   {t.contact.fallbackPre}
                   <a className="text-brand-300 underline underline-offset-4" href={`mailto:${CONTACT_EMAIL}`}>
                     {CONTACT_EMAIL}
@@ -310,7 +308,7 @@ export default function ContactSection() {
                 </p>
               )}
               {status === "error" && (
-                <p className="mt-4 text-[14px] text-red-300" role="alert">
+                <p className="mt-4 text-ui text-red-300" role="alert">
                   {t.contact.errorPre}
                   <a className="underline underline-offset-4" href={`mailto:${CONTACT_EMAIL}`}>
                     {CONTACT_EMAIL}

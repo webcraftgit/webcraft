@@ -78,9 +78,6 @@ export default function FAQSection() {
   return (
     <section id="faq" aria-labelledby="faq-heading" className="relative">
       <div ref={reveal} className="container-x relative max-w-[880px] py-[clamp(96px,12vw,160px)]">
-        <p data-reveal className="eyebrow mb-4">
-          {t.faq.eyebrow}
-        </p>
         <h2 data-reveal id="faq-heading" className="heading-2 max-w-[18ch]">
           {t.faq.heading}
         </h2>
@@ -162,7 +159,7 @@ export default function FAQSection() {
                   transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
                   className="overflow-hidden"
                 >
-                  <p className="px-5 pb-5 leading-relaxed text-ink-soft md:px-6 md:pb-6">
+                  <p className="max-w-[68ch] px-5 pb-5 text-body text-ink-soft md:px-6 md:pb-6">
                     {item.a}
                   </p>
                 </motion.div>
@@ -171,7 +168,7 @@ export default function FAQSection() {
           })}
         </div>
 
-        <p data-reveal className="mt-8 text-[15px] text-ink-soft">
+        <p data-reveal className="mt-8 text-ui text-ink-soft">
           {t.faq.closingPre}
           <Link
             href="/#contact"

@@ -286,13 +286,10 @@ export default function ServicesSection() {
         {/* content */}
         <div ref={reveal}>
           <div className="container-x relative py-[clamp(96px,12vw,160px)] pb-0 md:pb-0">
-            <p data-reveal className="eyebrow mb-4">
-              {t.services.eyebrow}
-            </p>
             <h2 data-reveal id="services-heading" className="heading-2 max-w-[16ch]">
               {t.services.heading}
             </h2>
-            <p data-reveal className="mt-5 max-w-[52ch] text-lg text-ink-soft">
+            <p data-reveal className="mt-5 max-w-[52ch] text-body text-ink-soft">
               {t.services.intro}
             </p>
           </div>

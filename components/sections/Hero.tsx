@@ -90,9 +90,6 @@ export default function Hero() {
         animate="visible"
         className="container-x pointer-events-none relative z-10 flex flex-col items-center pt-16 text-center"
       >
-        <motion.p variants={revealItem} className="eyebrow mb-5">
-          {t.hero.eyebrow}
-        </motion.p>
         <motion.h1 variants={revealItem} className="heading-display max-w-[13ch]">
           {t.hero.titleA}{" "}
           <span className="text-[var(--accent-green)]">{t.hero.titleAccent}</span>
@@ -100,7 +97,7 @@ export default function Hero() {
         </motion.h1>
         <motion.p
           variants={revealItem}
-          className="mt-6 max-w-[46ch] text-lg text-ink-soft"
+          className="hero-lead mt-6 max-w-[46ch] text-body text-ink/80"
         >
           {t.hero.subtitle}
         </motion.p>

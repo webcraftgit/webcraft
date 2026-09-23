@@ -33,7 +33,8 @@ export function fmt(n: number, locale: Locale, currency: string) {
   const grouped = new Intl.NumberFormat(locale === "pl" ? "pl-PL" : "en-US", {
     useGrouping: "always",
   }).format(n);
-  return `${grouped} ${currency}`;
+  // no-break space: the amount and "zł" never land on separate lines
+  return `${grouped}${String.fromCharCode(0xa0)}${currency}`;
 }
 
 export type TierId = "launch" | "business" | "signature";

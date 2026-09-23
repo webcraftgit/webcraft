@@ -1,6 +1,7 @@
 "use client";
 
 import { useLocale } from "@/components/i18n/LanguageProvider";
+import { typeset } from "@/lib/i18n/typography";
 
 /* ————————————————————————————————————————————————————————————————
  * BLACKWOOD — DEMO COPY, EN + PL  (CP4_62: full rewrite)
@@ -32,8 +33,9 @@ import { useLocale } from "@/components/i18n/LanguageProvider";
  * PL is written as Polish copy, not translated line by line. Kept in English:
  * "BLACKWOOD", "Speyside", "Spey", "single malt", "dunnage" (Polish whisky
  * writing keeps these). PL numbers follow Polish typography (1200, 40%).
- * The PL hero keeps "Wolny ogień" — "na wolnym ogniu" is the Polish idiom for
- * slow cooking, so it reads as slow, not free.
+ * Hero slogan (CP4_64): "Quietly exceptional", PL "Po cichu wyjątkowa" —
+ * feminine, agreeing with the implied "whisky". Split over two lines; the
+ * second is set in italic by BlackwoodSite.
  * ———————————————————————————————————————————————————————————————— */
 
 export const en = {
@@ -44,8 +46,8 @@ export const en = {
   railSection: (n: number, total: number) => `Section ${n} of ${total}`,
 
   hero: {
-    titleA: "Slow fire,",
-    titleB: "long dark.",
+    titleA: "Quietly",
+    titleB: "exceptional",
     lead: "An eighteen-year-old single malt from a warehouse by the Spey that has never been heated. 1,200 numbered bottles, and no second batch.",
     link: "Read about the cask",
     scroll: "Scroll down into Warehouse No. 4",
@@ -138,8 +140,8 @@ export const pl: typeof en = {
   railSection: (n: number, total: number) => `Sekcja ${n} z ${total}`,
 
   hero: {
-    titleA: "Wolny ogień,",
-    titleB: "długa ciemność.",
+    titleA: "Po cichu",
+    titleB: "wyjątkowa",
     lead: "Osiemnastoletnia whisky single malt z magazynu nad rzeką Spey, którego nigdy nie ogrzewano. 1200 numerowanych butelek i żadnej drugiej partii.",
     link: "Poznaj beczkę",
     scroll: "Przewiń w dół, do magazynu nr 4",
@@ -230,5 +232,10 @@ export const pl: typeof en = {
  */
 export function useBlackwoodCopy() {
   const [locale] = useLocale();
-  return locale === "en" ? en : pl;
+  return locale === "en" ? EN_SET : PL_SET;
 }
+
+/* No-break spaces (lib/i18n/typography.ts): keeps "1200 butelek", "40% obj."
+ * and Polish one-letter words ("z", "i", "w") off the ends of lines. */
+const EN_SET = typeset(en, "en");
+const PL_SET = typeset(pl, "pl");

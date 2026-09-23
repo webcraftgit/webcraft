@@ -89,7 +89,7 @@ export default function FunnelPanel({ active, reduced }: Props) {
       />
 
       <p className="eyebrow">{t.process.funnel.eyebrow}</p>
-      <label className="mt-3 flex items-center gap-2.5 text-[14px] text-ink-soft" htmlFor="funnel-visits">
+      <label className="mt-3 flex items-center gap-2.5 text-ui text-ink-soft" htmlFor="funnel-visits">
         {t.process.funnel.outOfPre}
         <input
           id="funnel-visits"
@@ -103,7 +103,7 @@ export default function FunnelPanel({ active, reduced }: Props) {
             if (Number.isFinite(v)) setVisits(Math.min(1000000, Math.max(0, Math.round(v))));
           }}
           onBlur={() => setVisits((v) => Math.max(100, v))}
-          className="w-[110px] rounded-input border border-[var(--glass-border)] bg-[rgba(5,8,15,0.55)] px-3 py-1.5 text-[15px] font-medium text-ink outline-none transition-colors focus:border-brand-400"
+          className="w-[110px] rounded-input border border-[var(--glass-border)] bg-[rgba(5,8,15,0.55)] px-3 py-1.5 text-ui font-medium text-ink outline-none transition-colors focus:border-brand-400"
         />
         {t.process.funnel.outOfPost}
       </label>
@@ -144,7 +144,7 @@ export default function FunnelPanel({ active, reduced }: Props) {
                     {reduced ? fmtNum(scaled(i)) : "0"}
                   </span>
                 </p>
-                <p className="mt-1 text-[12.5px] leading-snug text-ink-soft">
+                <p className="mt-1 text-small leading-snug text-ink-soft">
                   {label}
                 </p>
               </div>
@@ -162,7 +162,7 @@ export default function FunnelPanel({ active, reduced }: Props) {
         })}
       </div>
 
-      <p className="mt-5 text-[12px] leading-relaxed text-ink-soft/80">
+      <p className="mt-5 text-label leading-relaxed text-ink-soft/80">
         {t.process.funnel.footnote}
       </p>
     </aside>
