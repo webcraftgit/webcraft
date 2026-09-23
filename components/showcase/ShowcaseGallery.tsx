@@ -33,6 +33,9 @@ type Demo = {
   facts: string[];
   Site: ComponentType<{ preview?: boolean }>;
   posterBg: string;
+  /** A still of the real site for poster-gated demos, so the card shows what
+   *  opens instead of a bare gradient. Rendered object-cover over posterBg. */
+  posterImg?: string;
   /** false = the card never mounts WebGL, it shows the poster and opens live
    *  on click. Blackwood carries ~1MB of models + textures (CP3.9) and the
    *  home page must not pay for that just to scroll past a card. */
@@ -55,6 +58,7 @@ const BASE: Omit<Demo, "tagline" | "facts">[] = [
     name: "Blackwood · Speyside Single Malt",
     Site: BlackwoodSite,
     livePreview: false,
+    posterImg: "/demo/blackwood/cover.webp",
     // Warm everything the click will need: importing the scene module runs its
     // useGLTF.preload() for all five GLBs and downloads the R3F/post chunk; the
     // fetches pull the floor + brick textures into the HTTP cache; and warming
@@ -157,7 +161,17 @@ function LivePreview({ demo }: { demo: Demo }) {
           </DemoPreviewContext.Provider>
         </div>
       )}
-      {lite && (
+      {lite && demo.posterImg && (
+        <img
+          src={demo.posterImg}
+          alt=""
+          aria-hidden
+          loading="lazy"
+          decoding="async"
+          className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1200ms] ease-out will-change-transform group-hover:scale-[1.06]"
+        />
+      )}
+      {lite && !demo.posterImg && (
         <span
           className="absolute inset-0 flex items-center justify-center font-display text-title font-medium text-ink/90"
         >
