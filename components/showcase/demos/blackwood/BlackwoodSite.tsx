@@ -206,14 +206,16 @@ export default function BlackwoodSite({ preview = false }: { preview?: boolean }
     }
     const from = el.scrollTop;
     const dist = to - from;
-    // Long, gentle glide: the previous 780ms over ~4000px moved ~90px/frame at
-    // the midpoint, which the camera damp could not track without jerking. A
-    // slower easeInOutCubic keeps each frame small; the camera stays with it (or
-    // catches up a beat later, which is fine). CTA-only — manual scroll is Lenis.
-    const dur = 2000;
+    // Long, gentle glide. The camera dolly is at its most aggressive across the
+    // last third of the path (beats 4→6), so the scroll can't rush that stretch
+    // or the zoom jerks. easeInOutQuart over 3200ms keeps the per-frame delta
+    // small and, crucially, decelerates hard into the end — so beats 4→6 get the
+    // most slow frames and the camera stays with them (or catches up a beat
+    // later, which is fine). CTA-only — manual scroll stays on Lenis, untouched.
+    const dur = 3200;
     const start = performance.now();
     const ease = (t: number) =>
-      t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; // easeInOutCubic
+      t < 0.5 ? 8 * t * t * t * t : 1 - Math.pow(-2 * t + 2, 4) / 2; // easeInOutQuart
     const step = (now: number) => {
       const t = Math.min(1, (now - start) / dur);
       el.scrollTop = from + dist * ease(t);
