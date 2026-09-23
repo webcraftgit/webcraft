@@ -19,11 +19,11 @@ import { useWisCopy } from "./copy";
  *      upgrade rather than a prerequisite.
  *
  * RESOLUTION ORDER PER SLOT
- *   1. public/demo/wisniowa/<name>.jpg → .jpeg → .webp → .png   (your file wins)
+ *   1. public/demo/wisniowa/<file>, if that file is listed in LOCAL below
  *   2. the Unsplash URL below, requested at the width this slot actually needs
  *   3. diagnostic placeholder naming the file it wanted
- * So: DROP A FILE IN AND IT TAKES OVER. DELETE A FILE AND THE STOCK SHOT
- * RETURNS. Nothing to edit either way.
+ * So: DROP A FILE IN AND LIST IT IN `LOCAL` AND IT TAKES OVER. (Until v6.1
+ * the extensions were probed blind — see the note on LOCAL for why not now.)
  *
  * MEASURED ON THE RUNNING SITE (CP4_4, 2381px-wide viewport) — why these
  * particular slots were overridden:
@@ -78,18 +78,17 @@ export type PhotoSlot =
   | "gallery3";
 
 const DIR = "/demo/wisniowa";
-const EXTS = ["jpg", "jpeg", "webp", "png"] as const;
 
-/** Local base name (no extension) per slot. */
-const LOCAL: Record<PhotoSlot, string> = {
-  hero: "hero",
-  reception: "reception",
-  detail: "detail",
-  team: "team",
-  quote: "quote",
-  gallery1: "gallery-1",
-  gallery2: "gallery-2",
-  gallery3: "gallery-3",
+/* LOCAL FILES ARE NOW DECLARED, NOT PROBED (v6.1).
+ * Every slot used to try .jpg → .jpeg → .webp → .png in sequence before
+ * falling back to Unsplash. With one local file in the folder that was 28
+ * guaranteed 404s per page view, and each one sat in front of the image it
+ * delayed — the hero, the largest paint on the page, waited on four round
+ * trips before it even started downloading. Now a slot only asks for a local
+ * file that is listed here. Dropping a photo in is still one step: copy the
+ * file into public/demo/wisniowa/ and add its name below. */
+const LOCAL: Partial<Record<PhotoSlot, string>> = {
+  quote: "quote.jpg",
 };
 
 /**
@@ -180,13 +179,14 @@ export const CREDITS: Record<PhotoSlot, string> = {
 const unsplash = (id: string, w: number, h: number) =>
   `https://images.unsplash.com/${id}?auto=format&fit=crop&q=80&w=${w}&h=${h}`;
 
-/** Every URL this slot will try, in order: local extensions, then Unsplash. */
+/** Every URL this slot will try, in order: the declared local file, then Unsplash. */
 function candidates(slot: PhotoSlot): string[] {
   const r = REMOTE[slot];
-  return [...EXTS.map((e) => `${DIR}/${LOCAL[slot]}.${e}`), unsplash(r.id, r.w, r.h)];
+  const local = LOCAL[slot];
+  return [...(local ? [`${DIR}/${local}`] : []), unsplash(r.id, r.w, r.h)];
 }
 
-const expectedName = (slot: PhotoSlot) => `${LOCAL[slot]}.jpg`;
+const expectedName = (slot: PhotoSlot) => LOCAL[slot] ?? `${slot.replace(/(\d)$/, "-$1")}.jpg`;
 
 /* One warning per slot per load, not one per failed extension. */
 const warned = new Set<string>();
@@ -203,7 +203,14 @@ const warned = new Set<string>();
  * under a haze so the photograph read as fog rather than a room. It is now
  * concentrated behind the type only. The headline carries its own text-shadow
  * (see .wis-hero-type) so legibility no longer depends on drowning the image.
+ *
+ * v6: the hero photo is a white treatment room, and at .40 the lead paragraph
+ * over the chair measured well under 4.5:1. The centre is now a TIGHTER and
+ * darker pool (.58) sized to the text block, so the edges of the room stay as
+ * bright as before — it is not the full-frame haze the client objected to.
  */
+const SCRIM =
+  "radial-gradient(ellipse 52% 50% at 50% 54%, rgba(24,17,12,.58) 0%, rgba(24,17,12,.38) 55%, rgba(24,17,12,.12) 100%), linear-gradient(180deg, rgba(24,17,12,.38) 0%, rgba(24,17,12,.06) 38%, rgba(24,17,12,.34) 100%)";
 
 /**
  * Vertical focal point per slot, used as CSS `object-position`.
@@ -246,9 +253,8 @@ export function Figure({
 
   const onError = () => {
     const next = attempt + 1;
-    /* Warn when the LOCAL options run out and we fall back to stock — that is
-     * the moment worth knowing about, not the final give-up. */
-    if (next === EXTS.length && !warned.has(slot)) {
+    /* Warn when a DECLARED local file is missing and we fall back to stock. */
+    if (LOCAL[slot] && next === 1 && !warned.has(slot)) {
       warned.add(slot);
       // eslint-disable-next-line no-console
       /* Developer-facing, so deliberately NOT in copy.ts and deliberately not
@@ -256,8 +262,8 @@ export function Figure({
        * by a patient, and every other comment and log in this repo is English.
        * Only user-visible strings follow the page language. */
       console.info(
-        `[wiśniowa] slot "${slot}": no local file, falling back to the Unsplash shot. ` +
-          `To override, drop public${DIR}/${expectedName(slot)} in (or .jpeg/.webp/.png).`,
+        `[wiśniowa] slot "${slot}": public${DIR}/${expectedName(slot)} is listed in LOCAL ` +
+          `but did not load — falling back to the Unsplash shot.`,
       );
     }
     setAttempt(next);
@@ -271,21 +277,13 @@ export function Figure({
           src={urls[attempt]}
           alt={alt}
           loading={priority ? "eager" : "lazy"}
+          fetchPriority={priority ? "high" : "auto"}
           decoding="async"
           onError={onError}
           className="h-full w-full object-cover"
           style={{ objectPosition: FOCUS[slot] ?? "center" }}
         />
-        {scrim && (
-          <span
-            aria-hidden
-            className="absolute inset-0"
-            style={{
-              background:
-                "radial-gradient(ellipse 70% 62% at 50% 48%, rgba(24,17,12,.40) 0%, rgba(24,17,12,.13) 100%), linear-gradient(180deg, rgba(24,17,12,.34) 0%, rgba(24,17,12,.06) 42%, rgba(24,17,12,.40) 100%)",
-            }}
-          />
-        )}
+        {scrim && <span aria-hidden className="absolute inset-0" style={{ background: SCRIM }} />}
       </div>
     );
   }
@@ -308,16 +306,7 @@ export function Figure({
             "repeating-linear-gradient(-45deg, rgba(34,26,20,.05) 0 1px, transparent 1px 11px)",
         }}
       />
-      {scrim && (
-        <span
-          aria-hidden
-          className="absolute inset-0"
-          style={{
-            background:
-              "radial-gradient(ellipse 70% 62% at 50% 48%, rgba(24,17,12,.40) 0%, rgba(24,17,12,.13) 100%), linear-gradient(180deg, rgba(24,17,12,.34) 0%, rgba(24,17,12,.06) 42%, rgba(24,17,12,.40) 100%)",
-          }}
-        />
-      )}
+      {scrim && <span aria-hidden className="absolute inset-0" style={{ background: SCRIM }} />}
       <span className="absolute inset-x-3 bottom-3 flex flex-col gap-0.5">
         <span
           className="wis-mono truncate"

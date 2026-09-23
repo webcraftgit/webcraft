@@ -51,10 +51,10 @@ export const en = {
   nav: {
     items: [
       { label: "Treatments", id: "oferta" },
-      { label: "First visit", id: "pierwsza-wizyta" },
       { label: "The practice", id: "gabinet" },
-      { label: "Team", id: "zespol" },
+      { label: "First visit", id: "pierwsza-wizyta" },
       { label: "Prices", id: "cennik" },
+      { label: "Team", id: "zespol" },
       { label: "Contact", id: "kontakt" },
     ],
     main: "Main",
@@ -62,7 +62,16 @@ export const en = {
     open: "Open menu",
     close: "Close menu",
     callAria: "Call",
+    mailAria: "Send an email",
     railHours: "MON–FRI 8–20",
+    book: "Book a visit",
+    skip: "Skip to booking",
+  },
+
+  status: {
+    open: (until: string) => `Open now · until ${until}`,
+    closed: (when: "today" | "tomorrow" | "monday", at: string) =>
+      `Closed now · we open ${{ today: "today", tomorrow: "tomorrow", monday: "on Monday" }[when]} at ${at}`,
   },
 
   hero: {
@@ -85,7 +94,7 @@ export const en = {
     eyebrow: "Treatments",
     titleA: "Precise treatment,",
     titleB: "explained in plain language",
-    cta: "See the full range",
+    cta: "See prices",
     claims: [
       {
         text: "we cover the full range of restorative work and prosthetics, and we do root canal treatment under a microscope — more precisely, and with less risk of complications",
@@ -143,13 +152,14 @@ export const en = {
   ],
 
   booking: {
-    eyebrow: "Interactive prototype",
+    eyebrow: "Booking",
     titleA: "Book a visit",
     titleB: "in three steps",
-    lead: "You choose the treatment, then a date. We confirm the booking by phone — no account, no passwords.",
+    lead: "Choose the treatment and a time of day, then leave your number. Reception calls back the same working day to fix the exact time. No account, no passwords.",
     phone: "Prefer to call?",
     stepsAria: "Booking steps",
-    steps: ["Treatment", "Date", "Summary"],
+    steps: ["Treatment", "Time", "Your details"],
+    stepOf: (n: number, label: string) => `Step ${n} of 3: ${label}`,
     legend: "What can we help with?",
     scopes: [
       { id: "konsultacja", name: "Consultation", meta: "30 min · check-up and plan" },
@@ -157,8 +167,35 @@ export const en = {
       { id: "leczenie", name: "Restorative treatment", meta: "60 min · fillings" },
       { id: "niewiem", name: "Not sure", meta: "We’ll advise at the first visit" },
     ],
-    note: "Prototype — we don’t show real appointment availability.",
-    next: "Next: date",
+    legendTime: "When is easiest for you?",
+    times: [
+      { id: "rano", name: "Morning", meta: "8:00 – 12:00" },
+      { id: "poludnie", name: "Afternoon", meta: "12:00 – 16:00" },
+      { id: "wieczor", name: "Evening", meta: "16:00 – 20:00" },
+      { id: "sobota", name: "Saturday", meta: "9:00 – 14:00" },
+      { id: "obojetnie", name: "Any time", meta: "The first free slot" },
+    ],
+    legendContact: "Where should we call you?",
+    name: "First name",
+    tel: "Phone number",
+    telHint: "We’ll only use it to call you about this visit.",
+    msg: "Anything we should know?",
+    msgOptional: "optional",
+    msgPlaceholder: "e.g. a tooth hurts, or you’re nervous about injections",
+    errName: "Enter your first name, so we know who to ask for.",
+    errTel: "Enter a phone number with at least 9 digits, e.g. 600 000 000.",
+    errSummary: "Check the highlighted fields.",
+    choice: "Your choice",
+    change: "Change",
+    note: "Demo — we don’t show real availability. Reception agrees the exact time with you by phone.",
+    back: "Back",
+    next: "Next: time",
+    nextContact: "Next: your details",
+    submit: "Send visit request",
+    doneTitle: (name: string) => `Request sent — thank you, ${name}.`,
+    doneBody: (tel: string) => `Reception will call ${tel} the same working day to agree the exact time.`,
+    doneDemo: "This is a demo page, so nothing was actually sent.",
+    again: "Start a new request",
   },
 
   team: {
@@ -213,7 +250,8 @@ export const en = {
       },
     ],
     painTitle: "If you’re in pain, the order changes.",
-    painBody: "We deal with the pain at that same visit and leave the examination and the plan for later. Call rather than filling in a form:",
+    painBody: "We deal with the pain at that same visit and leave the examination and the plan for later. Call rather than filling in a form.",
+    painCta: "Call",
   },
 
   faq: {
@@ -254,6 +292,7 @@ export const en = {
       { name: "Take-home tray whitening", price: "from PLN 1,200" },
     ],
     note: "You’ll always know the final cost of treatment before it begins.",
+    cta: "Book a consultation",
   },
 
   contact: {
@@ -327,10 +366,10 @@ export const pl: typeof en = {
   nav: {
     items: [
       { label: "Oferta", id: "oferta" },
-      { label: "Pierwsza wizyta", id: "pierwsza-wizyta" },
       { label: "Gabinet", id: "gabinet" },
-      { label: "Zespół", id: "zespol" },
+      { label: "Pierwsza wizyta", id: "pierwsza-wizyta" },
       { label: "Cennik", id: "cennik" },
+      { label: "Zespół", id: "zespol" },
       { label: "Kontakt", id: "kontakt" },
     ],
     main: "Główna",
@@ -338,7 +377,16 @@ export const pl: typeof en = {
     open: "Otwórz menu",
     close: "Zamknij menu",
     callAria: "Zadzwoń",
+    mailAria: "Napisz e-mail",
     railHours: "PON–PT 8–20",
+    book: "Umów wizytę",
+    skip: "Przejdź do rezerwacji",
+  },
+
+  status: {
+    open: (until: string) => `Otwarte teraz · do ${until}`,
+    closed: (when: "today" | "tomorrow" | "monday", at: string) =>
+      `Teraz zamknięte · otwieramy ${{ today: "dziś", tomorrow: "jutro", monday: "w poniedziałek" }[when]} o ${at}`,
   },
 
   hero: {
@@ -361,7 +409,7 @@ export const pl: typeof en = {
     eyebrow: "Oferta",
     titleA: "Leczymy dokładnie",
     titleB: "i tłumaczymy po ludzku",
-    cta: "Zobacz pełen zakres",
+    cta: "Zobacz cennik",
     claims: [
       {
         text: "prowadzimy pełen zakres leczenia zachowawczego i protetyki, a leczenie kanałowe wykonujemy pod mikroskopem — dokładniej i z mniejszym ryzykiem powikłań",
@@ -419,13 +467,14 @@ export const pl: typeof en = {
   ],
 
   booking: {
-    eyebrow: "Interaktywny prototyp",
+    eyebrow: "Rezerwacja",
     titleA: "Umów wizytę",
     titleB: "w trzech krokach",
-    lead: "Wybierasz zakres, potem termin. Rezerwację potwierdzamy telefonicznie — bez zakładania konta i bez haseł.",
+    lead: "Wybierasz zakres i porę dnia, zostawiasz numer — recepcja oddzwania tego samego dnia roboczego i ustala dokładną godzinę. Bez zakładania konta i bez haseł.",
     phone: "Wolisz zadzwonić?",
     stepsAria: "Kroki rezerwacji",
-    steps: ["Zakres", "Termin", "Podsumowanie"],
+    steps: ["Zakres", "Pora", "Kontakt"],
+    stepOf: (n: number, label: string) => `Krok ${n} z 3: ${label}`,
     legend: "W czym możemy pomóc?",
     scopes: [
       { id: "konsultacja", name: "Konsultacja", meta: "30 min · przegląd i plan" },
@@ -433,8 +482,35 @@ export const pl: typeof en = {
       { id: "leczenie", name: "Leczenie zachowawcze", meta: "60 min · wypełnienia" },
       { id: "niewiem", name: "Nie wiem", meta: "Doradzimy przy pierwszej wizycie" },
     ],
-    note: "Prototyp — nie pokazujemy rzeczywistej dostępności terminów.",
-    next: "Dalej: termin",
+    legendTime: "Kiedy najłatwiej Ci przyjść?",
+    times: [
+      { id: "rano", name: "Rano", meta: "8:00 – 12:00" },
+      { id: "poludnie", name: "Po południu", meta: "12:00 – 16:00" },
+      { id: "wieczor", name: "Wieczorem", meta: "16:00 – 20:00" },
+      { id: "sobota", name: "W sobotę", meta: "9:00 – 14:00" },
+      { id: "obojetnie", name: "Obojętnie", meta: "Pierwszy wolny termin" },
+    ],
+    legendContact: "Gdzie mamy oddzwonić?",
+    name: "Imię",
+    tel: "Numer telefonu",
+    telHint: "Użyjemy go wyłącznie, żeby oddzwonić w sprawie tej wizyty.",
+    msg: "Coś, o czym powinniśmy wiedzieć?",
+    msgOptional: "opcjonalnie",
+    msgPlaceholder: "np. boli mnie ząb albo boję się znieczulenia",
+    errName: "Wpisz imię, żebyśmy wiedzieli, o kogo zapytać.",
+    errTel: "Wpisz numer telefonu — co najmniej 9 cyfr, np. 600 000 000.",
+    errSummary: "Sprawdź zaznaczone pola.",
+    choice: "Twój wybór",
+    change: "Zmień",
+    note: "Wersja demonstracyjna — nie pokazujemy rzeczywistej dostępności. Dokładną godzinę recepcja ustala z Tobą telefonicznie.",
+    back: "Wstecz",
+    next: "Dalej: pora",
+    nextContact: "Dalej: kontakt",
+    submit: "Wyślij prośbę o wizytę",
+    doneTitle: (name: string) => `Prośba wysłana — dziękujemy, ${name}.`,
+    doneBody: (tel: string) => `Recepcja oddzwoni na numer ${tel} tego samego dnia roboczego, żeby ustalić dokładną godzinę.`,
+    doneDemo: "To strona demonstracyjna, więc w rzeczywistości nic nie zostało wysłane.",
+    again: "Złóż nową prośbę",
   },
 
   team: {
@@ -489,7 +565,8 @@ export const pl: typeof en = {
       },
     ],
     painTitle: "Jeśli boli — kolejność się zmienia.",
-    painBody: "Bólem zajmujemy się na tej samej wizycie, a przegląd i plan zostawiamy na później. Zadzwoń zamiast wypełniać formularz:",
+    painBody: "Bólem zajmujemy się na tej samej wizycie, a przegląd i plan zostawiamy na później. Zadzwoń zamiast wypełniać formularz.",
+    painCta: "Zadzwoń",
   },
 
   faq: {
@@ -530,6 +607,7 @@ export const pl: typeof en = {
       { name: "Wybielanie nakładkowe", price: "od 1 200 zł" },
     ],
     note: "Ostateczny koszt leczenia zawsze poznasz przed jego rozpoczęciem.",
+    cta: "Umów konsultację",
   },
 
   contact: {

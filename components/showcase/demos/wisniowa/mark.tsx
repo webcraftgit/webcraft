@@ -110,9 +110,10 @@ export function Wordmark({
           <span
             className="wis-sans"
             style={{
-              fontSize: 8.5,
+              fontSize: 9.5,
+              fontWeight: 600,
               letterSpacing: "0.19em",
-              color: onDark ? "rgba(246,244,239,.62)" : "#8A8A83",
+              color: onDark ? "rgba(246,244,239,.78)" : "#5F6660",
               marginBottom: 3,
             }}
           >

@@ -19,8 +19,11 @@ Wrzuć pliki TUTAJ (public/demo/wisniowa/), pod tymi nazwami:
   gallery-3     spokojny kąt gabinetu (4:3)
   street        front budynku z drugiej strony ulicy (4:3)
 
-ROZSZERZENIE NIE MA ZNACZENIA: .jpg .jpeg .webp .png — każdy slot próbuje po
-kolei wszystkich czterech. Nie trzeba niczego zmieniać w kodzie.
+PO WRZUCENIU PLIKU DOPISZ GO DO `LOCAL` w components/showcase/demos/wisniowa/
+photos.tsx, np.  hero: "hero.webp",  — jedna linijka. Rozszerzenie dowolne
+(.jpg .jpeg .webp .png). Wcześniej strona zgadywała rozszerzenia sama, ale
+kosztowało to 28 błędów 404 na każde wejście i opóźniało zdjęcie w nagłówku.
+Bez wpisu w LOCAL slot pokazuje zdjęcie z Unsplash.
 
 ZDJĘCIA Z ZEWNĘTRZNEGO HOSTA: w photos.tsx zamiast nazwy wpisz pełny adres
 https://... Działa to dopiero od CP4_3, bo wcześniej `img-src 'self'` w
