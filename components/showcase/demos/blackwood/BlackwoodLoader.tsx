@@ -44,25 +44,30 @@ const T = {
 const SERIF = '"Playfair Display Variable", "Playfair Display", Georgia, serif';
 const SANS = '"Tenor Sans", Optima, "Gill Sans", "Segoe UI", sans-serif';
 
-/** Minimum time the screen stays up, so a fast cache load does not flash it. */
-const MIN_MS = 900;
+/** A floor under the hold, so nothing flashes; the real gate for motion users
+ *  is one full pour (the Lottie's loopCompleted), which runs ~4s. */
+const MIN_MS = 600;
 
 export default function BlackwoodLoader() {
   const { active, progress } = useProgress();
   const reduced = usePrefersReducedMotion();
   const [gone, setGone] = useState(false);
   const [leaving, setLeaving] = useState(false);
+  const [pouredOnce, setPouredOnce] = useState(false);
   const mounted = useRef(Date.now());
 
-  // Leave once the manager is idle AND assets are in — but never before MIN_MS,
-  // and force-drop after a hard ceiling so a dropped asset can't trap the site.
+  // Leave once the assets are in AND the pour has played through once, so the
+  // whole animation is always seen at least once — but never before MIN_MS, and
+  // force-drop after a hard ceiling so a dropped asset can't trap the site.
+  // Reduced-motion shows a still, so it does not wait for a loop that never runs.
   useEffect(() => {
-    const done = !active && progress >= 100;
-    if (!done) return;
+    const assetsIn = !active && progress >= 100;
+    const sawFullPour = reduced || pouredOnce;
+    if (!assetsIn || !sawFullPour) return;
     const wait = Math.max(0, MIN_MS - (Date.now() - mounted.current));
     const t = setTimeout(() => setLeaving(true), wait);
     return () => clearTimeout(t);
-  }, [active, progress]);
+  }, [active, progress, reduced, pouredOnce]);
 
   useEffect(() => {
     const ceiling = setTimeout(() => setLeaving(true), 12000);
@@ -121,6 +126,7 @@ export default function BlackwoodLoader() {
           loop
           autoplay={!reduced}
           segment={reduced ? [44, 45] : undefined}
+          subscriptions={{ loopCompleted: () => setPouredOnce(true) }}
           style={{ width: "100%", height: "100%" }}
           rendererSettings={{ preserveAspectRatio: "xMidYMid meet" }}
         />

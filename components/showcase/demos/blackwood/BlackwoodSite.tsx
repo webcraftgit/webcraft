@@ -198,13 +198,18 @@ export default function BlackwoodSite({ preview = false }: { preview?: boolean }
       requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
       cancelIdleCallback?: (id: number) => void;
     };
-    const raf = requestAnimationFrame(() => {
+    // Let the pour's opening (~0.8s: bottle tilt, stream, first fill) play on a
+    // clean main thread, THEN build the scene at the next idle slot (bounded).
+    // The assets are already fetched by the card's hover-prewarm, so this delays
+    // only CPU work, not the download — and it lands inside the loader's hold.
+    const start = () => {
       idle = w.requestIdleCallback
-        ? w.requestIdleCallback(() => setMountScene(true), { timeout: 400 })
-        : (window.setTimeout(() => setMountScene(true), 150) as unknown as number);
-    });
+        ? w.requestIdleCallback(() => setMountScene(true), { timeout: 300 })
+        : (window.setTimeout(() => setMountScene(true), 0) as unknown as number);
+    };
+    const floor = window.setTimeout(start, 800);
     return () => {
-      cancelAnimationFrame(raf);
+      clearTimeout(floor);
       if (w.cancelIdleCallback) w.cancelIdleCallback(idle);
       else clearTimeout(idle);
     };
