@@ -22,6 +22,10 @@ import "@fontsource/tenor-sans/latin-400.css";
 import "@fontsource/tenor-sans/latin-ext-400.css";
 
 const BlackwoodScene = dynamic(() => import("./BlackwoodScene"), { ssr: false });
+// Loader shares drei's global loading manager with the scene; it is a DOM
+// sibling of the canvas, so it must stay outside the ssr:false chunk boundary
+// only in that it renders in the browser — dynamic keeps drei out of SSR.
+const BlackwoodLoader = dynamic(() => import("./BlackwoodLoader"), { ssr: false });
 
 /* Blackwood tokens — cellar dark: cold blue-black ground, lantern amber. */
 const T = {
@@ -261,6 +265,15 @@ export default function BlackwoodSite({ preview = false }: { preview?: boolean }
           )}
         </div>
       </div>
+
+      {/* ————— loading screen (sticky to the viewport, above the chrome) ————— */}
+      {!preview && (
+        <div className="pointer-events-none sticky top-0 z-40 h-0">
+          <div className="absolute left-0 top-0 h-[var(--bw-vh,100vh)] w-full">
+            <BlackwoodLoader />
+          </div>
+        </div>
+      )}
 
       {/* ————— chrome ————— */}
       <div

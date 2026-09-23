@@ -37,6 +37,12 @@ type Demo = {
    *  on click. Blackwood carries ~1MB of models + textures (CP3.9) and the
    *  home page must not pay for that just to scroll past a card. */
   livePreview?: boolean;
+  /** Poster-gated WebGL demos never touch the network until the click, so the
+   *  scene chunk + GLBs + textures download only once the player is already
+   *  on screen — the worst moment, over the loading screen. This warms all of
+   *  it on the first hover/focus/tap of the card, so a click that lands a
+   *  second later finds most bytes already cached. Runs at most once. */
+  prewarm?: () => Promise<unknown>;
 };
 
 // Brand names + non-text config stay here; tagline/facts come from the
@@ -49,6 +55,20 @@ const BASE: Omit<Demo, "tagline" | "facts">[] = [
     name: "Blackwood · Speyside Single Malt",
     Site: BlackwoodSite,
     livePreview: false,
+    // Warm the heavy scene ahead of the click: importing the scene module runs
+    // its useGLTF.preload() for all five GLBs and downloads the R3F/post chunk;
+    // the fetches pull the floor + brick textures into the HTTP cache too.
+    prewarm: async () => {
+      [
+        "/textures/dark_planks/diff_2k.webp",
+        "/textures/dark_planks/nor_gl_1k.webp",
+        "/textures/dark_planks/rough_1k.webp",
+        "/textures/brick_wall/diff_1k.webp",
+        "/textures/brick_wall/nor_gl_1k.webp",
+        "/textures/brick_wall/rough_1k.webp",
+      ].forEach((u) => fetch(u).catch(() => {}));
+      await import("./demos/blackwood/BlackwoodScene");
+    },
     posterBg:
       "radial-gradient(46% 46% at 30% 62%, rgba(217,151,74,0.42) 0%, transparent 68%), radial-gradient(38% 40% at 72% 52%, rgba(176,86,26,0.26) 0%, transparent 70%), #07080A",
   },
@@ -181,6 +201,15 @@ export default function ShowcaseGallery() {
   const cards = useRef<Record<string, HTMLElement | null>>({});
   const returningTo = useRef<string | null>(null);
 
+  /* First hover/focus/tap on a card warms its heavy assets (see Demo.prewarm).
+     Once per demo per page load — the Set guards re-entry. */
+  const warmed = useRef<Set<string>>(new Set());
+  const prewarm = useCallback((d: Demo) => {
+    if (!d.prewarm || warmed.current.has(d.id)) return;
+    warmed.current.add(d.id);
+    d.prewarm().catch(() => warmed.current.delete(d.id));
+  }, []);
+
   const close = useCallback(() => {
     setOpen((current) => {
       returningTo.current = current?.id ?? null;
@@ -249,6 +278,9 @@ export default function ShowcaseGallery() {
             <button
               type="button"
               onClick={() => setOpen(d)}
+              onMouseEnter={() => prewarm(d)}
+              onFocus={() => prewarm(d)}
+              onTouchStart={() => prewarm(d)}
               aria-label={t.showcase.openFullscreen(d.name)}
               className="relative block aspect-[4/3] w-full cursor-pointer overflow-hidden md:aspect-[16/9]"
             >
