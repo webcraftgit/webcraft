@@ -296,7 +296,7 @@ export function Figure({
       className={`relative overflow-hidden ${rounded} ${className}`}
       style={{ background: "linear-gradient(135deg, #EFE7D8 0%, #E4DAC8 46%, #D8CDB8 100%)" }}
       role="img"
-      aria-label={`${alt} — ${expectedName(slot)}`}
+      aria-label={`${alt}: ${expectedName(slot)}`}
     >
       <span
         aria-hidden

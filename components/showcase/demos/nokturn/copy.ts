@@ -74,7 +74,7 @@ export const pl = {
     "chained-inside-tee": {
       blurb: "Oversize, nadruk na całej powierzchni",
       description:
-        "Nadruk pokrywa całą koszulkę — przód i tył, od ramion po dół. Drut kolczasty, cierniowy krzyż i ręcznie pisany tekst na spranym, szarym tle. Każda sztuka schodzi z prasy trochę inaczej.",
+        "Nadruk pokrywa całą koszulkę: przód i tył, od ramion po dół. Drut kolczasty, cierniowy krzyż i ręcznie pisany tekst na spranym, szarym tle. Każda sztuka schodzi z prasy trochę inaczej.",
       composition: "100% bawełna czesana",
       fit: "Oversize, opadające ramię",
       origin: "Szyte w Portugalii",
@@ -119,7 +119,7 @@ export const pl = {
   shop: {
     all: "Wszystko",
     bag: "Koszyk",
-    backToCollection: (brand: string) => `${brand} — wróć do kolekcji`,
+    backToCollection: (brand: string) => `${brand}, wróć do kolekcji`,
     freeShipping: (threshold: string) =>
       `Wysyłka gratis od ${threshold}. Nakład limitowany.`,
     sizeChart: "Tabela rozmiarów",
@@ -131,13 +131,13 @@ export const pl = {
 
   stock: {
     soldOut: "Wyprzedane",
-    left: (n: number) => `Zostały ${n} szt.`,
+    left: (n: number) => `Pozostało: ${n} szt.`,
     available: "Dostępny",
   },
 
   frame: {
-    /** alt text: "Burn The Churches — tył" */
-    alt: (name: string, shot: string) => `${name} — ${shot.toLowerCase()}`,
+    /** alt text: "Burn The Churches, tył" */
+    alt: (name: string, shot: string) => `${name}, ${shot.toLowerCase()}`,
     missing: (shot: string) => `Brak zdjęcia: ${shot.toLowerCase()}`,
   },
 
@@ -146,7 +146,7 @@ export const pl = {
     close: "Zamknij",
     closeAria: "Zamknij tabelę rozmiarów",
     size: "Rozmiar",
-    note: "Wymiary ubrania leżącego płasko, tolerancja ±2 cm. Kroje są luźne — jeśli wolisz, żeby leżało bliżej ciała, weź rozmiar mniej.",
+    note: "Wymiary ubrania leżącego płasko, tolerancja ±2 cm. Kroje są luźne, więc jeśli wolisz, żeby leżało bliżej ciała, weź rozmiar mniej.",
   },
 
   cart: {
@@ -171,13 +171,13 @@ export const pl = {
     subtotal: "Suma",
     total: "Razem",
     checkout: "Przejdź do płatności",
-    checkoutNote: "Demo, płatność nie jest realizowana",
+    checkoutNote: "Demo: płatność nie jest realizowana",
     added: (name: string, size: Size) =>
       `${name}, rozmiar ${size}, dodano do koszyka.`,
   },
 
   suggestion: {
-    closesGap: "Dobierz — i wysyłka gratis",
+    closesGap: "Dobierz, a wysyłka będzie gratis",
     goesWith: "Pasuje do tego",
     view: (name: string) => `Zobacz ${name}`,
     addGroup: (name: string) => `Dodaj ${name} w rozmiarze`,
@@ -245,7 +245,7 @@ export const en: typeof pl = {
     "chained-inside-tee": {
       blurb: "Oversize, all-over print",
       description:
-        "The print covers the whole shirt — front and back, shoulders to hem. Barbed wire, a thorn cross and hand-lettered text on a washed grey ground. Every piece comes off the press slightly differently.",
+        "The print covers the whole shirt: front and back, shoulders to hem. Barbed wire, a thorn cross and hand-lettered text on a washed grey ground. Every piece comes off the press slightly differently.",
       composition: "100% combed cotton",
       fit: "Oversize, dropped shoulder",
       origin: "Sewn in Portugal",
@@ -261,7 +261,7 @@ export const en: typeof pl = {
     "ferryman-hoodie": {
       blurb: "Hooded sweatshirt, large back print",
       description:
-        "The ferryman with his lantern — the only warm point in the whole collection. Fine hand-lettered text around the scene and two thorn crosses. Full-size brand mark across the back.",
+        "The ferryman with his lantern, the only warm point in the whole collection. Fine hand-lettered text around the scene and two thorn crosses. Full-size brand mark across the back.",
       composition: "80% cotton / 20% polyester",
       fit: "Boxy, dropped hem rib",
       origin: "Sewn in Portugal",
@@ -289,7 +289,7 @@ export const en: typeof pl = {
   shop: {
     all: "Everything",
     bag: "Bag",
-    backToCollection: (brand: string) => `${brand} — back to the collection`,
+    backToCollection: (brand: string) => `${brand}, back to the collection`,
     freeShipping: (threshold: string) =>
       `Free shipping over ${threshold}. Limited run.`,
     sizeChart: "Size guide",
@@ -306,7 +306,7 @@ export const en: typeof pl = {
   },
 
   frame: {
-    alt: (name: string, shot: string) => `${name} — ${shot.toLowerCase()}`,
+    alt: (name: string, shot: string) => `${name}, ${shot.toLowerCase()}`,
     missing: (shot: string) => `Photo missing: ${shot.toLowerCase()}`,
   },
 
@@ -315,7 +315,7 @@ export const en: typeof pl = {
     close: "Close",
     closeAria: "Close the size guide",
     size: "Size",
-    note: "Garment measured flat, tolerance ±2 cm. The cuts are loose — if you want it closer to the body, take one size down.",
+    note: "Garment measured flat, tolerance ±2 cm. The cuts are loose, so if you want it closer to the body, take one size down.",
   },
 
   cart: {
@@ -340,13 +340,13 @@ export const en: typeof pl = {
     subtotal: "Subtotal",
     total: "Total",
     checkout: "Go to checkout",
-    checkoutNote: "Demo — no payment is taken",
+    checkoutNote: "Demo: no payment is taken",
     added: (name: string, size: Size) =>
       `${name}, size ${size}, added to the bag.`,
   },
 
   suggestion: {
-    closesGap: "Add this — and shipping is free",
+    closesGap: "Add this and shipping is free",
     goesWith: "Goes with this",
     view: (name: string) => `View ${name}`,
     addGroup: (name: string) => `Add ${name} in size`,

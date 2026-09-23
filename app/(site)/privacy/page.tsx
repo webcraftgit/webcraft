@@ -25,15 +25,15 @@ const COPY = {
     title: "Privacy policy",
     updated: `Version ${POLICY_VERSION}`,
     intro:
-      "This page explains what we collect when you visit this site, why, and how to make us stop. It describes what the code actually does — nothing here is boilerplate.",
+      "This page explains what we collect when you visit this site, why, and how to make us stop. It describes what the code actually does, so nothing here is boilerplate.",
     sections: [
       {
         h: "Who is responsible",
-        p: "This site is run by a private individual, not a company. The controller of your data is Krzysztof Powierża, reachable at kristofpow@gmail.com. There is no registered business, so there is no company name or NIP to give — you deal directly with a person.",
+        p: "This site is run by a private individual, not a company. The controller of your data is Krzysztof Powierża, reachable at kristofpow@gmail.com. There is no registered business, so there is no company name or NIP to give. You deal directly with a person.",
       },
       {
         h: "What we collect without asking",
-        p: "If you send the contact form: your name, email address and message, plus the optional project type, budget band and content-readiness you selected. We keep a salted, one-way hash of your IP address for 24 hours to stop spam — it is not reversible and it cannot be linked to you tomorrow. We do not store raw IP addresses at any point.",
+        p: "If you send the contact form: your name, email address and message, plus the optional project type, budget band and content-readiness you selected. We keep a salted, one-way hash of your IP address for 24 hours to stop spam. It is not reversible and it cannot be linked to you tomorrow. We do not store raw IP addresses at any point.",
       },
       {
         h: "What we collect only if you agree",
@@ -41,7 +41,7 @@ const COPY = {
       },
       {
         h: "Why we are allowed to",
-        p: "Contact form: Art. 6(1)(b) GDPR — steps taken at your request before entering a contract. Spam protection: Art. 6(1)(f), our legitimate interest in a working inbox. Analytics: Art. 6(1)(a), your consent, and nothing else.",
+        p: "Contact form: Art. 6(1)(b) GDPR, steps taken at your request before entering a contract. Spam protection: Art. 6(1)(f), our legitimate interest in a working inbox. Analytics: Art. 6(1)(a), your consent, and nothing else.",
       },
       {
         h: "How long we keep it",
@@ -49,7 +49,7 @@ const COPY = {
       },
       {
         h: "Your rights",
-        p: "You can ask for a copy of your data, correction, deletion, restriction, portability, or object to processing. You can withdraw analytics consent at any time using the “Cookie settings” link in the footer of every page — exactly as easy as granting it was. Withdrawal deletes the identifiers in your browser immediately. You may also complain to the Polish supervisory authority (UODO).",
+        p: "You can ask for a copy of your data, correction, deletion, restriction, portability, or object to processing. You can withdraw analytics consent at any time using the “Cookie settings” link in the footer of every page. It is exactly as easy as granting it was. Withdrawal deletes the identifiers in your browser immediately. You may also complain to the Polish supervisory authority (UODO).",
       },
       {
         h: "Who else sees it",
@@ -63,15 +63,15 @@ const COPY = {
     title: "Polityka prywatności",
     updated: `Wersja ${POLICY_VERSION}`,
     intro:
-      "Ta strona wyjaśnia, co zbieramy podczas Twojej wizyty, po co i jak to zatrzymać. Opisuje to, co kod faktycznie robi — nie ma tu szablonowych formułek.",
+      "Ta strona wyjaśnia, co zbieramy podczas Twojej wizyty, po co i jak to zatrzymać. Opisuje to, co kod faktycznie robi, więc nie ma tu szablonowych formułek.",
     sections: [
       {
         h: "Kto odpowiada",
-        p: "Tę stronę prowadzi osoba prywatna, a nie firma. Administratorem Twoich danych jest Krzysztof Powierża, kontakt: kristofpow@gmail.com. Nie ma zarejestrowanej działalności, więc nie podajemy nazwy firmy ani NIP-u — masz do czynienia bezpośrednio z osobą.",
+        p: "Tę stronę prowadzi osoba prywatna, a nie firma. Administratorem Twoich danych jest Krzysztof Powierża, kontakt: kristofpow@gmail.com. Nie ma zarejestrowanej działalności, więc nie podajemy nazwy firmy ani NIP-u. Masz do czynienia bezpośrednio z osobą.",
       },
       {
         h: "Co zbieramy bez pytania",
-        p: "Jeśli wyślesz formularz kontaktowy: imię i nazwisko, adres e-mail i wiadomość, a także opcjonalnie wybrany rodzaj projektu, przedział budżetu i gotowość treści. Przez 24 godziny przechowujemy jednokierunkowy, solony skrót (hash) Twojego adresu IP, żeby blokować spam — jest nieodwracalny i nie da się go z Tobą powiązać. Surowych adresów IP nie zapisujemy w żadnym momencie.",
+        p: "Jeśli wyślesz formularz kontaktowy: imię i nazwisko, adres e-mail i wiadomość, a także opcjonalnie wybrany rodzaj projektu, przedział budżetu i gotowość treści. Przez 24 godziny przechowujemy jednokierunkowy, solony skrót (hash) Twojego adresu IP, żeby blokować spam. Skrót jest nieodwracalny i nie da się go z Tobą powiązać. Surowych adresów IP nie zapisujemy w żadnym momencie.",
       },
       {
         h: "Co zbieramy tylko za Twoją zgodą",
@@ -79,7 +79,7 @@ const COPY = {
       },
       {
         h: "Na jakiej podstawie",
-        p: "Formularz kontaktowy: art. 6 ust. 1 lit. b RODO — działania na Twoje żądanie przed zawarciem umowy. Ochrona przed spamem: art. 6 ust. 1 lit. f, nasz prawnie uzasadniony interes. Analityka: art. 6 ust. 1 lit. a, czyli Twoja zgoda i nic poza nią.",
+        p: "Formularz kontaktowy: art. 6 ust. 1 lit. b RODO, czyli działania na Twoje żądanie przed zawarciem umowy. Ochrona przed spamem: art. 6 ust. 1 lit. f, nasz prawnie uzasadniony interes. Analityka: art. 6 ust. 1 lit. a, czyli Twoja zgoda i nic poza nią.",
       },
       {
         h: "Jak długo to trzymamy",
@@ -87,7 +87,7 @@ const COPY = {
       },
       {
         h: "Twoje prawa",
-        p: "Możesz żądać kopii swoich danych, ich sprostowania, usunięcia, ograniczenia przetwarzania, przeniesienia, a także wnieść sprzeciw. Zgodę na analitykę możesz wycofać w każdej chwili — linkiem „Ustawienia plików cookie” w stopce każdej strony, dokładnie tak samo łatwo, jak jej udzieliłeś. Wycofanie natychmiast usuwa identyfikatory z Twojej przeglądarki. Masz też prawo wnieść skargę do Prezesa UODO.",
+        p: "Możesz żądać kopii swoich danych, ich sprostowania, usunięcia, ograniczenia przetwarzania, przeniesienia, a także wnieść sprzeciw. Zgodę na analitykę możesz wycofać w każdej chwili linkiem „Ustawienia plików cookie” w stopce każdej strony, dokładnie tak samo łatwo, jak jej udzieliłeś. Wycofanie natychmiast usuwa identyfikatory z Twojej przeglądarki. Masz też prawo wnieść skargę do Prezesa UODO.",
       },
       {
         h: "Kto jeszcze to widzi",

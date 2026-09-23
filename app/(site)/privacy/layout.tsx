@@ -18,7 +18,7 @@ import { privacyGraph } from "@/lib/seo/schema";
 export const metadata: Metadata = pageMetadata({
   title: "Polityka prywatności | Webcraft",
   description:
-    "Co zbieramy, po co i jak to wyłączyć. Opis tego, co faktycznie robi kod tej strony — bez formułek.",
+    "Co zbieramy, po co i jak to wyłączyć. Opis tego, co faktycznie robi kod tej strony, bez formułek.",
   path: "/privacy",
 });
 

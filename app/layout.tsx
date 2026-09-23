@@ -32,7 +32,7 @@ export const metadata: Metadata = {
     template: "%s | Webcraft",
   },
   description:
-    "Projektujemy i budujemy strony, które zamieniają wyświetlenia w sprzedaż — plus opieka, wideo i materiały marki. Wycena ustalona przed startem prac.",
+    "Projektujemy i budujemy strony, które zamieniają wyświetlenia w sprzedaż. Do tego opieka, wideo i materiały marki. Wycena ustalona przed startem prac.",
   applicationName: "Webcraft",
   robots: ROBOTS,
   // Files live in /public and are declared explicitly rather than relying on

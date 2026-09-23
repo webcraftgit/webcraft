@@ -289,9 +289,6 @@ export default function ServicesSection() {
             <h2 data-reveal id="services-heading" className="heading-2 max-w-[16ch]">
               {t.services.heading}
             </h2>
-            <p data-reveal className="mt-5 max-w-[52ch] text-body text-ink-soft">
-              {t.services.intro}
-            </p>
           </div>
 
           {/* rotary wheel — full-bleed so the side discs peek in from the edges */}

@@ -156,7 +156,7 @@ export const pl: typeof en = {
       { label: "Moc", value: "40% obj. · 700 ml" },
       { label: "Wydanie", value: "1200 butelek" },
     ],
-    body: "Bez barwienia, bez filtracji na zimno. Europejski dąb daje figę i ciemny miód. Nowy, wypalany dąb dokłada cedr i goździk — dostaje dziewięć miesięcy, a nie rok, żeby ich nie przykryć.",
+    body: "Bez barwienia, bez filtracji na zimno. Europejski dąb daje figę i ciemny miód. Nowy, wypalany dąb dokłada cedr i goździk. Dostaje dziewięć miesięcy, a nie rok, żeby ich nie przykryć.",
   },
 
   distillery: {
@@ -195,12 +195,12 @@ export const pl: typeof en = {
       {
         stage: "Smak",
         notes: "Toffi, goździk, skórka gorzkiej pomarańczy.",
-        comment: "Pełniejszy, niż zapowiada nos. Pomarańcza przychodzi późno — i gorzko.",
+        comment: "Pełniejszy, niż zapowiada nos. Pomarańcza pojawia się późno i jest gorzka.",
       },
       {
         stage: "Finisz",
         notes: "Długi, wytrawny, lekko słony.",
-        comment: "Najdłużej zostaje cedr. Skąd sól — w destylarni nikt nie jest do końca pewien.",
+        comment: "Najdłużej zostaje cedr. Skąd sól? W destylarni nikt nie jest do końca pewien.",
       },
     ],
   },

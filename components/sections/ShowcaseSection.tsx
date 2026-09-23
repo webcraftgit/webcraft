@@ -18,9 +18,6 @@ export default function ShowcaseSection() {
         <h2 data-reveal className="heading-2 max-w-[20ch]">
           {t.showcase.heading}
         </h2>
-        <p data-reveal className="mt-5 max-w-[58ch] text-body text-ink-soft">
-          {t.showcase.intro}
-        </p>
       </div>
 
       <div className="mt-12 md:mt-16">

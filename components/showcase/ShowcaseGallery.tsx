@@ -46,7 +46,7 @@ type DemoId = "blackwood" | "wisniowa" | "nokturn";
 const BASE: Omit<Demo, "tagline" | "facts">[] = [
   {
     id: "blackwood",
-    name: "Blackwood — Speyside Single Malt",
+    name: "Blackwood · Speyside Single Malt",
     Site: BlackwoodSite,
     livePreview: false,
     posterBg:
@@ -54,7 +54,7 @@ const BASE: Omit<Demo, "tagline" | "facts">[] = [
   },
   {
     id: "wisniowa",
-    name: "Wiśniowa — stomatologia",
+    name: "Wiśniowa · stomatologia",
     Site: WisniowaSite,
     // no WebGL: cheap enough to run live in the card
     posterBg:
@@ -66,7 +66,7 @@ const BASE: Omit<Demo, "tagline" | "facts">[] = [
    * bring it back, re-add an entry and its dictionary keys. */
   {
     id: "nokturn",
-    name: "Nokturn — sklep odzieżowy",
+    name: "Nokturn · sklep odzieżowy",
     Site: NokturnSite,
     // no WebGL and a type-only hero: cheap enough to run live in the card
     posterBg:

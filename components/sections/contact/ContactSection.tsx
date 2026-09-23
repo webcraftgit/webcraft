@@ -252,7 +252,7 @@ export default function ContactSection() {
                     {price(range.low)}–{price(range.high)}
                   </span>
                   {t.contact.estOver}{t.pricing.tiers[range.tierId].weeks}
-                  {range.note ? ` — ${t.contact.notes[range.note]}` : ""}{t.contact.estEnd}
+                  {range.note ? ` (${t.contact.notes[range.note]})` : ""}{t.contact.estEnd}
                 </p>
               )}
 
