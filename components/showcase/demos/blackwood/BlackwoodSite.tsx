@@ -183,6 +183,33 @@ export default function BlackwoodSite({ preview = false }: { preview?: boolean }
   const [section, setSection] = useState(1);
   const railFill = useRef<HTMLSpanElement | null>(null);
 
+  /* CP4 perf: the WebGL scene (three + drei + postprocessing eval, GLB parse,
+   * shader compile) is heavy main-thread work. Mounting it on the same tick as
+   * the click froze the player's open animation and the loader's first frames —
+   * the "lag on click". So the loader (small, prewarmed) mounts immediately and
+   * starts animating, and the scene is deferred one paint, to the next idle
+   * slot (bounded), by which point the entrance is done and the pour is smooth.
+   * Preview cards keep mounting at once — no loader, no entrance to protect. */
+  const [mountScene, setMountScene] = useState(preview);
+  useEffect(() => {
+    if (preview) return;
+    let idle: number;
+    const w = window as typeof window & {
+      requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
+      cancelIdleCallback?: (id: number) => void;
+    };
+    const raf = requestAnimationFrame(() => {
+      idle = w.requestIdleCallback
+        ? w.requestIdleCallback(() => setMountScene(true), { timeout: 400 })
+        : (window.setTimeout(() => setMountScene(true), 150) as unknown as number);
+    });
+    return () => {
+      cancelAnimationFrame(raf);
+      if (w.cancelIdleCallback) w.cancelIdleCallback(idle);
+      else clearTimeout(idle);
+    };
+  }, [preview]);
+
   useEffect(() => {
     const el = scroller.current;
     if (!el) return;
@@ -241,12 +268,14 @@ export default function BlackwoodSite({ preview = false }: { preview?: boolean }
       {/* ————— the cellar, behind everything (sticky, h-0 wrapper) ————— */}
       <div className="pointer-events-none sticky top-0 z-0 h-0">
         <div className="absolute left-0 top-0 h-[var(--bw-vh,100vh)] w-full">
-          <BlackwoodScene
-            quality={preview ? "preview" : "full"}
-            progress={progress}
-            scrollRot={scrollRot}
-            className="!absolute inset-0"
-          />
+          {mountScene && (
+            <BlackwoodScene
+              quality={preview ? "preview" : "full"}
+              progress={progress}
+              scrollRot={scrollRot}
+              className="!absolute inset-0"
+            />
+          )}
           {/* left scrim — the copy column sits on this, not on bare lantern light */}
           <div
             aria-hidden

@@ -55,9 +55,11 @@ const BASE: Omit<Demo, "tagline" | "facts">[] = [
     name: "Blackwood · Speyside Single Malt",
     Site: BlackwoodSite,
     livePreview: false,
-    // Warm the heavy scene ahead of the click: importing the scene module runs
-    // its useGLTF.preload() for all five GLBs and downloads the R3F/post chunk;
-    // the fetches pull the floor + brick textures into the HTTP cache too.
+    // Warm everything the click will need: importing the scene module runs its
+    // useGLTF.preload() for all five GLBs and downloads the R3F/post chunk; the
+    // fetches pull the floor + brick textures into the HTTP cache; and warming
+    // the loader + Lottie player means the pour paints instantly on click
+    // instead of after two async import hops.
     prewarm: async () => {
       [
         "/textures/dark_planks/diff_2k.webp",
@@ -67,7 +69,11 @@ const BASE: Omit<Demo, "tagline" | "facts">[] = [
         "/textures/brick_wall/nor_gl_1k.webp",
         "/textures/brick_wall/rough_1k.webp",
       ].forEach((u) => fetch(u).catch(() => {}));
-      await import("./demos/blackwood/BlackwoodScene");
+      await Promise.all([
+        import("./demos/blackwood/BlackwoodLoader"),
+        import("lottie-react"),
+        import("./demos/blackwood/BlackwoodScene"),
+      ]);
     },
     posterBg:
       "radial-gradient(46% 46% at 30% 62%, rgba(217,151,74,0.42) 0%, transparent 68%), radial-gradient(38% 40% at 72% 52%, rgba(176,86,26,0.26) 0%, transparent 70%), #07080A",
