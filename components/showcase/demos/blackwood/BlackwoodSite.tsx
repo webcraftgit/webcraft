@@ -38,24 +38,40 @@ const T = {
 const SERIF = '"Playfair Display Variable", "Playfair Display", Georgia, serif';
 const SANS = '"Tenor Sans", Optima, "Gill Sans", "Segoe UI", sans-serif';
 
-/* ————— TYPE SCALE (CP4_62) ———————————————————————————————————————
- * Five steps, each clearly apart from the next. Before this, eyebrow / h3 /
- * body all sat between 13 and 17px, so nothing led.
- *   label   12px Tenor caps, tracked .24em   — eyebrows, nav, CTAs, spec keys
- *   body    16px Tenor, 1.75                 — lead is 18px
- *   h3      20px Playfair
- *   h2      32 → 46px Playfair
- *   h1      48 → 74px Playfair
- * Small caps are for labels only; no paragraph is ever set in caps. */
+/* ————— TYPE SCALE (CP4_62, tightened in CP4_63) ———————————————————
+ * Every size on the page is one of these. CP4_63 found 11/12/15/16/17/18/20px
+ * plus four one-off clamps in use; 15 vs 16 and 17 vs 18 read as mistakes.
+ *   label    12px Tenor caps, tracked .18em  — 1–3 word labels ONLY
+ *   small    15px Tenor, 1.6                 — secondary copy, links
+ *   body     17px Tenor, 1.6                 — body and hero lead
+ *   h3       20px Playfair 480               — also spec values, attribution
+ *   quote    24 → 30px Playfair italic
+ *   h2       32 → 46px Playfair
+ *   h1       48 → 74px Playfair
+ *   figure   the cask's "18" — the page's one oversized piece of type
+ * Caps are for SHORT labels: anything that reads as a sentence (announce bar,
+ * scroll hint, a job title) is sentence case. Tenor is wide already, so .18em
+ * rather than .24em. Playfair DISPLAY is drawn for large sizes and its
+ * hairlines vanish light-on-black below ~24px, so small Playfair is 480. */
+const TRACK = "0.18em";
 const LABEL: React.CSSProperties = {
   fontFamily: SANS,
   textTransform: "uppercase",
-  letterSpacing: "0.24em",
+  letterSpacing: TRACK,
 };
 const labelCls = "text-[12px] leading-[1.6]";
-const bodyCls = "text-[16px] leading-[1.75]";
-const h3Cls = "text-[20px] leading-[1.3]";
-const h2Cls = "text-[clamp(2rem,3vw,2.9rem)] leading-[1.1]";
+const smallCls = "text-[15px] leading-[1.6] text-pretty";
+const bodyCls = "text-[17px] leading-[1.6] text-pretty";
+const h3Cls = "text-[20px] leading-[1.3] text-balance";
+const h2Cls = "text-[clamp(2rem,3vw,2.9rem)] leading-[1.1] text-balance";
+/** wght for Playfair at h3 size and below — see the note above. */
+const SMALL_SERIF = 480;
+
+/** Letter-spacing also lands AFTER the last glyph, which pushes tracked text
+ *  left of centre in a bordered button. This pulls the trailing space back. */
+function Tracked({ children }: { children: React.ReactNode }) {
+  return <span style={{ marginRight: `-${TRACK}` }}>{children}</span>;
+}
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 const rise = {
@@ -194,7 +210,14 @@ export default function BlackwoodSite({ preview = false }: { preview?: boolean }
       ref={scroller}
       data-lenis-prevent
       className="relative h-full overflow-y-auto overscroll-contain"
-      style={{ background: T.bg, color: T.ink, fontFamily: SANS, fontVariantNumeric: "lining-nums" }}
+      style={{
+        background: T.bg,
+        color: T.ink,
+        fontFamily: SANS,
+        fontVariantNumeric: "lining-nums",
+        // Tenor ships ONE weight and no italic: never let the browser fake them.
+        fontSynthesis: "none",
+      }}
     >
       {/* one continuous canvas of atmosphere — no light sections, ever. */}
       <div
@@ -245,7 +268,8 @@ export default function BlackwoodSite({ preview = false }: { preview?: boolean }
         style={{ borderColor: T.line, background: "rgba(7,8,10,0.62)" }}
       >
         <div className="flex h-[34px] items-center justify-center px-4">
-          <p className="truncate text-[11px] leading-[1.6]" style={{ ...LABEL, letterSpacing: "0.2em", color: T.inkSoft }}>
+          {/* A sentence, so sentence case (CP4_63) — not 11px tracked caps. */}
+          <p className="truncate text-[12px] leading-[1.6] tracking-[0.04em]" style={{ color: T.inkSoft }}>
             {c.announce}
           </p>
         </div>
@@ -257,12 +281,12 @@ export default function BlackwoodSite({ preview = false }: { preview?: boolean }
           className="text-[21px] font-semibold leading-none tracking-[0.18em]"
           style={{ fontFamily: SERIF, color: T.amber }}
         >
-          BLACKWOOD
+          <span style={{ marginRight: "-0.18em" }}>BLACKWOOD</span>
         </span>
         <nav className="hidden items-center gap-10 md:flex">
           {c.nav.map((l) => (
             <span key={l} className={labelCls} style={{ ...LABEL, color: T.inkSoft }}>
-              {l}
+              <Tracked>{l}</Tracked>
             </span>
           ))}
         </nav>
@@ -270,42 +294,40 @@ export default function BlackwoodSite({ preview = false }: { preview?: boolean }
           className={`whitespace-nowrap border px-4 py-2.5 lg:px-5 ${labelCls}`}
           style={{ ...LABEL, borderColor: T.amber, color: T.ink }}
         >
-          {c.navCta}
+          <Tracked>{c.navCta}</Tracked>
         </span>
       </header>
 
       {/* ————— 01 · hero ————— */}
       <Band first>
         <motion.div {...rise}>
-          <Eyebrow>
-            {c.hero.region} · {c.hero.est}
-          </Eyebrow>
-          <span className="mt-6 block h-px w-12" style={{ background: T.amber }} />
+          {/* CP4_63: no eyebrow — "Speyside · Est. 1887" is already in the
+              announce bar directly above. The amber rule opens the column. */}
+          <span className="block h-px w-12" style={{ background: T.amber }} />
+          {/* The second line differs by italic alone; amber on it read as the
+              stock "accent one phrase" headline. */}
           <DemoHeading
-            className="mt-6 text-[clamp(3rem,5.4vw,4.6rem)] font-medium leading-[1.02]"
+            className="mt-6 text-[clamp(3rem,5.4vw,4.6rem)] font-medium leading-[1.02] text-balance"
             style={{ fontFamily: SERIF, color: T.ink }}
           >
             {c.hero.titleA}
             <br />
-            <em style={{ color: T.amber }}>{c.hero.titleB}</em>
+            <em>{c.hero.titleB}</em>
           </DemoHeading>
-          <p
-            className="mt-6 max-w-[25rem] text-[17px] leading-[1.7] lg:text-[18px]"
-            style={{ color: T.inkBody }}
-          >
+          <p className={`mt-6 max-w-[25rem] ${bodyCls}`} style={{ color: T.inkBody }}>
             {c.hero.lead}
           </p>
           <span
-            className={`mt-8 inline-block border-b pb-1.5 ${labelCls}`}
-            style={{ ...LABEL, borderColor: T.amber, color: T.ink }}
+            className={`mt-8 inline-block border-b pb-1 ${smallCls}`}
+            style={{ borderColor: T.amber, color: T.ink }}
           >
             {c.hero.link}
           </span>
-          <div className="mt-10 flex items-center gap-3">
-            <span aria-hidden className={labelCls} style={{ color: T.inkSoft }}>
-              ↓
-            </span>
-            <span className={labelCls} style={{ ...LABEL, color: T.inkSoft }}>
+          {/* A drawn amber rule instead of a system "↓" glyph that matched
+              neither typeface. */}
+          <div className="mt-10 flex items-center gap-4">
+            <span aria-hidden className="block h-7 w-px" style={{ background: T.amber }} />
+            <span className={smallCls} style={{ color: T.inkSoft }}>
               {c.hero.scroll}
             </span>
           </div>
@@ -316,7 +338,21 @@ export default function BlackwoodSite({ preview = false }: { preview?: boolean }
       <Band>
         <motion.div {...rise}>
           <Eyebrow>{c.cask.eyebrow}</Eyebrow>
-          <h2 className={`mt-6 max-w-[16ch] ${h2Cls}`} style={{ fontFamily: SERIF }}>
+          {/* CP4_63: the label's "18", set as large as the page allows. This is
+              where the page spends its boldness; everything around it stays
+              at the quiet scale. Replaces the spec sheet's "Age" row. */}
+          <p className="mt-4 flex items-end gap-4" style={{ color: T.amber }}>
+            <span
+              className="block text-[clamp(7.5rem,11vw,10.5rem)] leading-[0.78]"
+              style={{ fontFamily: SERIF, fontWeight: 400 }}
+            >
+              {c.cask.age.figure}
+            </span>
+            <span className={`pb-2 ${labelCls}`} style={{ ...LABEL, color: T.inkSoft }}>
+              {c.cask.age.unit}
+            </span>
+          </p>
+          <h2 className={`mt-8 max-w-[16ch] ${h2Cls}`} style={{ fontFamily: SERIF }}>
             {c.cask.heading}
           </h2>
         </motion.div>
@@ -339,8 +375,8 @@ export default function BlackwoodSite({ preview = false }: { preview?: boolean }
                 {label}
               </dt>
               <dd
-                className="border-t py-3.5 text-[17px] leading-[1.35]"
-                style={{ fontFamily: SERIF, color: T.ink, borderColor: T.line }}
+                className="border-t py-3.5 text-[20px] leading-[1.3] text-balance"
+                style={{ fontFamily: SERIF, fontWeight: SMALL_SERIF, color: T.ink, borderColor: T.line }}
               >
                 {value}
               </dd>
@@ -368,10 +404,10 @@ export default function BlackwoodSite({ preview = false }: { preview?: boolean }
         <div className="mt-10 flex flex-col gap-7">
           {c.distillery.items.map(({ label, copy }) => (
             <motion.div key={label} {...rise} className="border-l pl-5" style={{ borderColor: T.amber }}>
-              <h3 className={h3Cls} style={{ fontFamily: SERIF }}>
+              <h3 className={h3Cls} style={{ fontFamily: SERIF, fontWeight: SMALL_SERIF }}>
                 {label}
               </h3>
-              <p className="mt-1.5 text-[15px] leading-[1.65]" style={{ color: T.inkBody }}>
+              <p className={`mt-1.5 ${smallCls}`} style={{ color: T.inkBody }}>
                 {copy}
               </p>
             </motion.div>
@@ -402,10 +438,10 @@ export default function BlackwoodSite({ preview = false }: { preview?: boolean }
               <p className={labelCls} style={{ ...LABEL, color: T.amber }}>
                 {n.stage}
               </p>
-              <h3 className={`mt-2 ${h3Cls}`} style={{ fontFamily: SERIF }}>
+              <h3 className={`mt-2 ${h3Cls}`} style={{ fontFamily: SERIF, fontWeight: SMALL_SERIF }}>
                 {n.notes}
               </h3>
-              <p className="mt-2 text-[15px] leading-[1.7]" style={{ color: T.inkBody }}>
+              <p className={`mt-2 ${smallCls}`} style={{ color: T.inkBody }}>
                 {n.comment}
               </p>
             </motion.div>
@@ -417,17 +453,28 @@ export default function BlackwoodSite({ preview = false }: { preview?: boolean }
       <Band>
         <motion.figure {...rise}>
           <Eyebrow>{c.voice.eyebrow}</Eyebrow>
+          {/* The opening quote mark hangs into the margin so the text edge
+              stays straight. Done with text-indent, not hanging-punctuation,
+              which only Safari supports. ~0.42em ≈ the width of “ and „ in
+              Playfair italic at this size. */}
           <blockquote
-            className="mt-8 text-[clamp(1.45rem,2.1vw,1.9rem)] italic leading-[1.45]"
-            style={{ fontFamily: SERIF, color: T.ink, hangingPunctuation: "first" }}
+            className="mt-8 text-[clamp(1.5rem,2.1vw,1.875rem)] italic leading-[1.45] text-pretty"
+            style={{ fontFamily: SERIF, color: T.ink, textIndent: "-0.42em" }}
           >
             {c.voice.quote}
           </blockquote>
           <figcaption className="mt-8">
-            <span className="block text-[18px]" style={{ fontFamily: SERIF, color: T.ink }}>
+            <span
+              className="block text-[20px] leading-[1.3]"
+              style={{ fontFamily: SERIF, fontWeight: SMALL_SERIF, color: T.ink }}
+            >
               {c.voice.name}
             </span>
-            <span className={`mt-1.5 block ${labelCls}`} style={{ ...LABEL, color: T.inkSoft }}>
+            {/* A job title is a phrase, not a label: italic serif, not caps. */}
+            <span
+              className={`mt-1 block italic ${bodyCls}`}
+              style={{ fontFamily: SERIF, fontWeight: SMALL_SERIF, color: T.inkBody }}
+            >
               {c.voice.role}
             </span>
           </figcaption>
@@ -438,20 +485,17 @@ export default function BlackwoodSite({ preview = false }: { preview?: boolean }
       <Band>
         <motion.div {...rise}>
           <Eyebrow>{c.find.eyebrow}</Eyebrow>
-          <h2
-            className="mt-7 max-w-[14ch] text-[clamp(2.4rem,3.8vw,3.4rem)] leading-[1.05]"
-            style={{ fontFamily: SERIF }}
-          >
+          <h2 className={`mt-6 max-w-[14ch] ${h2Cls}`} style={{ fontFamily: SERIF }}>
             {c.find.heading}
           </h2>
           <Body className="mt-6">{c.find.body}</Body>
           <span
-            className={`mt-10 inline-block border px-9 py-4 ${labelCls}`}
+            className={`mt-10 inline-block whitespace-nowrap border px-9 py-4 ${labelCls}`}
             style={{ ...LABEL, borderColor: T.amber, color: T.ink }}
           >
-            {c.find.cta}
+            <Tracked>{c.find.cta}</Tracked>
           </span>
-          <p className="mt-14 text-[12px] leading-[1.7]" style={{ color: T.inkSoft }}>
+          <p className="mt-14 text-[12px] leading-[1.6]" style={{ color: T.inkSoft }}>
             {c.find.disclaimer}
           </p>
         </motion.div>

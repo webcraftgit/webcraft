@@ -44,8 +44,6 @@ export const en = {
   railSection: (n: number, total: number) => `Section ${n} of ${total}`,
 
   hero: {
-    region: "Speyside",
-    est: "Est. 1887",
     titleA: "Slow fire,",
     titleB: "long dark.",
     lead: "An eighteen-year-old single malt from a warehouse by the Spey that has never been heated. 1,200 numbered bottles, and no second batch.",
@@ -54,10 +52,12 @@ export const en = {
   },
 
   cask: {
-    eyebrow: "02 — The cask",
+    eyebrow: "The cask",
+    /** The label's "18", set large: the page's one oversized piece of type.
+     *  It replaces the "Age" row of the spec sheet rather than repeating it. */
+    age: { figure: "18", unit: "Years old" },
     heading: "Eighteen years in old oak. Nine months in new.",
     spec: [
-      { label: "Age", value: "18 years" },
       { label: "Matured in", value: "First-fill European oak" },
       { label: "Finished in", value: "9 months, charred virgin oak" },
       { label: "Cask", value: "No. 0447" },
@@ -68,7 +68,7 @@ export const en = {
   },
 
   distillery: {
-    eyebrow: "03 — The distillery",
+    eyebrow: "The distillery",
     heading: "The casks are made fifty yards from the stills.",
     body: "Blackwood has malted, distilled, coopered and bottled on the same bend of the Spey since 1887. Nothing leaves the site until it is in a bottle.",
     items: [
@@ -92,7 +92,7 @@ export const en = {
   },
 
   tasting: {
-    eyebrow: "04 — Tasting",
+    eyebrow: "Tasting",
     heading: "Add a drop of water. Then wait a minute.",
     items: [
       {
@@ -114,7 +114,7 @@ export const en = {
   },
 
   voice: {
-    eyebrow: "05 — In the warehouse",
+    eyebrow: "In the warehouse",
     quote:
       "“People ask what we do to it for eighteen years. Mostly, we leave it alone. We check the casks, we keep the doors shut in winter, and we don’t let anyone talk us into bottling it early.”",
     name: "Morag Innes",
@@ -122,7 +122,7 @@ export const en = {
   },
 
   find: {
-    eyebrow: "06 — Find a bottle",
+    eyebrow: "Find a bottle",
     heading: "1,200 bottles. No second batch.",
     body: "Sold through a handful of specialist whisky shops and at the distillery door. Every bottle is numbered.",
     cta: "Find a stockist",
@@ -138,8 +138,6 @@ export const pl: typeof en = {
   railSection: (n: number, total: number) => `Sekcja ${n} z ${total}`,
 
   hero: {
-    region: "Speyside",
-    est: "Zał. 1887",
     titleA: "Wolny ogień,",
     titleB: "długa ciemność.",
     lead: "Osiemnastoletnia whisky single malt z magazynu nad rzeką Spey, którego nigdy nie ogrzewano. 1200 numerowanych butelek i żadnej drugiej partii.",
@@ -148,10 +146,10 @@ export const pl: typeof en = {
   },
 
   cask: {
-    eyebrow: "02 — Beczka",
+    eyebrow: "Beczka",
+    age: { figure: "18", unit: "Lat" },
     heading: "Osiemnaście lat w starym dębie. Dziewięć miesięcy w nowym.",
     spec: [
-      { label: "Wiek", value: "18 lat" },
       { label: "Leżakowanie", value: "Dąb europejski, pierwsze napełnienie" },
       { label: "Finisz", value: "9 miesięcy, wypalany dąb dziewiczy" },
       { label: "Beczka", value: "Nr 0447" },
@@ -162,7 +160,7 @@ export const pl: typeof en = {
   },
 
   distillery: {
-    eyebrow: "03 — Destylarnia",
+    eyebrow: "Destylarnia",
     heading: "Beczki powstają pięćdziesiąt metrów od alembików.",
     body: "Od 1887 roku słodujemy, destylujemy, robimy beczki i butelkujemy w tym samym zakolu Spey. Nic nie opuszcza destylarni, zanim nie trafi do butelki.",
     items: [
@@ -186,7 +184,7 @@ export const pl: typeof en = {
   },
 
   tasting: {
-    eyebrow: "04 — Degustacja",
+    eyebrow: "Degustacja",
     heading: "Dodaj kroplę wody. Odczekaj minutę.",
     items: [
       {
@@ -208,7 +206,7 @@ export const pl: typeof en = {
   },
 
   voice: {
-    eyebrow: "05 — W magazynie",
+    eyebrow: "W magazynie",
     quote:
       "„Ludzie pytają, co z nią robimy przez osiemnaście lat. Głównie zostawiamy ją w spokoju. Sprawdzamy beczki, zimą trzymamy drzwi zamknięte i nie dajemy się nikomu namówić, żeby butelkować wcześniej.”",
     name: "Morag Innes",
@@ -216,7 +214,7 @@ export const pl: typeof en = {
   },
 
   find: {
-    eyebrow: "06 — Gdzie kupić",
+    eyebrow: "Gdzie kupić",
     heading: "1200 butelek. Drugiej partii nie będzie.",
     body: "W sprzedaży w kilku specjalistycznych sklepach z whisky i w sklepie przy destylarni. Każda butelka jest numerowana.",
     cta: "Znajdź sklep",
