@@ -40,7 +40,6 @@ import { typeset } from "@/lib/i18n/typography";
 
 export const en = {
   announce: "Speyside · Est. 1887 · Distilled, matured and bottled at the distillery",
-  nav: ["The cask", "The distillery", "Tasting"],
   navCta: "Find a bottle",
   /** Rail: "Section 3 of 6" — the only string with interpolation. */
   railSection: (n: number, total: number) => `Section ${n} of ${total}`,
@@ -135,7 +134,6 @@ export const en = {
 
 export const pl: typeof en = {
   announce: "Speyside · Zał. 1887 · Destylowana, leżakowana i butelkowana w destylarni",
-  nav: ["Beczka", "Destylarnia", "Degustacja"],
   navCta: "Gdzie kupić",
   railSection: (n: number, total: number) => `Sekcja ${n} z ${total}`,
 

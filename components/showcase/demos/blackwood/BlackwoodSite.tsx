@@ -283,13 +283,9 @@ export default function BlackwoodSite({ preview = false }: { preview?: boolean }
         >
           <span style={{ marginRight: "-0.18em" }}>BLACKWOOD</span>
         </span>
-        <nav className="hidden items-center gap-10 md:flex">
-          {c.nav.map((l) => (
-            <span key={l} className={labelCls} style={{ ...LABEL, color: T.inkSoft }}>
-              <Tracked>{l}</Tracked>
-            </span>
-          ))}
-        </nav>
+        {/* No section nav: the three labels were plain spans that looked
+            clickable and did nothing, wrapped to two lines, and pulled the eye
+            off the bottle. One scroll story needs the wordmark and one CTA. */}
         <span
           className={`whitespace-nowrap border px-4 py-2.5 lg:px-5 ${labelCls}`}
           style={{ ...LABEL, borderColor: T.amber, color: T.ink }}
