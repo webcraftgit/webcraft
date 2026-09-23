@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, type MutableRefObject } from "react";
 import dynamic from "next/dynamic";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import DemoHeading from "@/components/showcase/DemoHeading";
 import { useBlackwoodCopy } from "./copy";
 /* CP4_62: TYPE FOLLOWS THE BOTTLE LABEL. The label (baked into the GLB) sets
@@ -145,12 +145,15 @@ function Body({ children, className = "" }: { children: React.ReactNode; classNa
 function Band({
   children,
   first = false,
+  id,
 }: {
   children: React.ReactNode;
   first?: boolean;
+  id?: string;
 }) {
   return (
     <section
+      id={id}
       className={`relative z-10 flex items-center px-8 lg:min-h-screen lg:pl-24 lg:pr-8 ${
         first ? "min-h-[86vh] pt-4" : "py-28 lg:py-0"
       }`}
@@ -182,6 +185,37 @@ export default function BlackwoodSite({ preview = false }: { preview?: boolean }
   const progress = useRef(0);
   const [section, setSection] = useState(1);
   const railFill = useRef<HTMLSpanElement | null>(null);
+
+  /* The header CTA and the closing section are the two "where to buy" beats.
+   * The brand is fictional, so neither links out: the header CTA scrolls the
+   * page to the closing "find a bottle" band, and that band's CTA reveals the
+   * stockist list inline. See the two buttons below. */
+  const [storesOpen, setStoresOpen] = useState(false);
+  /* The scroller is [data-lenis-prevent], and Lenis swallows native smooth
+   * scrolling on it (scrollIntoView / scrollTo with behavior:"smooth" no-op —
+   * only "auto" moves it). So the header CTA tweens scrollTop by hand; the
+   * scene's own scroll listener then dollies the camera along for free. */
+  const scrollToFind = () => {
+    const el = scroller.current;
+    const target = el?.querySelector<HTMLElement>("#bw-find");
+    if (!el || !target) return;
+    const to = el.scrollTop + (target.getBoundingClientRect().top - el.getBoundingClientRect().top);
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      el.scrollTop = to;
+      return;
+    }
+    const from = el.scrollTop;
+    const dist = to - from;
+    const dur = 780;
+    const start = performance.now();
+    const ease = (t: number) => 1 - Math.pow(1 - t, 3); // easeOutCubic
+    const step = (now: number) => {
+      const t = Math.min(1, (now - start) / dur);
+      el.scrollTop = from + dist * ease(t);
+      if (t < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  };
 
   /* CP4 perf: the WebGL scene (three + drei + postprocessing eval, GLB parse,
    * shader compile) is heavy main-thread work. Mounting it on the same tick as
@@ -333,12 +367,14 @@ export default function BlackwoodSite({ preview = false }: { preview?: boolean }
         {/* No section nav: the three labels were plain spans that looked
             clickable and did nothing, wrapped to two lines, and pulled the eye
             off the bottle. One scroll story needs the wordmark and one CTA. */}
-        <span
-          className={`whitespace-nowrap border px-4 py-2.5 lg:px-5 ${labelCls}`}
+        <button
+          type="button"
+          onClick={scrollToFind}
+          className={`cursor-pointer whitespace-nowrap border px-4 py-2.5 outline-none transition-colors duration-200 hover:bg-[rgba(217,151,74,0.12)] focus-visible:ring-2 focus-visible:ring-[rgba(217,151,74,0.7)] lg:px-5 ${labelCls}`}
           style={{ ...LABEL, borderColor: T.amber, color: T.ink }}
         >
           <Tracked>{c.navCta}</Tracked>
-        </span>
+        </button>
       </header>
 
       {/* ————— 01 · hero ————— */}
@@ -525,19 +561,69 @@ export default function BlackwoodSite({ preview = false }: { preview?: boolean }
       </Band>
 
       {/* ————— 06 · find a bottle ————— */}
-      <Band>
+      <Band id="bw-find">
         <motion.div {...rise}>
           <Eyebrow>{c.find.eyebrow}</Eyebrow>
           <h2 className={`mt-6 max-w-[14ch] ${h2Cls}`} style={{ fontFamily: SERIF }}>
             {c.find.heading}
           </h2>
           <Body className="mt-6">{c.find.body}</Body>
-          <span
-            className={`mt-10 inline-block whitespace-nowrap border px-9 py-4 ${labelCls}`}
+
+          {/* Fictional brand: no external store. The CTA reveals the stockists
+              inline — a handful of specialist shops and the distillery door. */}
+          <button
+            type="button"
+            onClick={() => setStoresOpen((v) => !v)}
+            aria-expanded={storesOpen}
+            className={`mt-10 inline-flex cursor-pointer items-center gap-3 whitespace-nowrap border px-9 py-4 outline-none transition-colors duration-200 hover:bg-[rgba(217,151,74,0.12)] focus-visible:ring-2 focus-visible:ring-[rgba(217,151,74,0.7)] ${labelCls}`}
             style={{ ...LABEL, borderColor: T.amber, color: T.ink }}
           >
-            <Tracked>{c.find.cta}</Tracked>
-          </span>
+            <Tracked>{storesOpen ? c.find.ctaClose : c.find.cta}</Tracked>
+            <span
+              aria-hidden
+              className="transition-transform duration-300"
+              style={{ transform: storesOpen ? "rotate(45deg)" : "none", color: T.amber }}
+            >
+              +
+            </span>
+          </button>
+
+          <AnimatePresence initial={false}>
+            {storesOpen && (
+              <motion.div
+                key="stores"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.5, ease: EASE }}
+                className="overflow-hidden"
+              >
+                <ul className="mt-8 border-t" style={{ borderColor: T.line }}>
+                  {c.find.stores.map((s) => (
+                    <li
+                      key={s.name}
+                      className="flex items-baseline justify-between gap-6 border-b py-3.5"
+                      style={{ borderColor: T.line }}
+                    >
+                      <span className="text-[15px]" style={{ fontFamily: SANS, color: T.ink }}>
+                        {s.name}
+                      </span>
+                      <span
+                        className="whitespace-nowrap text-[11px]"
+                        style={{ ...LABEL, letterSpacing: "0.12em", color: T.inkSoft }}
+                      >
+                        {s.place}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+                <p className="mt-5 text-[13px] leading-[1.6]" style={{ color: T.inkSoft }}>
+                  {c.find.storesNote}
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           <p className="mt-14 text-[12px] leading-[1.6]" style={{ color: T.inkSoft }}>
             {c.find.disclaimer}
           </p>

@@ -127,6 +127,14 @@ export const en = {
     heading: "1,200 bottles. No second batch.",
     body: "Sold through a handful of specialist whisky shops and at the distillery door. Every bottle is numbered.",
     cta: "Find a stockist",
+    ctaClose: "Hide stockists",
+    storesNote: "Allocations are small — call ahead to reserve a numbered bottle.",
+    stores: [
+      { name: "Dramfield & Co.", place: "Edinburgh" },
+      { name: "The Cooper’s Shelf", place: "Aberdeen" },
+      { name: "North Pour Fine Spirits", place: "Glasgow" },
+      { name: "Blackwood Distillery Shop", place: "Craigellachie, Speyside" },
+    ],
     disclaimer:
       "Blackwood is a fictional brand, built by Webcraft to demonstrate a concept site. Please drink responsibly.",
   },
@@ -218,6 +226,14 @@ export const pl: typeof en = {
     heading: "1200 butelek. Drugiej partii nie będzie.",
     body: "W sprzedaży w kilku specjalistycznych sklepach z whisky i w sklepie przy destylarni. Każda butelka jest numerowana.",
     cta: "Znajdź sklep",
+    ctaClose: "Zwiń listę",
+    storesNote: "Pula jest niewielka — zadzwoń, aby zarezerwować numerowaną butelkę.",
+    stores: [
+      { name: "Dramfield & Co.", place: "Edynburg" },
+      { name: "The Cooper’s Shelf", place: "Aberdeen" },
+      { name: "North Pour Fine Spirits", place: "Glasgow" },
+      { name: "Sklep przy destylarni Blackwood", place: "Craigellachie, Speyside" },
+    ],
     disclaimer:
       "Blackwood to fikcyjna marka, stworzona przez Webcraft jako projekt koncepcyjny. Pij odpowiedzialnie.",
   },
