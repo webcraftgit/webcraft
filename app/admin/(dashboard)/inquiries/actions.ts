@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/supabase/server";
-import { oneOf, str } from "@/lib/security/validation";
+import { oneOf, str, uuid } from "@/lib/security/validation";
 
 const STATUSES = ["new", "contacted", "quoted", "won", "lost", "spam"] as const;
 
@@ -16,13 +16,19 @@ export async function updateInquiry(formData: FormData) {
   const { db, isAdmin } = await requireAdmin();
   if (!isAdmin || !db) throw new Error("forbidden");
 
-  const id = str(formData.get("id"), 36);
+  // id must be a UUID, not just short: a non-UUID reaches Postgres as an
+  // invalid uuid literal, which raises and leaks the raw db message to the
+  // client. Validate the shape here and keep the error generic.
+  const id = uuid(formData.get("id"));
   const status = oneOf(formData.get("status"), STATUSES);
   const notes = str(formData.get("admin_notes"), 8000);
   if (!id || !status) throw new Error("bad_request");
 
   const { error } = await db.from("inquiries").update({ status, admin_notes: notes || null }).eq("id", id);
-  if (error) throw new Error(error.message);
+  if (error) {
+    console.error("[updateInquiry] update failed", error.code, error.message);
+    throw new Error("update_failed");
+  }
 
   revalidatePath("/admin/inquiries");
   revalidatePath("/admin");
