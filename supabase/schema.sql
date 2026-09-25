@@ -206,6 +206,17 @@ alter table public.inquiries   force row level security;
 alter table public.events      force row level security;
 alter table public.consent_log force row level security;
 
+-- Supabase's default privileges auto-grant ALL on every new public table to
+-- anon and authenticated. anon must hold NOTHING here: it has no policies, so
+-- RLS already blocks row access — but TRUNCATE and REFERENCES ignore RLS, so a
+-- lingering grant is a real hole, not a formality. Strip anon (and the PUBLIC
+-- pseudo-role it inherits from) back to zero. authenticated keeps its grants;
+-- the policies below are what actually gate it. Revoking an absent privilege is
+-- a no-op, so this stays safe to re-run.
+revoke all on public.inquiries, public.events, public.consent_log,
+               public.admin_users, public.rate_limits
+  from anon, public;
+
 drop policy if exists inquiries_admin_read   on public.inquiries;
 drop policy if exists inquiries_admin_update on public.inquiries;
 create policy inquiries_admin_read   on public.inquiries for select to authenticated using (public.is_admin());
