@@ -19,7 +19,7 @@ export default function SceneCanvas() {
   return (
     <div className="relative h-full w-full">
       {/* Static fallback — visually complete before any JS */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
+      { }
       <motion.img
         src="/logo-w.svg"
         alt="Webcraft logo"

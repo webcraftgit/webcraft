@@ -256,7 +256,7 @@ export function Figure({
     /* Warn when a DECLARED local file is missing and we fall back to stock. */
     if (LOCAL[slot] && next === 1 && !warned.has(slot)) {
       warned.add(slot);
-      // eslint-disable-next-line no-console
+       
       /* Developer-facing, so deliberately NOT in copy.ts and deliberately not
        * localised — it is read in a console by whoever maintains the site, not
        * by a patient, and every other comment and log in this repo is English.
