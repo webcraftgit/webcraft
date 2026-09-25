@@ -35,9 +35,10 @@ type Demo = {
   posterBg: string;
   /** A still of the real site for poster-gated demos, so the card shows what
    *  opens instead of a bare gradient. Rendered object-cover over posterBg.
-   *  posterImg is the wide (16:9) desktop crop; posterImgMobile is a tighter
-   *  4:3 crop for the mobile card, framed so the key subject survives — a
-   *  center-crop of the wide still would drop it. */
+   *  posterImg is used at every breakpoint. Set posterImgMobile only when a
+   *  demo needs a separately framed crop for the 4:3 mobile card; leave it
+   *  unset when one centered still survives object-cover at both the mobile
+   *  (4:3) and desktop (16:9) card sizes, as Blackwood's banner does. */
   posterImg?: string;
   posterImgMobile?: string;
   /** false = the card never mounts WebGL, it shows the poster and opens live
@@ -62,8 +63,9 @@ const BASE: Omit<Demo, "tagline" | "facts">[] = [
     name: "Blackwood · Speyside Single Malt",
     Site: BlackwoodSite,
     livePreview: false,
+    // Centered banner survives object-cover at both card sizes, so one still
+    // serves mobile (4:3) and desktop (16:9) — no separate posterImgMobile.
     posterImg: "/demo/blackwood/banner.svg",
-    posterImgMobile: "/demo/blackwood/banner.svg",
     // Warm everything the click will need: importing the scene module runs its
     // useGLTF.preload() for all five GLBs and downloads the R3F/post chunk; the
     // fetches pull the floor + brick textures into the HTTP cache; and warming
@@ -168,7 +170,8 @@ function LivePreview({ demo }: { demo: Demo }) {
       )}
       {lite && demo.posterImg && (
         <picture>
-          {/* md card is 16:9, mobile card is 4:3 — serve a crop framed for each */}
+          {/* desktop uses posterImg; mobile <img> below uses posterImgMobile
+              when a demo sets one, else falls back to the same posterImg */}
           <source media="(min-width: 768px)" srcSet={demo.posterImg} />
           <img
             src={demo.posterImgMobile ?? demo.posterImg}
