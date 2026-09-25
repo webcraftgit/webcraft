@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
+import { asSessionCookie } from "@/lib/supabase/cookie-options";
 
 /**
  * Session refresh + /admin gate (CP6-backend).
@@ -37,7 +38,8 @@ export async function proxy(req: NextRequest) {
         setAll: (list: { name: string; value: string; options: CookieOptions }[]) => {
           list.forEach(({ name, value }) => req.cookies.set(name, value));
           res = NextResponse.next({ request: req });
-          list.forEach(({ name, value, options }) => res.cookies.set(name, value, options));
+          // session cookies: the login dies when the browser is closed
+          list.forEach(({ name, value, options }) => res.cookies.set(name, value, asSessionCookie(options)));
         },
       },
     }

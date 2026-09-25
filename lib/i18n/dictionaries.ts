@@ -652,7 +652,7 @@ export const pl: Dictionary = {
       },
       {
         q: `Ile kosztuje projekt?`,
-        a: `Ceny startowe znajdziesz tuż wyżej, w sekcji cennika. Obecnie obowiązują stawki założycielskie, póki nasze portfolio się zapełnia. Dokładną kwotę ustalamy po krótkiej rozmowie wstępnej, przed rozpoczęciem prac, a wycena jest rozpisana pozycjami, żebyś mógł ciąć zakres, a nie jakość. Bez niespodzianek w rozliczeniu godzinowym.`,
+        a: `Ceny startowe znajdziesz powyżej, w sekcji cennika. Obecnie obowiązują stawki założycielskie, póki nasze portfolio się zapełnia. Dokładną kwotę ustalamy po krótkiej rozmowie wstępnej, przed rozpoczęciem prac, a wycena jest rozpisana pozycjami, żebyś mógł ciąć zakres, a nie jakość. Bez niespodzianek w rozliczeniu godzinowym.`,
       },
       {
         q: `Dlaczego to kosztuje więcej niż strony za 3 000 zł, które widziałem?`,
