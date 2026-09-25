@@ -3,13 +3,17 @@ import { fileURLToPath } from "node:url";
 
 /**
  * Unit tests only, run in Node. The suites cover the pure security + consent
- * logic in lib/ — no DOM, no Next runtime needed.
+ * logic in lib/, the Postgres-backed rate limiter, and the admin auth gate.
  *
- * `server-only` is aliased to an empty stub: the real package throws when
- * imported outside a React Server Component bundle, so files that guard
- * themselves with `import "server-only"` (e.g. lib/security/hash.ts) could not
- * otherwise be imported by a plain Node test.
+ * Aliases:
+ *  - `server-only` → an empty stub. The real package throws when imported
+ *    outside a React Server Component bundle, so files guarded with
+ *    `import "server-only"` could not otherwise be imported by a Node test.
+ *  - `@` → the project root, mirroring the tsconfig `@/*` path so tests can
+ *    import modules the same way the app does.
  */
+const root = fileURLToPath(new URL(".", import.meta.url)).replace(/[/\\]$/, "");
+
 export default defineConfig({
   test: {
     environment: "node",
@@ -17,8 +21,9 @@ export default defineConfig({
     exclude: ["node_modules", ".next"],
   },
   resolve: {
-    alias: {
-      "server-only": fileURLToPath(new URL("./test/server-only-stub.ts", import.meta.url)),
-    },
+    alias: [
+      { find: "server-only", replacement: `${root}/test/server-only-stub.ts` },
+      { find: /^@\/(.*)$/, replacement: `${root}/$1` },
+    ],
   },
 });

@@ -1,0 +1,44 @@
+name: CI
+
+# The gatekeeper. Runs on every pull request and every push to main, so no
+# change reaches the live site without passing the same checks a developer
+# runs locally: types, the test suite, and a full production build.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# Least privilege: the checks only need to read the code.
+permissions:
+  contents: read
+
+# A newer push to the same branch/PR cancels the older, still-running check.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: types, tests, build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies (from the lockfile)
+        run: npm ci
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Run tests
+        run: npm test
+
+      - name: Production build
+        run: npm run build
