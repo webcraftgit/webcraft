@@ -4,16 +4,20 @@ import { createServerClient, type CookieOptions } from "@supabase/ssr";
 /**
  * Session refresh + /admin gate (CP6-backend).
  *
+ * Next 16 renamed the `middleware` convention to `proxy` (this file + the
+ * `proxy` export). It runs on the Node.js runtime — fine here, since the only
+ * work is a Supabase session read.
+ *
  * This is the OUTER gate only. It answers "is there a valid session?" — it does
  * NOT answer "is this person an admin", because that requires a database read
- * and middleware runs on every request. The real check is `requireAdmin()` in
- * the admin layout, backed by RLS in Postgres. Defence in depth: even if this
+ * and this runs on every request. The real check is `requireAdmin()` in the
+ * admin layout, backed by RLS in Postgres. Defence in depth: even if this
  * file were deleted, the dashboard would return nothing.
  *
  * getUser() (not getSession()) — getSession only decodes the cookie, which the
  * client controls. getUser revalidates the JWT with Supabase.
  */
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   let res = NextResponse.next({ request: req });
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;

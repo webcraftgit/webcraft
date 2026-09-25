@@ -64,6 +64,10 @@ const securityHeaders = [
 const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false, // stop advertising the framework
+  // Pin the Turbopack root to this project. Without it, Next 16 walks up and
+  // can latch onto a stray lockfile in a parent directory as the workspace
+  // root, which changes how files resolve. Keep it explicit.
+  turbopack: { root: import.meta.dirname },
   // CP4_17-seo: /showcase used to be a rendered page whose only job was to call
   // redirect(), which costs a render and returns a TEMPORARY 307 — telling
   // crawlers to keep coming back and to leave the old URL in the index. A
