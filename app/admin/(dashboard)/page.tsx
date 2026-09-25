@@ -14,6 +14,24 @@ type Overview = {
   by_device: Row[]; by_locale: Row[]; by_country: Row[]; by_referrer: Row[]; by_utm_source: Row[];
   chip_tier: Row[]; chip_budget: Row[]; section_reach: Row[]; scroll_depth: Row[];
   daily: { day: string; sessions: number; inquiries: number }[];
+
+  // retention
+  visitors_new: number; visitors_returning: number; multi_day_visitors: number;
+  cohorts: { k: string; size: number; ret: number }[];
+  visits_before_inquiry: Row[];
+  // marketing / attribution
+  inq_by_source: Row[]; inq_by_channel: Row[]; by_channel: Row[];
+  by_utm_medium: Row[]; by_utm_campaign: Row[]; landing_pages: Row[];
+  // engagement / site quality
+  sessions_with_pv: number; bounced_sessions: number; avg_session_seconds: number;
+  section_funnel: Row[];
+};
+
+/** Seconds → "2m 40s" / "45s". Session length is rough by nature (it can't see
+ *  the final page's dwell time), so we don't pretend to sub-second precision. */
+const dur = (s: number) => {
+  const t = Math.round(s || 0);
+  return t >= 60 ? `${Math.floor(t / 60)}m ${t % 60}s` : `${t}s`;
 };
 
 const pct = (a: number, b: number) => (b > 0 ? `${((a / b) * 100).toFixed(1)}%` : "—");
@@ -162,6 +180,109 @@ export default async function Overview({
       <div className="mt-4">
         <Panel title="Countries">
           <Bars rows={o.by_country} />
+        </Panel>
+      </div>
+
+      <h2 className="mb-4 mt-10 font-display text-[20px] font-medium text-ink">Do they come back</h2>
+      <p className="mb-4 max-w-[70ch] text-[13.5px] text-ink-soft">
+        A visitor is “new” the first time we ever see them and “returning” once they come back on a
+        later day. People rarely commission a site on their first visit — this is where you see the
+        trust build.
+      </p>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <Stat label="New visitors" value={o.visitors_new} sub="first time we’ve seen them" />
+        <Stat label="Returning" value={o.visitors_returning} sub="had visited before this range" />
+        <Stat
+          label="Came back"
+          value={o.multi_day_visitors}
+          sub={`${pct(o.multi_day_visitors, o.visitors)} visited on 2+ days`}
+        />
+        <Stat
+          label="Return rate"
+          value={pct(o.visitors_returning, o.visitors)}
+          sub="share who are returning"
+        />
+      </div>
+      <div className="mt-4 grid gap-4 lg:grid-cols-2">
+        <Panel title="Visits before an inquiry" note="How many separate visits a lead made before sending the form.">
+          <Bars rows={o.visits_before_inquiry} empty="No inquiries with analytics consent yet." />
+        </Panel>
+        <Panel title="Weekly cohorts" note="Of the visitors first seen that week, how many ever came back.">
+          {(o.cohorts ?? []).length ? (
+            <table className="w-full text-[13.5px]">
+              <thead>
+                <tr className="text-ink-soft">
+                  <th className="pb-2 text-left font-normal">Week of</th>
+                  <th className="pb-2 text-right font-normal">New</th>
+                  <th className="pb-2 text-right font-normal">Returned</th>
+                  <th className="pb-2 text-right font-normal">Rate</th>
+                </tr>
+              </thead>
+              <tbody className="tabular-nums">
+                {(o.cohorts ?? []).map((c) => (
+                  <tr key={c.k} className="border-t border-[var(--glass-border)]">
+                    <td className="py-1.5 text-ink">{c.k}</td>
+                    <td className="py-1.5 text-right text-ink-soft">{c.size}</td>
+                    <td className="py-1.5 text-right text-ink-soft">{c.ret}</td>
+                    <td className="py-1.5 text-right text-ink">{pct(c.ret, c.size)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <p className="text-[13.5px] text-ink-soft">No data yet.</p>
+          )}
+        </Panel>
+      </div>
+
+      <h2 className="mb-4 mt-10 font-display text-[20px] font-medium text-ink">Which marketing works</h2>
+      <p className="mb-4 max-w-[70ch] text-[13.5px] text-ink-soft">
+        The first two panels count actual inquiries, not clicks. A channel that sends a lot of
+        traffic but few of these is a channel to rethink.
+      </p>
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Panel title="Inquiries by source">
+          <Bars rows={o.inq_by_source} empty="No inquiries with attribution yet." />
+        </Panel>
+        <Panel title="Inquiries by channel">
+          <Bars rows={o.inq_by_channel} empty="No inquiries with attribution yet." />
+        </Panel>
+        <Panel title="All traffic by channel">
+          <Bars rows={o.by_channel} />
+        </Panel>
+        <Panel title="Landing pages">
+          <Bars rows={o.landing_pages} />
+        </Panel>
+        <Panel title="Campaign medium">
+          <Bars rows={o.by_utm_medium} />
+        </Panel>
+        <Panel title="Campaign name">
+          <Bars rows={o.by_utm_campaign} />
+        </Panel>
+      </div>
+
+      <h2 className="mb-4 mt-10 font-display text-[20px] font-medium text-ink">Site quality</h2>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <Stat
+          label="Bounce rate"
+          value={pct(o.bounced_sessions, o.sessions_with_pv)}
+          sub="left after a single page"
+        />
+        <Stat label="Avg time on site" value={dur(o.avg_session_seconds)} sub="per session" />
+        <Stat
+          label="Pages / session"
+          value={o.sessions > 0 ? (o.pageviews / o.sessions).toFixed(1) : "—"}
+          sub={`${o.pageviews} page views`}
+        />
+        <Stat
+          label="Engaged sessions"
+          value={pct(o.sessions_with_pv - o.bounced_sessions, o.sessions_with_pv)}
+          sub="saw more than one page"
+        />
+      </div>
+      <div className="mt-4">
+        <Panel title="Where attention falls off" note="Sections in page order. Each is counted once per session at 40% visible.">
+          <Funnel steps={(o.section_funnel ?? []).map((s) => ({ label: s.k, value: s.c }))} />
         </Panel>
       </div>
     </>

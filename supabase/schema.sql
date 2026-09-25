@@ -314,6 +314,126 @@ begin
                       select props->>'pct' as k, count(distinct session_id) as c from events
                       where created_at >= v_from and name = 'scroll_depth' group by 1 order by k) x),
 
+    -- ——— retention: do people come back? ————————————————————————————————
+    -- A visitor is "new" if their first-ever event is inside the window, and
+    -- "returning" if they existed before it and showed up again inside it.
+    'visitors_new',       (select count(*) from (
+                      select visitor_id from events group by visitor_id
+                      having min(created_at) >= v_from) t),
+    'visitors_returning', (select count(*) from (
+                      select visitor_id from events group by visitor_id
+                      having min(created_at) < v_from and max(created_at) >= v_from) t),
+    'multi_day_visitors', (select count(*) from (
+                      select visitor_id from events where created_at >= v_from
+                      group by visitor_id
+                      having count(distinct date_trunc('day', created_at)) >= 2) t),
+
+    -- weekly cohorts: of the visitors first seen in a week, how many ever came
+    -- back on another day. Recent weeks read low — they've had less time.
+    'cohorts',      (select coalesce(json_agg(json_build_object(
+                        'k', wk, 'size', size, 'ret', ret) order by wk), '[]')
+                      from (
+                        select to_char(date_trunc('week', fs.first_at),'YYYY-MM-DD') as wk,
+                               count(*) as size,
+                               count(*) filter (where fs.came_back) as ret
+                        from (
+                          select visitor_id, min(created_at) as first_at,
+                                 count(distinct date_trunc('day', created_at)) >= 2 as came_back
+                          from events group by visitor_id
+                        ) fs
+                        where fs.first_at >= v_from
+                        group by date_trunc('week', fs.first_at)
+                      ) c),
+
+    -- how many separate visits it took before a lead sent the form
+    'visits_before_inquiry', (select coalesce(json_agg(json_build_object('k',k,'c',c) order by ord), '[]')
+                      from (
+                        select k, count(*) as c, ord from (
+                          select case when n <= 1 then '1 visit'
+                                      when n = 2 then '2 visits'
+                                      when n between 3 and 5 then '3–5 visits'
+                                      else '6+ visits' end as k,
+                                 case when n <= 1 then 1 when n = 2 then 2
+                                      when n between 3 and 5 then 3 else 4 end as ord
+                          from (
+                            select (select count(distinct e.session_id) from events e
+                                      where e.visitor_id = i.visitor_id
+                                        and e.created_at <= i.created_at) as n
+                            from inquiries i
+                            where i.created_at >= v_from and i.visitor_id is not null
+                          ) counts
+                        ) bucketed
+                        group by k, ord
+                      ) c),
+
+    -- ——— marketing: which channels actually produce leads ————————————————
+    -- inquiries by their own source (real leads, not just clicks)
+    'inq_by_source', (select coalesce(json_agg(json_build_object('k',k,'c',c)), '[]') from (
+                      select coalesce(nullif(utm_source,''), nullif(referrer_host,''), 'direct') as k,
+                             count(*) as c
+                      from inquiries where created_at >= v_from
+                      group by 1 order by c desc limit 12) x),
+    'inq_by_channel', (select coalesce(json_agg(json_build_object('k',k,'c',c)), '[]') from (
+                      select case
+                        when lower(coalesce(utm_medium,'')) in ('cpc','ppc','paid','paidsearch','paid_search','display') then 'paid'
+                        when lower(coalesce(utm_medium,'')) in ('social','social-media','social-network')
+                             or coalesce(referrer_host,'') ~* '(facebook|fb\.com|instagram|twitter|t\.co|x\.com|linkedin|tiktok|youtube|pinterest|reddit)' then 'social'
+                        when lower(coalesce(utm_medium,'')) = 'email' then 'email'
+                        when coalesce(referrer_host,'') ~* '(google|bing|duckduckgo|yahoo|ecosia|baidu|yandex)' then 'organic search'
+                        when coalesce(referrer_host,'') = '' then 'direct'
+                        else 'referral' end as k,
+                        count(*) as c
+                      from inquiries where created_at >= v_from
+                      group by 1 order by c desc) x),
+    -- all sessions grouped into the same channel buckets (attribution = first event of the session)
+    'by_channel',    (select coalesce(json_agg(json_build_object('k',k,'c',c)), '[]') from (
+                      select channel as k, count(*) as c from (
+                        select distinct on (session_id) case
+                          when lower(coalesce(utm_medium,'')) in ('cpc','ppc','paid','paidsearch','paid_search','display') then 'paid'
+                          when lower(coalesce(utm_medium,'')) in ('social','social-media','social-network')
+                               or coalesce(referrer_host,'') ~* '(facebook|fb\.com|instagram|twitter|t\.co|x\.com|linkedin|tiktok|youtube|pinterest|reddit)' then 'social'
+                          when lower(coalesce(utm_medium,'')) = 'email' then 'email'
+                          when coalesce(referrer_host,'') ~* '(google|bing|duckduckgo|yahoo|ecosia|baidu|yandex)' then 'organic search'
+                          when coalesce(referrer_host,'') = '' then 'direct'
+                          else 'referral' end as channel
+                        from events where created_at >= v_from
+                        order by session_id, created_at
+                      ) s group by channel order by c desc) x),
+    'by_utm_medium', (select coalesce(json_agg(json_build_object('k',k,'c',c)), '[]') from (
+                      select coalesce(nullif(utm_medium,''),'—') as k, count(distinct session_id) as c
+                      from events where created_at >= v_from group by 1 order by c desc limit 12) x),
+    'by_utm_campaign',(select coalesce(json_agg(json_build_object('k',k,'c',c)), '[]') from (
+                      select coalesce(nullif(utm_campaign,''),'—') as k, count(distinct session_id) as c
+                      from events where created_at >= v_from group by 1 order by c desc limit 12) x),
+    -- which page people arrived on (first event of each session)
+    'landing_pages', (select coalesce(json_agg(json_build_object('k',k,'c',c)), '[]') from (
+                      select coalesce(nullif(path,''),'/') as k, count(*) as c from (
+                        select distinct on (session_id) path
+                        from events where created_at >= v_from
+                        order by session_id, created_at
+                      ) s group by 1 order by c desc limit 12) x),
+
+    -- ——— engagement / site quality ——————————————————————————————————————
+    'sessions_with_pv', (select count(*) from (
+                      select session_id from events
+                      where created_at >= v_from and name = 'page_view'
+                      group by session_id) t),
+    'bounced_sessions', (select count(*) from (   -- exactly one page view = a bounce
+                      select session_id from events
+                      where created_at >= v_from and name = 'page_view'
+                      group by session_id having count(*) = 1) t),
+    'avg_session_seconds', (select coalesce(round(avg(dur)), 0) from (
+                      select extract(epoch from (max(created_at) - min(created_at))) as dur
+                      from events where created_at >= v_from group by session_id) t),
+    -- where attention falls off, section by section in page order
+    'section_funnel', (select coalesce(json_agg(json_build_object('k',k,'c',c) order by ord), '[]') from (
+                      select s.k, s.ord,
+                        coalesce((select count(distinct session_id) from events
+                           where created_at >= v_from and name = 'section_view'
+                             and props->>'section' = s.k), 0) as c
+                      from (values ('hero',1),('services',2),('process',3),
+                                   ('pricing',4),('faq',5),('contact',6)) as s(k, ord)) x),
+
     'daily',        (select coalesce(json_agg(x), '[]') from (
                       select d::date as day,
                         (select count(distinct session_id) from events e
