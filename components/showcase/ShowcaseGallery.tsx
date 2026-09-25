@@ -62,8 +62,8 @@ const BASE: Omit<Demo, "tagline" | "facts">[] = [
     name: "Blackwood · Speyside Single Malt",
     Site: BlackwoodSite,
     livePreview: false,
-    posterImg: "/demo/blackwood/cover.webp",
-    posterImgMobile: "/demo/blackwood/cover-mobile.webp",
+    posterImg: "/demo/blackwood/banner.svg",
+    posterImgMobile: "/demo/blackwood/banner.svg",
     // Warm everything the click will need: importing the scene module runs its
     // useGLTF.preload() for all five GLBs and downloads the R3F/post chunk; the
     // fetches pull the floor + brick textures into the HTTP cache; and warming
