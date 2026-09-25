@@ -82,7 +82,7 @@ export default function AdminLogin() {
         <p className="mt-2 text-[14px] text-ink-soft">
           {stage === "email"
             ? "We email a one-time code to the address on file."
-            : `Enter the 6-digit code sent to ${normalized}.`}
+            : `Enter the 8-digit code sent to ${normalized}.`}
         </p>
 
         {!supabase && (
@@ -136,7 +136,7 @@ export default function AdminLogin() {
                   inputMode="numeric"
                   autoComplete="one-time-code"
                   maxLength={8}
-                  placeholder="000000"
+                  placeholder="00000000"
                   value={code}
                   onChange={(e) => setCode(e.target.value)}
                   className={`${input} tracking-[0.3em]`}
@@ -145,7 +145,7 @@ export default function AdminLogin() {
               <button
                 type="button"
                 onClick={verify}
-                disabled={busy || code.trim().length < 6}
+                disabled={busy || code.trim().length < 8}
                 className="min-h-[48px] w-full rounded-full bg-brand-400 px-6 text-[15px] font-semibold text-[#05080F] transition-colors hover:bg-brand-300 disabled:opacity-50"
               >
                 {busy ? "Checking…" : "Sign in"}
