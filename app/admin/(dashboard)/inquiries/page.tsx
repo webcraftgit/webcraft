@@ -28,8 +28,11 @@ export default async function Inquiries({
 }: {
   searchParams: Promise<{ status?: string }>;
 }) {
-  const { db } = await requireAdmin();
-  if (!db) redirect("/admin/login");
+  // Defence in depth: the (dashboard) layout already gates non-admins, but it
+  // renders concurrently with this page, so gate here too — never run the
+  // inquiries query for a session that isn't an admin. RLS is the last word.
+  const { db, isAdmin } = await requireAdmin();
+  if (!db || !isAdmin) redirect("/admin/login");
   const status = (await searchParams).status;
 
   let q = db.from("inquiries").select("*").order("created_at", { ascending: false }).limit(200);
