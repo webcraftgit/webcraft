@@ -31,6 +31,30 @@ export const dynamic = "force-dynamic"; // never cached, never prerendered
 
 const MAX_BODY = 16 * 1024; // 16KB; the form's own limits sum to ~4.5KB
 
+/**
+ * Same-origin CSRF gate, tolerant of the www/apex split.
+ *
+ * A visitor on https://www.example.com and one on https://example.com are on
+ * the same site, but their Origin headers differ by four characters. A strict
+ * `origin !== site` string compare would 403 every real submission from
+ * whichever host isn't the one set in NEXT_PUBLIC_SITE_URL. We compare
+ * scheme + host + port, ignoring a leading "www.", so both hosts pass while a
+ * genuinely different site is still rejected. Unparseable input falls back to
+ * an exact match — fail closed, never open.
+ */
+function sameSite(origin: string, site: string): boolean {
+  try {
+    const a = new URL(origin);
+    const b = new URL(site);
+    const strip = (h: string) => h.replace(/^www\./, "");
+    return (
+      a.protocol === b.protocol && strip(a.host) === strip(b.host)
+    );
+  } catch {
+    return origin === site;
+  }
+}
+
 export async function POST(req: Request) {
   // 1. body size — Content-Length can lie, so re-check after reading
   const declared = Number(req.headers.get("content-length") ?? 0);
@@ -43,9 +67,10 @@ export async function POST(req: Request) {
   }
 
   // 2. same-origin only. Browsers always send Origin on cross-site POSTs.
+  //    www.example.com and example.com count as the same site (see sameSite).
   const origin = req.headers.get("origin");
   const site = process.env.NEXT_PUBLIC_SITE_URL;
-  if (origin && site && origin !== site) {
+  if (origin && site && !sameSite(origin, site)) {
     return NextResponse.json({ ok: false, error: "forbidden" }, { status: 403 });
   }
 
