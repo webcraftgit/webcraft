@@ -286,7 +286,7 @@ export const en = {
       },
       {
         q: `Will I be able to edit the site myself?`,
-        a: `Yes. Content you'll touch often (text, images, offers) is wired to an editing setup you can use without us. The parts that keep the site fast and polished stay in code, so the design can't drift after handover.`,
+        a: `On Business and Signature, yes. Content you'll touch often (text, images, offers, prices) is wired to a simple editing panel you can use without us. The parts that keep the site fast and polished stay in code, so the design can't drift after handover. On Launch, changes go through the monthly care plan instead, or you can upgrade to Business.`,
       },
       {
         q: `Do you handle hosting, domains and maintenance?`,
@@ -724,7 +724,7 @@ export const pl: Dictionary = {
       },
       {
         q: `Czy będę mógł samodzielnie edytować stronę?`,
-        a: `Tak. Treści, które często zmieniasz (teksty, zdjęcia, oferty), podłączamy do panelu edycji, z którego skorzystasz bez naszej pomocy. Elementy, które trzymają stronę szybką i dopracowaną, zostają w kodzie, żeby projekt nie rozjechał się po przekazaniu.`,
+        a: `W pakietach Biznes i Premium tak. Treści, które często zmieniasz (teksty, zdjęcia, oferty, ceny), podłączamy do prostego panelu edycji, z którego skorzystasz bez naszej pomocy. Elementy, które trzymają stronę szybką i dopracowaną, zostają w kodzie, żeby projekt nie rozjechał się po przekazaniu. W pakiecie Start zmiany wprowadzamy w ramach miesięcznej opieki albo możesz przejść na pakiet Biznes.`,
       },
       {
         q: `Czy zajmujecie się hostingiem, domenami i utrzymaniem?`,
