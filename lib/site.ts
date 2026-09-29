@@ -7,13 +7,16 @@
  * already uses for its CSRF Origin check — so the canonical origin cannot
  * drift between the two.
  *
- * ⚠️ THE FALLBACK IS A PLACEHOLDER AND MUST NOT REACH PRODUCTION. Shipping
- * with it makes every canonical, every OG image URL and every sitemap entry
- * point at a domain you do not own, which is worse than having none at all:
- * Google would be told the real pages are duplicates of someone else's site.
- * Set NEXT_PUBLIC_SITE_URL in the host's env before the first deploy.
+ * ⚠️ THE FALLBACK IS A SENTINEL AND MUST NOT REACH PRODUCTION. It is a
+ * deliberately unreachable host (RFC 2606 .invalid), NOT the real domain: the
+ * real domain is weturn.studio, set via NEXT_PUBLIC_SITE_URL in the host's env.
+ * The two must stay different — SITE_URL_IS_PLACEHOLDER below treats "env equals
+ * the fallback" as unconfigured, so if the fallback were weturn.studio, setting
+ * the real production URL would wrongly noindex the live site. Shipping with the
+ * sentinel points canonicals/OG/sitemap at a dead host; a real deploy always
+ * sets NEXT_PUBLIC_SITE_URL=https://weturn.studio first.
  */
-const FALLBACK_SITE_URL = "https://weturn.studio"; // TODO(launch): real domain
+const FALLBACK_SITE_URL = "https://example.invalid"; // sentinel — real domain is weturn.studio (set via env)
 
 export const SITE_URL = (
   process.env.NEXT_PUBLIC_SITE_URL || FALLBACK_SITE_URL
