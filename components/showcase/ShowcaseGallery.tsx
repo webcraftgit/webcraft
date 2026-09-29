@@ -125,7 +125,7 @@ function useLite(demo: Demo) {
 function LiveBadge({ demo, label }: { demo: Demo; label: string }) {
   if (useLite(demo)) return null;
   return (
-    <span className="absolute left-4 top-4 flex items-center gap-1.5 rounded-full bg-bg/70 px-3 py-1 text-label font-semibold uppercase tracking-[0.1em] text-ink backdrop-blur-sm">
+    <span aria-hidden className="absolute left-4 top-4 flex items-center gap-1.5 rounded-full bg-bg/70 px-3 py-1 text-label font-semibold uppercase tracking-[0.1em] text-ink backdrop-blur-sm">
       <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-accent-green" aria-hidden />
       {label}
     </span>
@@ -375,16 +375,14 @@ export default function ShowcaseGallery() {
               i === 0 && "md:col-span-2"
             )}
           >
-            {/* live preview — the whole frame is the button */}
-            <button
-              type="button"
-              onClick={(e) => openDemo(d, e.currentTarget)}
-              onMouseEnter={() => prewarm(d)}
-              onFocus={() => prewarm(d)}
-              onTouchStart={() => prewarm(d)}
-              aria-label={t.showcase.openFullscreen(d.name)}
+            {/* live preview — the whole frame is the button. The button is an
+                overlay SIBLING of the preview, not its wrapper: the live site
+                renders its own <button>s (menus, carts), and a button inside a
+                button is invalid HTML and a hydration error on md+ where the
+                preview runs live. */}
+            <div
               className={cn(
-                "relative block aspect-[4/3] w-full cursor-pointer overflow-hidden",
+                "relative aspect-[4/3] w-full",
                 i === 0 ? "md:aspect-[16/9]" : "md:aspect-[16/10]"
               )}
             >
@@ -393,11 +391,21 @@ export default function ShowcaseGallery() {
               <span className="absolute inset-0 bg-bg/0 transition-colors duration-300 group-hover:bg-bg/30" />
               {/* open affordance — always visible, not hover-only: nothing
                   else said the preview could be opened */}
-              <span className="absolute bottom-4 right-4 rounded-full bg-brand-400 px-4 py-2 text-small font-semibold text-[#05080F] shadow-[0_0_24px_rgba(56,189,248,0.35)] transition-all duration-300 group-hover:bg-brand-300 group-hover:shadow-[0_0_34px_rgba(56,189,248,0.6)]">
+              <span aria-hidden className="absolute bottom-4 right-4 rounded-full bg-brand-400 px-4 py-2 text-small font-semibold text-[#05080F] shadow-[0_0_24px_rgba(56,189,248,0.35)] transition-all duration-300 group-hover:bg-brand-300 group-hover:shadow-[0_0_34px_rgba(56,189,248,0.6)]">
                 {t.showcase.openBadge}
               </span>
               <LiveBadge demo={d} label={t.showcase.live} />
-            </button>
+              {/* last, so it sits over the badges and takes every click */}
+              <button
+                type="button"
+                onClick={(e) => openDemo(d, e.currentTarget)}
+                onMouseEnter={() => prewarm(d)}
+                onFocus={() => prewarm(d)}
+                onTouchStart={() => prewarm(d)}
+                aria-label={t.showcase.openFullscreen(d.name)}
+                className="absolute inset-0 block h-full w-full cursor-pointer"
+              />
+            </div>
 
             {/* meta */}
             <div className="flex-1 p-6 md:p-7">

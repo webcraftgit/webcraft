@@ -209,6 +209,6 @@ publicznie do pobrania. Trzymaj je w materiałach klienta.
 
 KRÓJ DISPLAY — METAL MACABRE
 ----------------------------
-Napis NOKTURN w nagłówku i stopce ma być złożony krojem Metal Macabre.
-Pliku fontu nie ma w repo — instrukcja i ścieżka: public/fonts/README.txt.
-Do czasu wrzucenia pliku stack schodzi na UnifrakturMaguntia.
+Docelowym krojem napisu NOKTURN jest Metal Macabre, ale jego licencja
+zabrania publikacji pliku, więc nie ma go w repo, a strona składa wordmark
+UnifrakturMaguntia. Szczegóły i jak przywrócić: public/fonts/README.txt.
