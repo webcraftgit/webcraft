@@ -242,7 +242,7 @@ export const en = {
         weeks: `2 weeks`,
         includes: [
           `Everything in Business`,
-          `Custom 3D / WebGL scenes (like this site)`,
+          `Up to 2 custom 3D / WebGL scenes (like this site)`,
           `Bespoke scroll & interaction design`,
           `Performance budget kept under load`,
           `Priority build slot`,
@@ -681,7 +681,7 @@ export const pl: Dictionary = {
         weeks: `2 tygodnie`,
         includes: [
           `Wszystko z pakietu Biznes`,
-          `Autorskie sceny 3D / WebGL (jak na tej stronie)`,
+          `Do 2 autorskich scen 3D / WebGL (jak na tej stronie)`,
           `Projekt scrolla i interakcji szyty na miarę`,
           `Budżet wydajności utrzymany pod obciążeniem`,
           `Priorytetowy termin realizacji`,
