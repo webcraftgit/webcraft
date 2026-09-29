@@ -78,11 +78,20 @@ const MOBILE_HDR = "/potsdamer_platz_256.hdr";
  * touching FitGroup or REFERENCE_WIDTH. */
 const MOBILE_ENV_ROT = new THREE.Euler(0.06, 0.22, 0);
 
+/* The lit (no-HDR) look. Two jobs now:
+ *   1. genuine HDR load failure on desktop/iPhone, and
+ *   2. Android, which we route here on purpose (see below).
+ * So it has to stand on its own as a good-looking lit mark, not just a
+ * not-broken one — brighter than the old emergency rig: a cool key from the
+ * top-left, a brand-blue fill from the right, and a lifted ambient so the metal
+ * never reads near-black. */
 function EnvMapFallback() {
   return (
     <>
-      <ambientLight intensity={0.55} />
-      <pointLight position={[0, 200, 100]} intensity={0.6} color="#A5F3FC" />
+      <ambientLight intensity={0.9} />
+      <pointLight position={[0, 200, 100]} intensity={1.1} color="#BAE6FD" />
+      <directionalLight position={[-140, 160, 120]} intensity={1.1} color="#E0F2FE" />
+      <directionalLight position={[160, -40, -80]} intensity={0.7} color="#38BDF8" />
     </>
   );
 }
@@ -148,10 +157,28 @@ export default function LogoScene({ onReady }: { onReady?: () => void }) {
   // Desktop uses the HDR env map for reflections. If it fails to load, drop the
   // material's metalness so the W stays a lit blue solid instead of a shadow.
   const [envFailed, setEnvFailed] = useState(false);
-  /* Both platforms load an HDRI now (mobile a 99KB 256x128 copy of the same
-     plate), so the metallic material runs everywhere. Only a genuine LOAD
-     FAILURE drops us back to the matte fallback. */
-  const hasEnvMap = !envFailed;
+
+  /* ————— ANDROID RENDERS THE MARK TOO DARK —————
+   * The mark is a near-specular metal, so on desktop and iPhone it is basically
+   * a mirror of the HDR plate. On many Android GPUs that plate does not survive
+   * the RGBE → half-float path (patchy half-float linear-filter support), so
+   * the environment decodes wrong or empty and the metal has almost nothing
+   * bright to reflect — it renders as a dark blue "shadow" of the W. Tuning the
+   * HDR cannot fix a device that will not sample it.
+   *
+   * So Android is routed to the lit (no-HDR) look ON PURPOSE: the brightened
+   * EnvMapFallback rig above, with a matte-metal material (see hasEnvMap). It
+   * loses the mirror reflection it was never getting anyway and gains a mark
+   * that is reliably visible. Detected client-side to avoid an SSR mismatch;
+   * desktop and iPhone still load and mirror the HDR exactly as before. */
+  const [isAndroid, setIsAndroid] = useState(false);
+  useEffect(() => {
+    setIsAndroid(/android/i.test(navigator.userAgent));
+  }, []);
+
+  /* Metallic (mirror) material only when we actually have a reflective
+     environment: not on Android, and not after a genuine HDR load failure. */
+  const hasEnvMap = !envFailed && !isAndroid;
 
   // CP4_46: only render while the hero is on screen AND no demo player covers
   // the page. R3F's default loop renders every frame forever, so the logo and
@@ -221,14 +248,21 @@ export default function LogoScene({ onReady }: { onReady?: () => void }) {
             models that have to be reconciled by hand. Both go through the
             same error boundary, so a failed fetch on either drops to the
             matte fallback instead of killing the WebGL context. */}
-        <EnvErrorBoundary
-          fallback={<EnvMapFallback />}
-          onFail={() => setEnvFailed(true)}
-        >
-          <Suspense fallback={<EnvMapFallback />}>
-            <Environment files={isMobile ? MOBILE_HDR : LOCAL_HDR} environmentRotation={isMobile ? MOBILE_ENV_ROT : undefined} />
-          </Suspense>
-        </EnvErrorBoundary>
+        {isAndroid ? (
+          /* Android never fetches the HDR: it renders it dark anyway (see the
+             note above), so we skip the 99KB download and the failing decode
+             and light the matte mark directly. */
+          <EnvMapFallback />
+        ) : (
+          <EnvErrorBoundary
+            fallback={<EnvMapFallback />}
+            onFail={() => setEnvFailed(true)}
+          >
+            <Suspense fallback={<EnvMapFallback />}>
+              <Environment files={isMobile ? MOBILE_HDR : LOCAL_HDR} environmentRotation={isMobile ? MOBILE_ENV_ROT : undefined} />
+            </Suspense>
+          </EnvErrorBoundary>
+        )}
       </Suspense>
     </Canvas>
   );

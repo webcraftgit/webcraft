@@ -74,13 +74,16 @@ export default function LogoMesh({ interactive = true, hasEnvMap = true }: { int
             that same failure case, so it is zero in normal operation. */}
         <meshPhysicalMaterial
           color="#38BDF8"
-          metalness={hasEnvMap ? 0.9 : 0.3}
-          roughness={hasEnvMap ? 0.22 : 0.4}
+          metalness={hasEnvMap ? 0.9 : 0.25}
+          roughness={hasEnvMap ? 0.22 : 0.38}
           clearcoat={1}
           clearcoatRoughness={0.12}
           envMapIntensity={1.4}
           emissive="#0EA5E9"
-          emissiveIntensity={hasEnvMap ? 0 : 0.25}
+          /* matte branch (Android + HDR-failure): a small emissive floor keeps
+             the mark a lit blue instead of leaning on reflections it doesn't
+             have. Zero on the metallic branch so desktop/iPhone are unchanged. */
+          emissiveIntensity={hasEnvMap ? 0 : 0.35}
         />
       </mesh>
       {/* Detached pixel fragments — same material family, slightly brighter */}

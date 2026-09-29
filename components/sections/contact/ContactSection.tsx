@@ -153,7 +153,9 @@ export default function ContactSection() {
         </div>
 
         {/* ——— form ——— */}
-        <div data-reveal className="glass relative rounded-panel p-6 md:p-8">
+        {/* Start-project CTAs scroll here (scrollToHash aims at this, not the
+            section top) so the whole form lands in view. */}
+        <div data-reveal data-scroll-focus className="glass relative rounded-panel p-6 md:p-8">
           <span
             aria-hidden
             className="pointer-events-none absolute inset-x-6 top-0 h-px"
