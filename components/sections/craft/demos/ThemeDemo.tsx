@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { cn } from "@/lib/utils";
+import { cn, radioGroupKeys } from "@/lib/utils";
 import { useT } from "@/components/i18n/LanguageProvider";
 
 type ThemeId = "studio" | "bakery" | "clinic" | "gym";
@@ -139,17 +139,19 @@ export default function ThemeDemo() {
       </div>
 
       {/* swatches */}
-      <div className="mt-4 flex items-center gap-2.5" role="radiogroup" aria-label={t.demos.theme.aria}>
+      <div className="mt-4 flex items-center gap-2.5" role="radiogroup" aria-label={t.demos.theme.aria} onKeyDown={radioGroupKeys}>
         {THEMES.map((sw) => (
           <button
             key={sw.id}
             role="radio"
             aria-checked={sw.id === theme.id}
+            tabIndex={sw.id === theme.id ? 0 : -1}
             aria-label={t.demos.theme.themeAria(nameOf(sw.id))}
             data-cursor={t.demos.theme.cursor}
             onClick={() => setTheme(sw)}
             className={cn(
-              "relative h-9 w-9 rounded-full border transition-transform duration-300",
+              // drawn at 36px, tappable at 44px
+              "relative h-9 w-9 rounded-full border transition-transform duration-300 after:absolute after:-inset-1 after:content-['']",
               sw.id === theme.id
                 ? "scale-110 border-brand-300"
                 : "border-brand-400/25 hover:scale-105"

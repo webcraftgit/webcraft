@@ -8,7 +8,9 @@ import { cn } from "@/lib/utils";
 /**
  * PL / EN segmented control. Two pills in a glass track; the active one is
  * filled. Sets the locale on tap — the whole page re-renders from the swapped
- * dictionary. Small enough to sit in the navbar; full 44px hit area via padding.
+ * dictionary. The pills are drawn small enough for the navbar, but each one's
+ * hit area is stretched to 44px tall with a pseudo-element (the pills alone
+ * were ~24px).
  */
 export default function LangToggle({ className }: { className?: string }) {
   const [locale, setLocale] = useLocale();
@@ -33,7 +35,8 @@ export default function LangToggle({ className }: { className?: string }) {
             aria-pressed={active}
             aria-label={LOCALE_LABELS[l]}
             className={cn(
-              "min-w-[34px] rounded-full px-2.5 py-1 text-[12.5px] font-semibold tracking-wide transition-colors",
+              "relative min-w-[38px] rounded-full px-2.5 py-1.5 text-[12.5px] font-semibold tracking-wide transition-colors",
+              "after:absolute after:-inset-y-2 after:inset-x-0 after:content-['']",
               active
                 ? "bg-brand-400 text-[#05080F]"
                 : "text-ink-soft hover:text-ink"

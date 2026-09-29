@@ -15,6 +15,7 @@ import {
   LOCALES,
   type Locale,
 } from "@/lib/i18n/config";
+import { usePathname } from "next/navigation";
 import { DICTS, type Dictionary } from "@/lib/i18n/dictionaries";
 import { typeset } from "@/lib/i18n/typography";
 
@@ -35,6 +36,22 @@ type Ctx = {
 const LanguageContext = createContext<Ctx | null>(null);
 
 /**
+ * First visit, no stored choice: follow the browser. Anyone whose browser
+ * lists Polish anywhere gets Polish; everyone else gets English instead of a
+ * page they may not read. Crawlers are left on the default so Google keeps
+ * rendering the Polish page it indexes (its renderer reports en-US).
+ */
+function detectLocale(): Locale {
+  if (typeof navigator === "undefined") return DEFAULT_LOCALE;
+  if (/bot|crawl|spider|slurp|lighthouse|headless/i.test(navigator.userAgent)) {
+    return DEFAULT_LOCALE;
+  }
+  const langs = navigator.languages?.length ? navigator.languages : [navigator.language];
+  if (langs.some((l) => l?.toLowerCase().startsWith("pl"))) return "pl";
+  return langs.some((l) => l?.toLowerCase().startsWith("en")) ? "en" : DEFAULT_LOCALE;
+}
+
+/**
  * Holds the active locale and swaps the dictionary. Initial state is the
  * server default so hydration matches; a returning visitor's stored choice is
  * applied in an effect (with a brief flip for the non-default language — see
@@ -45,21 +62,36 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>(DEFAULT_LOCALE);
 
   useEffect(() => {
+    let saved: string | null = null;
     try {
-      const saved = localStorage.getItem(LOCALE_STORAGE_KEY);
-      if (saved && LOCALES.includes(saved as Locale) && saved !== locale) {
-        setLocaleState(saved as Locale);
-      }
+      saved = localStorage.getItem(LOCALE_STORAGE_KEY);
     } catch {
-      /* localStorage unavailable — stay on default */
+      /* localStorage unavailable — fall through to detection */
     }
+    const next =
+      saved && LOCALES.includes(saved as Locale) ? (saved as Locale) : detectLocale();
+    if (next !== locale) setLocaleState(next);
     // run once
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const pathname = usePathname();
   useEffect(() => {
     document.documentElement.lang = locale;
-  }, [locale]);
+    // Server metadata is always the default locale; keep the tab title in the
+    // language the visitor is actually reading. Next streams the metadata
+    // <title> in after hydration (and again on client navigation), which
+    // would overwrite a one-off assignment — so watch <head> and re-apply.
+    const title = TYPESET[locale].titles[pathname];
+    if (!title) return;
+    const apply = () => {
+      if (document.title !== title) document.title = title;
+    };
+    apply();
+    const mo = new MutationObserver(apply);
+    mo.observe(document.head, { subtree: true, childList: true, characterData: true });
+    return () => mo.disconnect();
+  }, [locale, pathname]);
 
   const setLocale = useCallback((l: Locale) => {
     setLocaleState(l);

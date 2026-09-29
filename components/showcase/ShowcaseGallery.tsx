@@ -14,7 +14,7 @@ import { useIsMobile, usePrefersReducedMotion } from "@/hooks/useMediaQuery";
 import { cn } from "@/lib/utils";
 import { useT } from "@/components/i18n/LanguageProvider";
 import { DemoPreviewContext } from "@/components/showcase/DemoHeading";
-import { scrollWindowTo } from "@/lib/scroll-to";
+import { lockScroll, scrollWindowTo } from "@/lib/scroll-to";
 import { ScrollTrigger } from "@/lib/gsap";
 
 /* demo sites lazy-load — they carry their own R3F canvases */
@@ -57,10 +57,9 @@ type Demo = {
 // dictionary (keyed by id). The demo site's own internals stay in character
 // (i.e. not translated) by design — it is fictional client-style work.
 type DemoId = "blackwood" | "wisniowa" | "nokturn";
-const BASE: Omit<Demo, "tagline" | "facts">[] = [
+const BASE: Omit<Demo, "name" | "tagline" | "facts">[] = [
   {
     id: "blackwood",
-    name: "Blackwood · Speyside Single Malt",
     Site: BlackwoodSite,
     livePreview: false,
     // Centered banner survives object-cover at both card sizes, so one still
@@ -91,8 +90,11 @@ const BASE: Omit<Demo, "tagline" | "facts">[] = [
   },
   {
     id: "wisniowa",
-    name: "Wiśniowa · stomatologia",
     Site: WisniowaSite,
+    // Phones and reduced-motion get this still instead of the live preview —
+    // without it the card was a beige box with the name on it. A 4:3 capture
+    // of the real hero (1160×870), so it fills the mobile card uncropped.
+    posterImg: "/demo/wisniowa/poster.webp",
     // no WebGL: cheap enough to run live in the card
     posterBg:
       "radial-gradient(60% 55% at 40% 40%, rgba(78,107,91,0.16) 0%, transparent 70%), #F5F2EA",
@@ -103,13 +105,32 @@ const BASE: Omit<Demo, "tagline" | "facts">[] = [
    * bring it back, re-add an entry and its dictionary keys. */
   {
     id: "nokturn",
-    name: "Nokturn · sklep odzieżowy",
     Site: NokturnSite,
+    posterImg: "/demo/nokturn/poster.webp",
     // no WebGL and a type-only hero: cheap enough to run live in the card
     posterBg:
       "radial-gradient(58% 52% at 44% 40%, rgba(126,17,22,0.20) 0%, transparent 70%), #0A0A0C",
   },
 ];
+
+/** true when the card shows a still instead of running the site live */
+function useLite(demo: Demo) {
+  const isMobile = useIsMobile();
+  const reduced = usePrefersReducedMotion();
+  return isMobile || reduced || demo.livePreview === false;
+}
+
+/** "Live preview" only where the site really is running — it used to be
+ *  stamped on posters too (Blackwood always, every card on phones). */
+function LiveBadge({ demo, label }: { demo: Demo; label: string }) {
+  if (useLite(demo)) return null;
+  return (
+    <span className="absolute left-4 top-4 flex items-center gap-1.5 rounded-full bg-bg/70 px-3 py-1 text-label font-semibold uppercase tracking-[0.1em] text-ink backdrop-blur-sm">
+      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-accent-green" aria-hidden />
+      {label}
+    </span>
+  );
+}
 
 /**
  * The real site, running live inside the card: rendered at a fixed virtual
@@ -121,9 +142,7 @@ function LivePreview({ demo }: { demo: Demo }) {
   const box = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(0.28);
   const [near, setNear] = useState(false);
-  const isMobile = useIsMobile();
-  const reduced = usePrefersReducedMotion();
-  const lite = isMobile || reduced || demo.livePreview === false;
+  const lite = useLite(demo);
 
   useEffect(() => {
     const el = box.current;
@@ -203,12 +222,16 @@ export default function ShowcaseGallery() {
   const t = useT();
   const DEMOS: Demo[] = BASE.map((d) => ({
     ...d,
+    name: t.showcase.demos[d.id as DemoId].name,
     tagline: t.showcase.demos[d.id as DemoId].blurb,
     facts: t.showcase.demos[d.id as DemoId].facts,
   }));
   const reveal = useReveal<HTMLDivElement>();
   const [open, setOpen] = useState<Demo | null>(null);
   const closeBtn = useRef<HTMLButtonElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  // the card button that opened the player — focus goes back to it on close
+  const openerRef = useRef<HTMLElement | null>(null);
 
   /* CP4_55 — COMING BACK OUT OF A DEMO DUMPED YOU IN THE PROCESS SECTION.
    *
@@ -268,6 +291,8 @@ export default function ShowcaseGallery() {
           { immediate: true }
         );
         ScrollTrigger.refresh();
+        // hand focus back to the card that opened the player
+        openerRef.current?.focus({ preventScroll: true });
       });
     });
     return () => {
@@ -276,62 +301,106 @@ export default function ShowcaseGallery() {
     };
   }, [open]);
 
+  /* The player is a full-screen "page", so the phone's Back gesture has to
+   * close it — before, Back left the whole site. Opening pushes one history
+   * entry; every way of closing (button, Esc, Back) goes through that entry,
+   * so the history stays balanced. */
+  const pushed = useRef(false);
+  const requestClose = useCallback(() => {
+    if (pushed.current) window.history.back(); // → popstate → close()
+    else close();
+  }, [close]);
+
+  const openDemo = useCallback((d: Demo, opener: HTMLElement) => {
+    openerRef.current = opener;
+    setOpen(d);
+  }, []);
+
+  const openId = open?.id ?? null;
   useEffect(() => {
-    if (!open) return;
-    document.documentElement.style.overflow = "hidden";
+    if (!openId) return;
+    lockScroll(true);
     // CP4_46: tell the home hero's WebGL canvas to stop rendering while a demo
     // owns the screen (LogoScene listens). Otherwise two render loops run.
     window.dispatchEvent(new CustomEvent("weturn:demo-player", { detail: true }));
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && close();
+
+    window.history.pushState({ weturnDemo: openId }, "");
+    pushed.current = true;
+    const onPop = () => {
+      pushed.current = false;
+      close();
+    };
+
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && requestClose();
+    /* Focus containment. The demos run their own traps (cart drawer, mobile
+       menu), so rather than a second Tab trap fighting them, anything that
+       lets focus escape the player — into the navbar or the page behind — is
+       caught here and sent back to the Close button. */
+    const onFocusIn = (e: FocusEvent) => {
+      const dialog = dialogRef.current;
+      if (dialog && e.target instanceof Node && !dialog.contains(e.target)) {
+        closeBtn.current?.focus();
+      }
+    };
+
+    window.addEventListener("popstate", onPop);
     window.addEventListener("keydown", onKey);
+    document.addEventListener("focusin", onFocusIn);
     closeBtn.current?.focus();
     return () => {
-      document.documentElement.style.overflow = "";
+      lockScroll(false);
       window.dispatchEvent(new CustomEvent("weturn:demo-player", { detail: false }));
+      window.removeEventListener("popstate", onPop);
       window.removeEventListener("keydown", onKey);
+      document.removeEventListener("focusin", onFocusIn);
     };
-  }, [open, close]);
+  }, [openId, close, requestClose]);
 
   return (
     <div ref={reveal}>
       {/* hidden while the player is open → previews leave the viewport and
           their observers unmount the WebGL contexts behind the overlay */}
-      <div className={cn("grid grid-cols-1 gap-10", open && "hidden")}>
-        {DEMOS.map((d) => (
+      <div className={cn("grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-8", open && "hidden")}>
+        {DEMOS.map((d, i) => (
           <article
             key={d.id}
             ref={(node) => {
               cards.current[d.id] = node;
             }}
             data-reveal
-            className="glass group relative overflow-hidden rounded-panel transition-colors duration-300 hover:border-[var(--glass-border-hover)]"
+            className={cn(
+              "glass group relative flex flex-col overflow-hidden rounded-panel transition-colors duration-300 hover:border-[var(--glass-border-hover)]",
+              // first demo is featured full-width; the rest pair up on md+ so
+              // the section is ~2 screens instead of three stacked 16:9 frames
+              i === 0 && "md:col-span-2"
+            )}
           >
             {/* live preview — the whole frame is the button */}
             <button
               type="button"
-              onClick={() => setOpen(d)}
+              onClick={(e) => openDemo(d, e.currentTarget)}
               onMouseEnter={() => prewarm(d)}
               onFocus={() => prewarm(d)}
               onTouchStart={() => prewarm(d)}
               aria-label={t.showcase.openFullscreen(d.name)}
-              className="relative block aspect-[4/3] w-full cursor-pointer overflow-hidden md:aspect-[16/9]"
+              className={cn(
+                "relative block aspect-[4/3] w-full cursor-pointer overflow-hidden",
+                i === 0 ? "md:aspect-[16/9]" : "md:aspect-[16/10]"
+              )}
             >
               <LivePreview demo={d} />
-              {/* hover veil + CTA */}
-              <span className="absolute inset-0 flex items-center justify-center bg-bg/0 transition-colors duration-300 group-hover:bg-bg/40">
-                <span className="touch-show translate-y-2 rounded-full bg-brand-400 px-6 py-2.5 text-small font-semibold text-[#05080F] opacity-0 shadow-[0_0_30px_rgba(56,189,248,0.45)] transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
-                  {t.showcase.openBadge}
-                </span>
+              {/* hover veil */}
+              <span className="absolute inset-0 bg-bg/0 transition-colors duration-300 group-hover:bg-bg/30" />
+              {/* open affordance — always visible, not hover-only: nothing
+                  else said the preview could be opened */}
+              <span className="absolute bottom-4 right-4 rounded-full bg-brand-400 px-4 py-2 text-small font-semibold text-[#05080F] shadow-[0_0_24px_rgba(56,189,248,0.35)] transition-all duration-300 group-hover:bg-brand-300 group-hover:shadow-[0_0_34px_rgba(56,189,248,0.6)]">
+                {t.showcase.openBadge}
               </span>
-              {/* live badge */}
-              <span className="absolute left-4 top-4 flex items-center gap-1.5 rounded-full bg-bg/70 px-3 py-1 text-label font-semibold uppercase tracking-[0.1em] text-ink backdrop-blur-sm">
-                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-accent-green" aria-hidden />
-                {t.showcase.live}
-              </span>
+              <LiveBadge demo={d} label={t.showcase.live} />
             </button>
 
             {/* meta */}
-            <div className="p-6 md:p-7">
+            <div className="flex-1 p-6 md:p-7">
               <h3 className="font-display text-[clamp(1.2rem,1.8vw,1.5rem)] font-medium text-ink">
                 {d.name}
               </h3>
@@ -355,6 +424,7 @@ export default function ShowcaseGallery() {
       <AnimatePresence>
         {open && (
           <motion.div
+            ref={dialogRef}
             key={open.id}
             role="dialog"
             aria-modal="true"
@@ -378,7 +448,7 @@ export default function ShowcaseGallery() {
               <button
                 ref={closeBtn}
                 type="button"
-                onClick={close}
+                onClick={requestClose}
                 className="glass flex min-h-[44px] items-center gap-2 rounded-full px-5 py-2 text-small font-medium text-ink transition-colors hover:border-[var(--glass-border-hover)]"
               >
                 {t.showcase.close}

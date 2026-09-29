@@ -3,7 +3,7 @@
 import { useCallback, useRef, useState } from "react";
 import { animate, motion, useMotionValue, type MotionValue } from "framer-motion";
 import { usePrefersReducedMotion } from "@/hooks/useMediaQuery";
-import { cn } from "@/lib/utils";
+import { cn, radioGroupKeys } from "@/lib/utils";
 import { EASE_OUT_EXPO } from "@/animations/variants";
 import { useT } from "@/components/i18n/LanguageProvider";
 
@@ -50,16 +50,17 @@ export default function MotionDemo() {
   return (
     <div className="flex h-full flex-col">
       {/* easing picks */}
-      <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={t.demos.motion.aria}>
+      <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={t.demos.motion.aria} onKeyDown={radioGroupKeys}>
         {MOVES.map((m) => (
           <button
             key={m.id}
             role="radio"
             aria-checked={m.id === move.id}
+            tabIndex={m.id === move.id ? 0 : -1}
             data-cursor={t.demos.motion.cursor}
             onClick={() => play(m)}
             className={cn(
-              "rounded-full px-4 py-2 text-[12.5px] font-medium transition-colors duration-300",
+              "min-h-[44px] rounded-full px-4 py-2 text-[12.5px] font-medium transition-colors duration-300",
               m.id === move.id
                 ? "bg-brand-400 text-[#05080F]"
                 : "glass text-ink hover:border-[var(--glass-border-hover)]"

@@ -10,7 +10,7 @@ import { scrollWindowTo } from "@/lib/scroll-to";
 /**
  * FAQ (CP4) — glass accordion. Open/close is pointer-driven, so Framer
  * Motion owns it (locked rule: GSAP = scroll, Framer = pointer).
- * One item open at a time; buttons carry aria-expanded/aria-controls.
+ * Items open independently; buttons carry aria-expanded/aria-controls.
  * Answers stay honest — no invented numbers, no fake guarantees.
  */
 
@@ -20,26 +20,23 @@ export default function FAQSection() {
   const t = useT();
   const FAQS = t.faq.items;
   const reveal = useReveal<HTMLDivElement>();
-  const [open, setOpen] = useState<number | null>(0);
+  // Several answers can be open at once, so people can compare them.
+  const [openSet, setOpenSet] = useState<Set<number>>(() => new Set([0]));
   const baseId = useId();
 
   /* CP4_54 — CENTRE THE ANSWER YOU JUST OPENED.
    *
    * Opening an item near the bottom of the screen pushed its answer below the
    * fold, so the reward for tapping was a scroll. Now the page moves the item
-   * into the middle of the viewport.
+   * into the middle of the viewport (client preference: always centre, even
+   * when the answer was already visible).
    *
-   * The catch: at the moment of the click the panel is still 0px tall and the
-   * previously-open panel is still at full height, so measuring the live
-   * layout would centre on geometry that is about to change. Waiting for the
-   * 450ms collapse to finish instead would mean the page sits still and THEN
-   * lurches. So the final geometry is PREDICTED from the two heights we
-   * already know — the answer's own content height, and the height the item
-   * above is about to give back — and the scroll starts on the same frame as
-   * the accordion. The two animations run together and land together.
+   * At the moment of the click the panel is still 0px tall, so the final
+   * geometry is PREDICTED from the answer's content height and the scroll
+   * starts on the same frame as the accordion; the two land together.
    *
-   * A tall answer is top-aligned under the navbar instead of centred, because
-   * centring something taller than the screen hides its first line. */
+   * A tall answer is top-aligned under the navbar instead, because anything
+   * taller than the screen must show its first line. */
   const items = useRef<Array<HTMLDivElement | null>>([]);
   const panels = useRef<Array<HTMLDivElement | null>>([]);
   const NAV_CLEARANCE = 108; // fixed navbar + a little air
@@ -52,27 +49,26 @@ export default function FAQSection() {
 
   const toggle = useCallback(
     (i: number) => {
-      const prev = open;
-      const next = prev === i ? null : i;
-      setOpen(next);
-      if (next === null) return; // closing: leave the page where it is
+      const opening = !openSet.has(i);
+      setOpenSet((s) => {
+        const next = new Set(s);
+        if (next.has(i)) next.delete(i);
+        else next.add(i);
+        return next;
+      });
+      if (!opening) return; // closing: leave the page where it is
 
       const el = items.current[i];
       if (!el) return;
 
       const rect = el.getBoundingClientRect();
-      // an item ABOVE this one collapsing lifts everything below it
-      const lift = prev !== null && prev < i ? panelHeight(prev) : 0;
-      const top = rect.top - lift;
       const height = rect.height + panelHeight(i);
-
       const vh = window.innerHeight;
       const offset =
         height > vh - NAV_CLEARANCE ? NAV_CLEARANCE : (vh - height) / 2;
-
-      scrollWindowTo(window.scrollY + top - offset);
+      scrollWindowTo(window.scrollY + rect.top - offset);
     },
-    [open]
+    [openSet]
   );
 
   return (
@@ -84,7 +80,7 @@ export default function FAQSection() {
 
         <div data-reveal className="mt-10 space-y-3 md:mt-12">
           {FAQS.map((item, i) => {
-            const isOpen = open === i;
+            const isOpen = openSet.has(i);
             const panelId = `${baseId}-faq-panel-${i}`;
             const btnId = `${baseId}-faq-btn-${i}`;
             return (

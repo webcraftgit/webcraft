@@ -3,7 +3,7 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 import { rateLimit } from "@/lib/security/rate-limit";
 import { clientIp, hashIp } from "@/lib/security/hash";
 import {
-  TIERS, READINESS, BUDGETS, LOCALES, MAX,
+  TIERS, SERVICES, READINESS, BUDGETS, LOCALES, MAX,
   oneOf, uuid, str, email, host, utm,
 } from "@/lib/security/validation";
 
@@ -107,12 +107,19 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: "validation" }, { status: 400 });
   }
 
+  // Non-website requests (video / print / other) have no column of their own
+  // (the tier CHECK only allows the three website tiers). Tag the stored
+  // message instead, so the inbox shows what the inquiry is about without a
+  // schema migration.
+  const service = oneOf(body.service, SERVICES);
+  const storedMessage = service ? `[${service}] ${message}`.slice(0, MAX.message) : message;
+
   const consented = body.analytics_consent === true;
 
   const row = {
     name,
     email: mail,
-    message,
+    message: storedMessage,
     tier: oneOf(body.tier, TIERS),
     content_readiness: oneOf(body.content_readiness, READINESS),
     budget: oneOf(body.budget, BUDGETS),

@@ -92,6 +92,8 @@ const SPIN = 12; // deg of self-rotation per step
 const MAX_POS = 1.6; // transforms clamp here; fully hidden past 1.45
 const WHEEL_SPRING = { type: "spring", stiffness: 240, damping: 30 } as const;
 const N = ICONS.length;
+const tabId = (i: number) => `service-tab-${i}`;
+const panelId = (i: number) => `service-panel-${i}`;
 const mod = (v: number) => ((v % N) + N) % N;
 /** signed shortest wrap distance from slot `from` to slot `to` */
 const shortest = (from: number, to: number) => {
@@ -150,10 +152,13 @@ function WheelSlide({ i, rotation, active, promote, service, onFocus }: SlidePro
   );
 
   return (
-    <motion.li
+    <motion.div
       style={{ zIndex }}
+      id={panelId(i)}
+      role="tabpanel"
+      aria-labelledby={tabId(i)}
       aria-hidden={!active}
-      className="pointer-events-none absolute inset-x-0 top-16 flex list-none justify-center md:top-24"
+      className="pointer-events-none absolute inset-x-0 top-16 flex justify-center md:top-24"
     >
       <motion.div
         style={{
@@ -184,7 +189,7 @@ function WheelSlide({ i, rotation, active, promote, service, onFocus }: SlidePro
       >
         <ServiceCard service={service} active={active} index={i} />
       </motion.div>
-    </motion.li>
+    </motion.div>
   );
 }
 
@@ -302,7 +307,7 @@ export default function ServicesSection() {
 
           {/* rotary wheel — full-bleed so the side discs peek in from the edges */}
           <div data-reveal className="relative pb-[clamp(96px,12vw,160px)] pt-12 md:pt-16">
-            <motion.ul
+            <motion.div
               drag="x"
               dragConstraints={{ left: 0, right: 0 }}
               dragElastic={0}
@@ -335,24 +340,51 @@ export default function ServicesSection() {
                   }}
                 />
               ))}
-            </motion.ul>
+            </motion.div>
 
             {/* controls */}
             <div className="container-x mt-4 flex items-center justify-between">
-              <div className="flex gap-2.5" role="tablist" aria-label={t.services.tablist}>
-                {SERVICES.map((svc, i) => (
-                  <button
-                    key={svc.key}
-                    role="tab"
-                    aria-selected={i === mod(index)}
-                    aria-label={svc.title}
-                    onClick={() => goToItem(i)}
-                    className={cn(
-                      "relative h-2 rounded-full transition-all duration-300 after:absolute after:-inset-x-2 after:-inset-y-3 after:content-['']",
-                      i === mod(index) ? "w-8 bg-brand-400" : "w-2 bg-brand-700 hover:bg-brand-500"
-                    )}
-                  />
-                ))}
+              {/* ARIA tabs pattern: one tab stop, arrows/Home/End move between
+                  services, each tab controls its disc's tabpanel. The dots
+                  are drawn at 10px but each hit area is 44px tall. */}
+              <div
+                className="flex gap-4"
+                role="tablist"
+                aria-label={t.services.tablist}
+                onKeyDown={(e) => {
+                  const cur = mod(indexRef.current);
+                  const to =
+                    e.key === "ArrowRight" ? mod(cur + 1)
+                    : e.key === "ArrowLeft" ? mod(cur - 1)
+                    : e.key === "Home" ? 0
+                    : e.key === "End" ? N - 1
+                    : null;
+                  if (to === null) return;
+                  e.preventDefault();
+                  goToItem(to);
+                  document.getElementById(tabId(to))?.focus();
+                }}
+              >
+                {SERVICES.map((svc, i) => {
+                  const selected = i === mod(index);
+                  return (
+                    <button
+                      key={svc.key}
+                      id={tabId(i)}
+                      type="button"
+                      role="tab"
+                      aria-selected={selected}
+                      aria-controls={panelId(i)}
+                      tabIndex={selected ? 0 : -1}
+                      aria-label={svc.title}
+                      onClick={() => goToItem(i)}
+                      className={cn(
+                        "relative h-2.5 rounded-full transition-all duration-300 after:absolute after:-inset-x-2 after:-inset-y-[17px] after:content-['']",
+                        selected ? "w-9 bg-brand-400" : "w-2.5 bg-brand-700 hover:bg-brand-500"
+                      )}
+                    />
+                  );
+                })}
               </div>
               <div className="flex gap-3">
                 {[

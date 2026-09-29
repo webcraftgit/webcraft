@@ -7,7 +7,7 @@ import { Environment } from "@react-three/drei";
 import LogoMesh from "./LogoMesh";
 import FitGroup from "./FitGroup";
 import ParticleField from "./ParticleField";
-import { useIsMobile, usePrefersReducedMotion } from "@/hooks/useMediaQuery";
+import { useIsMobile, useMediaQuery, usePrefersReducedMotion } from "@/hooks/useMediaQuery";
 
 /**
  * Graceful fallback when the HDR fails to load.
@@ -154,6 +154,7 @@ const LOCAL_HDR = "/potsdamer_platz_1k.hdr";
 export default function LogoScene({ onReady }: { onReady?: () => void }) {
   const isMobile = useIsMobile();
   const reduced = usePrefersReducedMotion();
+  const isDesktop = useMediaQuery("(min-width: 1024px)", true);
   // Desktop uses the HDR env map for reflections. If it fails to load, drop the
   // material's metalness so the W stays a lit blue solid instead of a shadow.
   const [envFailed, setEnvFailed] = useState(false);
@@ -240,7 +241,10 @@ export default function LogoScene({ onReady }: { onReady?: () => void }) {
         <FitGroup>
           <LogoMesh interactive={!isMobile && !reduced} hasEnvMap={hasEnvMap} />
         </FitGroup>
-        {!reduced && <ParticleField count={isMobile ? 200 : 400} />}
+        {/* Tablets (768–1023px) got the full desktop 400 inside an orbit
+            already contracted to their width — the densest swarm of any
+            size, right behind the headline. */}
+        {!reduced && <ParticleField count={isMobile ? 200 : isDesktop ? 400 : 260} />}
 
         {/* Reflections. SAME PLATE ON BOTH PLATFORMS — 1k on desktop, the
             99KB 256x128 copy on mobile — so the mark's shading is the same

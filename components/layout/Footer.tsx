@@ -19,6 +19,7 @@ const LINKS = [
   { key: "process", href: "/#process" },
   { key: "pricing", href: "/#pricing" },
   { key: "faq", href: "/#faq" },
+  { key: "contact", href: "/#contact" },
 ] as const;
 
 export default function Footer() {
@@ -42,13 +43,13 @@ export default function Footer() {
           <p className="mt-1 text-small text-ink-soft">{t.footer.tagline}</p>
         </div>
 
-        <nav aria-label="Footer">
-          <ul className="flex flex-wrap gap-x-6 gap-y-2">
+        <nav aria-label={t.footer.navLabel}>
+          <ul className="flex flex-wrap gap-x-6 md:gap-y-2">
             {LINKS.map((l) => (
               <li key={l.href}>
                 <Link
                   href={l.href}
-                  className="text-small text-ink-soft transition-colors hover:text-ink"
+                  className="inline-flex min-h-[44px] items-center text-small text-ink-soft transition-colors hover:text-ink md:min-h-0"
                 >
                   {t.nav[l.key]}
                 </Link>
@@ -60,7 +61,7 @@ export default function Footer() {
         <div className="text-small text-ink-soft md:text-right">
           <a
             href={`mailto:${CONTACT_EMAIL}`}
-            className="text-brand-300 transition-colors hover:text-brand-400"
+            className="inline-flex min-h-[44px] items-center text-brand-300 transition-colors hover:text-brand-400 md:min-h-0"
           >
             {CONTACT_EMAIL}
           </a>
@@ -68,13 +69,13 @@ export default function Footer() {
             © {new Date().getFullYear()} Weturn. {t.footer.rights}
           </p>
           <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1 md:justify-end">
-            <Link href="/privacy" className="transition-colors hover:text-ink">
+            <Link href="/privacy" className="inline-flex min-h-[44px] items-center transition-colors hover:text-ink md:min-h-0">
               {t.consent.policy}
             </Link>
             <button
               type="button"
               onClick={reopen}
-              className="text-left underline decoration-brand-500/30 underline-offset-4 transition-colors hover:text-ink"
+              className="inline-flex min-h-[44px] items-center text-left underline decoration-brand-500/30 underline-offset-4 transition-colors hover:text-ink md:min-h-0"
             >
               {t.consent.settingsLink}
             </button>

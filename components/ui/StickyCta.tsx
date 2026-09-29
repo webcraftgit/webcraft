@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useT } from "@/components/i18n/LanguageProvider";
+import { useConsent } from "@/components/analytics/ConsentProvider";
 
 /**
  * Sticky mobile CTA (CP4.2, conversion idea #6). Mobile-only pill fixed to
@@ -15,6 +16,9 @@ export default function StickyCta() {
   const t = useT();
   const [pastCraft, setPastCraft] = useState(false);
   const [contactVisible, setContactVisible] = useState(false);
+  // the consent banner owns the bottom edge until it is answered — both used
+  // to sit at bottom-4 and stack on top of each other
+  const { decided } = useConsent();
 
   useEffect(() => {
     const craft = document.getElementById("craft");
@@ -37,7 +41,7 @@ export default function StickyCta() {
     };
   }, []);
 
-  const show = pastCraft && !contactVisible;
+  const show = pastCraft && !contactVisible && decided;
 
   return (
     <AnimatePresence>
