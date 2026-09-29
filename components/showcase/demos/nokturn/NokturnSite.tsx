@@ -83,7 +83,7 @@ import { useNokturnCopy } from "./copy";
  *  Bodoni carries the headings instead: high-contrast, engraved, liturgical
  *  rather than costume-gothic, and its latin + latin-ext subsets cover Polish
  *  completely. All four faces are npm packages served from our own origin, so
- *  none of this touches CSP, and none of it is Clash Display — Webcraft's own
+ *  none of this touches CSP, and none of it is Clash Display — Weturn's own
  *  face, which would make the client's store look like the agency.
  *
  *  MONO IS RATIONED. It used to set the nav, the footer headings, the
@@ -1497,7 +1497,7 @@ export default function NokturnSite({ preview = false }: { preview?: boolean }) 
   return (
     /* relative + overflow-hidden: the drawer anchors HERE, not to the browser */
     /* data-demo scopes the focus ring: globals.css sets an unscoped
-       :focus-visible in Webcraft's sky blue, which this store inherited, so
+       :focus-visible in Weturn's sky blue, which this store inherited, so
        every keyboard focus ring in a near-black oxblood shop was cyan. */
     <div
       data-demo="nokturn"

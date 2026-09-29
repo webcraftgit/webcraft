@@ -281,13 +281,13 @@ export default function ShowcaseGallery() {
     document.documentElement.style.overflow = "hidden";
     // CP4_46: tell the home hero's WebGL canvas to stop rendering while a demo
     // owns the screen (LogoScene listens). Otherwise two render loops run.
-    window.dispatchEvent(new CustomEvent("webcraft:demo-player", { detail: true }));
+    window.dispatchEvent(new CustomEvent("weturn:demo-player", { detail: true }));
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && close();
     window.addEventListener("keydown", onKey);
     closeBtn.current?.focus();
     return () => {
       document.documentElement.style.overflow = "";
-      window.dispatchEvent(new CustomEvent("webcraft:demo-player", { detail: false }));
+      window.dispatchEvent(new CustomEvent("weturn:demo-player", { detail: false }));
       window.removeEventListener("keydown", onKey);
     };
   }, [open, close]);

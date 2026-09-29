@@ -130,7 +130,7 @@ export default function NotFound() {
           aria-label={t.nav.home}
           className="font-display text-body font-medium text-ink transition-colors hover:text-brand-300"
         >
-          Webcraft
+          Weturn
         </Link>
         <span className="eyebrow hidden sm:block">{t.notFound.eyebrow}</span>
       </header>

@@ -212,7 +212,7 @@ export const pl = {
     brand: "Marka",
     brandItems: ["O nas", "Druk i materiały", "Newsletter"],
     disclaimer: (brand: string) =>
-      `${brand} jest marką fikcyjną, stworzoną przez Webcraft jako projekt koncepcyjny. Marka, produkty, ceny i dostępność nie istnieją, a zamówienia nie są realizowane.`,
+      `${brand} jest marką fikcyjną, stworzoną przez Weturn jako projekt koncepcyjny. Marka, produkty, ceny i dostępność nie istnieją, a zamówienia nie są realizowane.`,
   },
 };
 
@@ -381,7 +381,7 @@ export const en: typeof pl = {
     brand: "Brand",
     brandItems: ["About us", "Print and fabrics", "Newsletter"],
     disclaimer: (brand: string) =>
-      `${brand} is a fictional brand, built by Webcraft as a concept project. The brand, the products, the prices and the availability do not exist, and no order is fulfilled.`,
+      `${brand} is a fictional brand, built by Weturn as a concept project. The brand, the products, the prices and the availability do not exist, and no order is fulfilled.`,
   },
 };
 

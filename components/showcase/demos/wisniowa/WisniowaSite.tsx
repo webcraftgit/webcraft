@@ -51,7 +51,7 @@ import DemoHeading from "@/components/showcase/DemoHeading";
  *     a slot, and the confirmation says nothing was sent.
  *   · No invented patient reviews — PROMISES are commitments, labelled so.
  *   · No stock faces under invented doctor names — team stays monogrammed.
- *   · Webcraft is named in the top strip and the footer.
+ *   · Weturn is named in the top strip and the footer.
  *
  * Fonts scoped to .wis-root; component contract ({ preview }) unchanged.
  * ———————————————————————————————————————————————————————————————— */
@@ -574,8 +574,8 @@ export default function WisniowaSite({ preview = false }: { preview?: boolean })
           </a>
         )}
 
-        {/* demo disclaimer — the honesty register, Webcraft named outright.
-          * The PL/EN control lives here, in Webcraft's own meta-layer, not in
+        {/* demo disclaimer — the honesty register, Weturn named outright.
+          * The PL/EN control lives here, in Weturn's own meta-layer, not in
           * the clinic header. Hidden in `preview`: the grid card is inert and
           * scaled, so a focusable control inside it would be a trap. */}
         <div

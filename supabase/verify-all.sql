@@ -1,5 +1,5 @@
 -- ============================================================================
--- Webcraft — post-setup verification, ALL CHECKS IN ONE GRID.
+-- Weturn — post-setup verification, ALL CHECKS IN ONE GRID.
 -- Run this in the Supabase SQL editor AFTER schema.sql.
 --
 -- Why this file exists alongside verify.sql: the Supabase SQL editor only

@@ -11,7 +11,7 @@ import { createContext, useContext, type CSSProperties, type ReactNode } from "r
  * a dental clinic, a whiskey label, a clothing store — straight into the DOM
  * of `/`. Consequences, in order of how much they cost:
  *   1. The home page had FOUR <h1>s, three of them about other businesses.
- *   2. The dominant body text on Webcraft's home page was not about Webcraft.
+ *   2. The dominant body text on Weturn's home page was not about Weturn.
  *      A crawler weighing "what is this page about" reads far more Polish
  *      dental copy than studio copy.
  *   3. A fictional clinic's prices and phone CTA sat on a real domain.

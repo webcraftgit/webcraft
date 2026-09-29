@@ -1,5 +1,5 @@
 -- ============================================================================
--- Webcraft — database schema (CP6-backend)
+-- Weturn — database schema (CP6-backend)
 -- Run once in the Supabase SQL editor. Idempotent: safe to re-run.
 --
 -- SECURITY MODEL (the whole point of this file):

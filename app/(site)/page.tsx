@@ -23,7 +23,7 @@ import StickyCta from "@/components/ui/StickyCta";
  * space here.
  */
 export const metadata: Metadata = pageMetadata({
-  title: "Tworzenie stron internetowych Warszawa | Webcraft",
+  title: "Tworzenie stron internetowych Warszawa | Weturn",
   description:
     "Studio cyfrowe: strony szyte na miarę, opieka nad stroną, krótkie wideo i materiały marki. Stawki założycielskie od 3 500 zł, wycena przed startem prac.",
   path: "/",

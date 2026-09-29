@@ -164,10 +164,10 @@ export default function LogoScene({ onReady }: { onReady?: () => void }) {
     const io = el ? new IntersectionObserver(([e]) => setOnScreen(e.isIntersecting)) : null;
     if (el && io) io.observe(el);
     const onPlayer = (e: Event) => setPlayerOpen(Boolean((e as CustomEvent<boolean>).detail));
-    window.addEventListener("webcraft:demo-player", onPlayer);
+    window.addEventListener("weturn:demo-player", onPlayer);
     return () => {
       io?.disconnect();
-      window.removeEventListener("webcraft:demo-player", onPlayer);
+      window.removeEventListener("weturn:demo-player", onPlayer);
     };
   }, []);
 

@@ -125,8 +125,8 @@ html.lenis, html.lenis body { height: auto; }
   outline-offset: 3px;
 }
 
-/* The concept sites are not Webcraft. The rule above is unscoped, so every
- * keyboard focus ring inside a demo was drawn in Webcraft's sky blue — cyan
+/* The concept sites are not Weturn. The rule above is unscoped, so every
+ * keyboard focus ring inside a demo was drawn in Weturn's sky blue — cyan
  * rings on Nokturn's near-black/oxblood store, which is the one place the
  * brand illusion had to hold. Each demo declares its own ring colour via
  * data-demo; anything without one still gets the studio default. */

@@ -79,7 +79,7 @@ export default function Navbar() {
             className="text-body font-semibold tracking-[0.14em] text-ink"
             style={{ fontFamily: "var(--font-display)" }}
           >
-            WEBCRAFT
+            WETURN
           </span>
         </Link>
 

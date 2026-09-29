@@ -28,12 +28,12 @@ export const metadata: Metadata = {
   title: {
     // The brand line is the H1 on the page; the tab and the SERP get the
     // phrase people actually type. Template keeps sub-pages consistent.
-    default: "Tworzenie stron internetowych Warszawa | Webcraft",
-    template: "%s | Webcraft",
+    default: "Tworzenie stron internetowych Warszawa | Weturn",
+    template: "%s | Weturn",
   },
   description:
     "Projektujemy i budujemy strony, które zamieniają wyświetlenia w sprzedaż. Do tego opieka, wideo i materiały marki. Wycena ustalona przed startem prac.",
-  applicationName: "Webcraft",
+  applicationName: "Weturn",
   robots: ROBOTS,
   // Files live in /public and are declared explicitly rather than relying on
   // the app/icon.* convention, because the convention emits hashed URLs that

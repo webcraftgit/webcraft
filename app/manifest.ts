@@ -11,8 +11,8 @@ import { DEFAULT_LOCALE } from "@/lib/i18n/config";
  */
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Webcraft — studio cyfrowe",
-    short_name: "Webcraft",
+    name: "Weturn — studio cyfrowe",
+    short_name: "Weturn",
     description:
       "Tworzymy strony internetowe, które zamieniają wyświetlenia w sprzedaż.",
     lang: DEFAULT_LOCALE,
