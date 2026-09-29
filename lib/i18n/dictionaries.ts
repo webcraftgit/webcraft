@@ -217,7 +217,7 @@ export const en = {
         weeks: `1 week`,
         includes: [
           `Single-page site, custom design`,
-          `Copy direction & structure workshop`,
+          `Copywriting & site structure, written for you`,
           `Motion & micro-interactions`,
           `Contact/lead capture wired to your inbox`,
           `Analytics + launch checklist`,
@@ -302,7 +302,11 @@ export const en = {
       },
       {
         q: `What do you need from us to start?`,
-        a: `About an hour for the discovery call, access to your brand materials if they exist, and honest answers about what the site should achieve. We draft structure and copy direction with you, and you review at fixed checkpoints instead of writing pages yourself.`,
+        a: `Three things: about an hour for the discovery call, a short questionnaire about your business, and your logo and photos. We write all the site's text for you from the questionnaire and the call, and you approve it on day one instead of writing pages yourself. Anything missing at kickoff pauses the clock until it arrives.`,
+      },
+      {
+        q: `Do you design logos or provide photos?`,
+        a: `Not as part of a website project. Logo design is always a separate project with its own quote and its own timeline, and it never counts toward your website's delivery window. If you don't have a logo yet, we can launch with your business name set in the site's typeface and swap the logo in later. Photos always come from you: your own, a photographer's, or stock you've licensed. No photos at all? We design the site around type, color and motion instead.`,
       },
     ],
   },
@@ -318,7 +322,7 @@ export const en = {
     sentBodyEnd: `.`,
     whatBuilding: `What are we building?`,
     optional: `(optional)`,
-    contentQ: `Texts & photos for the site?`,
+    contentQ: `Texts for the site?`,
     budgetQ: `Budget in mind?`,
     estPre: `Projects like this typically land between `,
     estOver: `, live within `,
@@ -651,7 +655,7 @@ export const pl: Dictionary = {
         weeks: `1 tydzień`,
         includes: [
           `Strona jednostronicowa, indywidualny projekt`,
-          `Warsztat z kierunku i struktury treści`,
+          `Teksty i struktura strony, napisane za Ciebie`,
           `Ruch i mikrointerakcje`,
           `Formularz kontaktowy podłączony do Twojej skrzynki`,
           `Analityka + checklista startowa`,
@@ -736,7 +740,11 @@ export const pl: Dictionary = {
       },
       {
         q: `Czego potrzebujecie od nas, żeby zacząć?`,
-        a: `Około godziny na rozmowę wstępną, dostęp do materiałów marki, jeśli je macie, i szczere odpowiedzi na pytanie, co strona ma osiągnąć. Szkic struktury i kierunek treści tworzymy razem z Tobą, a Ty zatwierdzasz je w ustalonych punktach kontrolnych, zamiast samodzielnie pisać podstrony.`,
+        a: `Trzech rzeczy: około godziny na rozmowę wstępną, krótkiej ankiety o Twojej firmie oraz Twojego logo i zdjęć. Wszystkie teksty na stronę piszemy za Ciebie na podstawie ankiety i rozmowy, a Ty zatwierdzasz je pierwszego dnia, zamiast samodzielnie pisać podstrony. Jeśli czegoś brakuje na starcie, zegar staje, dopóki to nie dotrze.`,
+      },
+      {
+        q: `Czy projektujecie logo albo dostarczacie zdjęcia?`,
+        a: `Nie w ramach projektu strony. Projekt logo to zawsze osobne zlecenie z własną wyceną i własnym harmonogramem, które nigdy nie wlicza się do terminu realizacji strony. Jeśli nie masz jeszcze logo, możemy uruchomić stronę z nazwą firmy złożoną krojem pisma strony i podmienić ją na logo później. Zdjęcia zawsze dostarczasz Ty: własne, od fotografa albo licencjonowane zdjęcia stockowe. Nie masz żadnych zdjęć? Projektujemy stronę opartą na typografii, kolorze i ruchu.`,
       },
     ],
   },
@@ -752,7 +760,7 @@ export const pl: Dictionary = {
     sentBodyEnd: `.`,
     whatBuilding: `Co budujemy?`,
     optional: `(opcjonalnie)`,
-    contentQ: `Teksty i zdjęcia na stronę?`,
+    contentQ: `Teksty na stronę?`,
     budgetQ: `Masz budżet w głowie?`,
     estPre: `Projekty tego typu zwykle mieszczą się między `,
     estOver: `, czas realizacji: `,
