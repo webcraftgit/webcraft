@@ -7,8 +7,8 @@ import type { Locale } from "./config";
  * key is ever added to one language and not the other, the build fails. That's
  * the coherence guard — translations can't silently drift out of sync.
  *
- * Timelines here are the CP5 "half the delivery time" pass: process step badges
- * and tier weeks were halved from CP4.x (e.g. Business 4–6 → 2–3 weeks). Numbers
+ * Timelines here follow the agency-kit delivery commitments (Launch ≤1 week,
+ * Business + Signature ≤2 weeks, our working days; client wait time pauses the clock). Numbers
  * that carry a promise (delivery windows) live in copy, on purpose, so they're
  * easy to audit and honest — they're a claim about our own turnaround.
  *
@@ -142,31 +142,31 @@ export const en = {
     eyebrow: `Process`,
     heading: `From views to sales, one step at a time.`,
     introPre: `Every project runs through the same four steps, and most go from brief to a live site in `,
-    introStrong: `2–3 weeks`,
+    introStrong: `2 weeks or less`,
     introPost: `. Each step exists to move a visitor one stage down the funnel; the panel on the right shows what happens to a thousand views along the way.`,
-    footnote: `Step times are shown for a typical Business-scope build. Launch runs faster, Signature longer. Your quote comes with its own schedule.`,
+    footnote: `Step times are shown for a typical Business-scope build, counted in our working days. Launch runs faster. The clock pauses while we wait for your feedback or content.`,
     steps: {
       discover: {
         title: `Discover`,
-        time: `2–3 days`,
+        time: `1 day`,
         body: `We map who lands on your site, where they come from, and the one thing each of them needs to see first. Strategy before pixels: the funnel is designed before the homepage is.`,
         deliverable: `Structure & content plan`,
       },
       design: {
         title: `Design`,
-        time: `4–6 days`,
+        time: `1 day`,
         body: `An above-the-fold that earns the next scroll. Hierarchy, motion and copy tuned so the first three seconds answer "am I in the right place?", because most visitors decide right there.`,
         deliverable: `Interactive design prototype`,
       },
       build: {
         title: `Build`,
-        time: `1–2 weeks`,
+        time: `6 days`,
         body: `Sub-second loads, motion with intent, details that hold up under a slow scroll. Craftsmanship is a trust signal: a site that feels expensive makes the company behind it feel dependable.`,
         deliverable: `Production site, tested on real devices`,
       },
       launch: {
         title: `Launch & grow`,
-        time: `2–3 days`,
+        time: `2 days`,
         body: `Clear next steps for the visitor, analytics wired from day one for you. We watch where the funnel leaks after launch and tighten it. A website is a system, not a poster.`,
         deliverable: `Live site + measurement setup`,
       },
@@ -214,7 +214,7 @@ export const en = {
       launch: {
         name: `Launch`,
         tagline: `One sharp page that sells one thing well.`,
-        weeks: `1–2 weeks`,
+        weeks: `1 week`,
         includes: [
           `Single-page site, custom design`,
           `Copy direction & structure workshop`,
@@ -226,7 +226,7 @@ export const en = {
       business: {
         name: `Business`,
         tagline: `A full site built around your sales funnel.`,
-        weeks: `2–3 weeks`,
+        weeks: `2 weeks`,
         includes: [
           `Multi-section site (up to ~7 sections/pages)`,
           `Everything in Launch`,
@@ -238,7 +238,7 @@ export const en = {
       signature: {
         name: `Signature`,
         tagline: `A site people send to each other. 3D, motion, the works.`,
-        weeks: `3–5 weeks`,
+        weeks: `2 weeks`,
         includes: [
           `Everything in Business`,
           `Custom 3D / WebGL scenes (like this site)`,
@@ -270,7 +270,7 @@ export const en = {
     items: [
       {
         q: `How long does a website take?`,
-        a: `Most projects land between two and four weeks from kickoff to launch. Discovery and design take the first half; build, content and testing the second. A tight one-pager can be faster, a site with custom 3D or a larger structure slower. You get a real timeline after Discover, not a guess before it.`,
+        a: `Fast. A Launch one-pager goes live within a week, Business and Signature sites within two, counted in our working days from kickoff. The one condition is on your side: have your content ready and reply within a day at each checkpoint, because the clock pauses while we wait for you. Sites that need logins, a database or a shop are quoted separately with their own schedule.`,
       },
       {
         q: `What does a project cost?`,
@@ -321,7 +321,7 @@ export const en = {
     contentQ: `Texts & photos for the site?`,
     budgetQ: `Budget in mind?`,
     estPre: `Projects like this typically land between `,
-    estOver: ` over `,
+    estOver: `, live within `,
     estEnd: `. Exact fixed quote after a short discovery call.`,
     nameLabel: `Name`,
     emailLabel: `Email`,
@@ -577,31 +577,31 @@ export const pl: Dictionary = {
     eyebrow: `Proces`,
     heading: `Od wyświetleń do sprzedaży, krok po kroku.`,
     introPre: `Każdy projekt przechodzi przez te same cztery kroki, a większość trafia od briefu do działającej strony w `,
-    introStrong: `2–3 tygodnie`,
+    introStrong: `maksymalnie 2 tygodnie`,
     introPost: `. Każdy krok przesuwa odwiedzającego o etap dalej na ścieżce klienta; panel po prawej pokazuje, co po drodze dzieje się z tysiącem wyświetleń.`,
-    footnote: `Czasy kroków podaliśmy dla typowego projektu w pakiecie Biznes. Start trwa krócej, Premium dłużej. Twoja wycena ma własny harmonogram.`,
+    footnote: `Czasy kroków podaliśmy dla typowego projektu w pakiecie Biznes, w naszych dniach roboczych. Start trwa krócej. Zegar staje, gdy czekamy na Twoją opinię lub treści.`,
     steps: {
       discover: {
         title: `Analiza`,
-        time: `2–3 dni`,
+        time: `1 dzień`,
         body: `Ustalamy, kto trafia na Twoją stronę, skąd przychodzi i co każdy z nich musi zobaczyć jako pierwsze. Strategia przed pikselami: ścieżkę klienta projektujemy, zanim powstanie strona główna.`,
         deliverable: `Struktura i plan treści`,
       },
       design: {
         title: `Projekt`,
-        time: `4–6 dni`,
+        time: `1 dzień`,
         body: `Pierwszy ekran, który zasługuje na kolejne przewinięcie. Hierarchia, ruch i tekst dostrojone tak, by pierwsze trzy sekundy odpowiadały: „czy jestem we właściwym miejscu?”, bo większość decyduje właśnie tam.`,
         deliverable: `Interaktywny prototyp projektu`,
       },
       build: {
         title: `Wdrożenie`,
-        time: `1–2 tygodnie`,
+        time: `6 dni`,
         body: `Ładowanie poniżej sekundy, ruch z zamysłem, detale, które bronią się przy powolnym przewijaniu. Dopracowanie to sygnał zaufania: gdy strona sprawia wrażenie drogiej, firma za nią stojąca wydaje się solidna.`,
         deliverable: `Gotowa strona, przetestowana na prawdziwych urządzeniach`,
       },
       launch: {
         title: `Start i rozwój`,
-        time: `2–3 dni`,
+        time: `2 dni`,
         body: `Jasne kolejne kroki dla odwiedzającego, analityka podłączona od pierwszego dnia. Po starcie sprawdzamy, w którym miejscu ścieżka się urywa, i uszczelniamy ją. Strona to system, a nie plakat.`,
         deliverable: `Działająca strona + konfiguracja pomiarów`,
       },
@@ -648,7 +648,7 @@ export const pl: Dictionary = {
       launch: {
         name: `Start`,
         tagline: `Jedna dopracowana strona, która dobrze sprzedaje jedną rzecz.`,
-        weeks: `1–2 tygodnie`,
+        weeks: `1 tydzień`,
         includes: [
           `Strona jednostronicowa, indywidualny projekt`,
           `Warsztat z kierunku i struktury treści`,
@@ -660,7 +660,7 @@ export const pl: Dictionary = {
       business: {
         name: `Biznes`,
         tagline: `Kompletna strona zbudowana wokół Twojej ścieżki klienta.`,
-        weeks: `2–3 tygodnie`,
+        weeks: `2 tygodnie`,
         includes: [
           `Wielosekcyjna strona (do ~7 sekcji/podstron)`,
           `Wszystko z pakietu Start`,
@@ -672,7 +672,7 @@ export const pl: Dictionary = {
       signature: {
         name: `Premium`,
         tagline: `Strona, którą ludzie przesyłają sobie nawzajem. 3D, ruch, pełen zakres.`,
-        weeks: `3–5 tygodni`,
+        weeks: `2 tygodnie`,
         includes: [
           `Wszystko z pakietu Biznes`,
           `Autorskie sceny 3D / WebGL (jak na tej stronie)`,
@@ -704,7 +704,7 @@ export const pl: Dictionary = {
     items: [
       {
         q: `Ile trwa stworzenie strony?`,
-        a: `Większość projektów trwa od dwóch do czterech tygodni, licząc od rozpoczęcia do uruchomienia strony. Pierwsza połowa to analiza i projekt, druga to budowa, treści i testy. Zwięzły one-pager może powstać szybciej, a strona z autorskim 3D lub rozbudowaną strukturą wolniej. Realny harmonogram dostajesz po etapie analizy, zamiast zgadywać go wcześniej.`,
+        a: `Szybko. One-pager w pakiecie Start działa w ciągu tygodnia, strony w pakietach Biznes i Premium w ciągu dwóch, licząc nasze dni robocze od rozpoczęcia. Jedyny warunek leży po Twojej stronie: przygotuj treści i odpowiadaj w ciągu dnia na każdym etapie, bo gdy czekamy na Ciebie, zegar staje. Strony z logowaniem, bazą danych lub sklepem wyceniamy osobno, z osobnym harmonogramem.`,
       },
       {
         q: `Ile kosztuje projekt?`,
@@ -755,7 +755,7 @@ export const pl: Dictionary = {
     contentQ: `Teksty i zdjęcia na stronę?`,
     budgetQ: `Masz budżet w głowie?`,
     estPre: `Projekty tego typu zwykle mieszczą się między `,
-    estOver: ` w ciągu `,
+    estOver: `, czas realizacji: `,
     estEnd: `. Dokładna, stała wycena po krótkiej rozmowie wstępnej.`,
     nameLabel: `Imię i nazwisko`,
     emailLabel: `E-mail`,
