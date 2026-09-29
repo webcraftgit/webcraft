@@ -24,13 +24,12 @@ export default function FAQSection() {
   const [openSet, setOpenSet] = useState<Set<number>>(() => new Set([0]));
   const baseId = useId();
 
-  /* CP4_54 — KEEP THE ANSWER YOU JUST OPENED IN VIEW.
+  /* CP4_54 — CENTRE THE ANSWER YOU JUST OPENED.
    *
    * Opening an item near the bottom of the screen pushed its answer below the
-   * fold, so the reward for tapping was a scroll. The page used to re-centre
-   * EVERY opened item, which moved the page even when the answer was already
-   * fully visible — disorienting. Now it only moves when the opened answer
-   * would end below the fold, and only as far as needed.
+   * fold, so the reward for tapping was a scroll. Now the page moves the item
+   * into the middle of the viewport (client preference: always centre, even
+   * when the answer was already visible).
    *
    * At the moment of the click the panel is still 0px tall, so the final
    * geometry is PREDICTED from the answer's content height and the scroll
@@ -41,7 +40,6 @@ export default function FAQSection() {
   const items = useRef<Array<HTMLDivElement | null>>([]);
   const panels = useRef<Array<HTMLDivElement | null>>([]);
   const NAV_CLEARANCE = 108; // fixed navbar + a little air
-  const BOTTOM_AIR = 24;
 
   /** natural (fully open) height of panel i, measured from its content */
   const panelHeight = (i: number) => {
@@ -66,14 +64,9 @@ export default function FAQSection() {
       const rect = el.getBoundingClientRect();
       const height = rect.height + panelHeight(i);
       const vh = window.innerHeight;
-      const bottom = rect.top + height;
-      if (bottom <= vh - BOTTOM_AIR) return; // already fully visible
-
-      const delta =
-        height > vh - NAV_CLEARANCE - BOTTOM_AIR
-          ? rect.top - NAV_CLEARANCE // too tall: top-align under the navbar
-          : bottom - (vh - BOTTOM_AIR); // just enough to reveal the end
-      scrollWindowTo(window.scrollY + delta);
+      const offset =
+        height > vh - NAV_CLEARANCE ? NAV_CLEARANCE : (vh - height) / 2;
+      scrollWindowTo(window.scrollY + rect.top - offset);
     },
     [openSet]
   );
