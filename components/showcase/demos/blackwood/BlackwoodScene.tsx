@@ -1769,8 +1769,12 @@ function Post({ progress, tier }: { progress?: MutableRefObject<number>; tier: T
     ) : (
       /* CP4_67: standard merged pipeline. AO grounds everything, DoF gives the
        * long-lens look (focus locked on the bottle), bloom glows the flames, AgX
-       * keeps the amber from clipping, then a light grade + vignette + grain. */
-      <EffectComposer multisampling={4}>
+       * keeps the amber from clipping, then a light grade + vignette + grain.
+       * MSAA 4 → 2: the geometry edge sample count. On a weak integrated GPU
+       * (MacBook) 4× MSAA on a full-res buffer with this post stack is a real
+       * cost; 2× halves the MSAA fill and the edges hold because DoF + bloom +
+       * the AgX grade already soften them. */
+      <EffectComposer multisampling={2}>
         {bwOn("ao") ? <N8AO aoRadius={0.35} distanceFalloff={0.6} intensity={2.2} halfRes /> : <></>}
         {/* no bokehScale prop: it is set every frame above, and a prop would be
             re-applied over it on any re-render */}
@@ -1879,7 +1883,8 @@ function Cellar({ tier, progress }: { tier: Tier; progress?: MutableRefObject<nu
         </>
       )}
 
-      {/* point-light cube shadows are desktop only; mobile keeps the key spot's */}
+      {/* Shadows are desktop-only (Canvas shadows=false on mobile), so these
+          castShadow flags are no-ops off the full tier. */}
       <Lantern position={[-0.66, 0, 0.5]} intensity={4.5} castShadow={full} />
       <Lantern position={[1.38, BARREL_TOP, -1.55]} intensity={3.5} />
 
@@ -1915,7 +1920,11 @@ function Cellar({ tier, progress }: { tier: Tier; progress?: MutableRefObject<nu
       </Environment>
 
       <CameraRig progress={progress} />
-      {lit && <ShadowGate watch={bottleRef} />}
+      {/* Shadow maps are desktop only now. The mobile tier used to keep the key
+          spot's 1024² soft shadow, which is a full extra scene render every time
+          the bottle moves — the biggest single cost left on phones. Dropping it
+          is the main mobile win; the fog + fill already ground the bottle. */}
+      {full && <ShadowGate watch={bottleRef} />}
 
       {lit && !BW_NOPOST && <Post progress={progress} tier={tier} />}
     </>
@@ -1947,7 +1956,7 @@ export default function BlackwoodScene({
   return (
     <Canvas
       className={className}
-      shadows={lit ? "soft" : false}
+      shadows={tier === "full" ? "soft" : false}
       dpr={dpr}
       gl={{ antialias: !lit, // MSAA lives in the composer when lit
          alpha: false, powerPreference: "high-performance" }}

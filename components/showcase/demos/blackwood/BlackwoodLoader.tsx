@@ -128,7 +128,14 @@ export default function BlackwoodLoader() {
           segment={reduced ? [44, 45] : undefined}
           subscriptions={{ loopCompleted: () => setPouredOnce(true) }}
           style={{ width: "100%", height: "100%" }}
-          rendererSettings={{ preserveAspectRatio: "xMidYMid meet" }}
+          /* Canvas, not the default SVG renderer. The scene's GLB decode +
+             shader compile hammer the main thread right under the pour, and the
+             SVG renderer re-lays-out its DOM tree every frame — that contention
+             is the residual stutter. A single <canvas> draws on the compositor
+             with no per-frame layout, so the pour stays smooth through the
+             compile burst. clearCanvas keeps the loop from ghosting. */
+          renderer="canvas"
+          rendererSettings={{ preserveAspectRatio: "xMidYMid meet", clearCanvas: true }}
         />
       </div>
 

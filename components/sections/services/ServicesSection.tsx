@@ -104,11 +104,13 @@ type SlideProps = {
   i: number;
   rotation: MotionValue<number>;
   active: boolean;
+  /** center + its two neighbours — the discs that are on screen and moving */
+  promote: boolean;
   service: Service;
   onFocus: () => void;
 };
 
-function WheelSlide({ i, rotation, active, service, onFocus }: SlideProps) {
+function WheelSlide({ i, rotation, active, promote, service, onFocus }: SlideProps) {
   const isMobile = useIsMobile();
   const isDesktop = useMediaQuery("(min-width: 1024px)", true);
   // 3-tier wheel: phone / tablet / desktop — tablet discs used to render at
@@ -167,9 +169,16 @@ function WheelSlide({ i, rotation, active, service, onFocus }: SlideProps) {
         onClick={onFocus}
         className={cn(
           "w-[min(86vw,340px)] md:w-[460px] lg:w-[560px]",
-          // four permanently promoted layers is a lot of texture memory on a
-          // phone; only the disc in focus keeps the hint
-          active && "will-change-transform",
+          // The disc's .metal-disc skin is a 70px outer shadow + inset sheen +
+          // three gradients — expensive to raster. While the wheel spins, the
+          // side discs animate scale/x/y too, so an UNpromoted side disc
+          // re-rasters that whole skin every frame ("the bubbles lag"). Promote
+          // the three that are actually on screen (center + both neighbours) so
+          // the compositor just moves their cached layer. The 4th, hidden disc
+          // stays unpromoted, so we never hold four large layers on a phone.
+          // will-change alone promotes the layer; framer owns the inline
+          // transform, so we must not set our own transform here.
+          promote && "will-change-transform [backface-visibility:hidden]",
           !active && "cursor-pointer"
         )}
       >
@@ -319,6 +328,7 @@ export default function ServicesSection() {
                   i={i}
                   rotation={rotation}
                   active={i === mod(index)}
+                  promote={Math.abs(shortest(mod(index), i)) <= 1}
                   service={service}
                   onFocus={() => {
                     if (!dragging.current && i !== mod(index)) goToItem(i);

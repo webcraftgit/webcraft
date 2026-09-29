@@ -69,7 +69,22 @@ export function scrollToHash(href: string, opts: { duration?: number } = {}): bo
   const el = document.getElementById(id);
   if (!el) return false;
 
-  const top = el.getBoundingClientRect().top + window.scrollY - NAV_CLEARANCE;
+  // A section can nominate the element that actually matters (a form, a card)
+  // with [data-scroll-focus]. Landing on the SECTION top drops the visitor at
+  // the section's big top padding — the heading sits mid-screen and a tall form
+  // below it runs off the bottom ("can't see the whole form"). Aim at the focus
+  // element instead: centre it in the space under the navbar when it fits, and
+  // top-align it under the navbar when it is taller than that space, so its top
+  // is always visible and it gets the most room the viewport can give.
+  const focus = el.querySelector<HTMLElement>("[data-scroll-focus]") ?? el;
+  const rect = focus.getBoundingClientRect();
+  const avail = window.innerHeight - NAV_CLEARANCE;
+  const slack = avail - rect.height;
+  const top =
+    rect.top +
+    window.scrollY -
+    NAV_CLEARANCE -
+    (slack > 0 ? slack / 2 : 0);
   scrollWindowTo(top, { duration: opts.duration ?? 0.6 });
 
   if (window.location.hash !== `#${id}`) {
