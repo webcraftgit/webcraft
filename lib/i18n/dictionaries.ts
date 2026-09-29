@@ -291,7 +291,7 @@ export const en = {
       },
       {
         q: `Do you handle hosting, domains and maintenance?`,
-        a: `We set up hosting and the domain as part of launch and hand you the keys. Everything stays in accounts you own. After launch you can run it yourself, or keep us on the monthly care plan from the pricing section, with hosting, updates, backups and small changes handled for you. Your call, no lock-in.`,
+        a: `Yes, all of it is set up as part of launch. Your domain is always registered in your name. On the monthly care plan we host the site on our professional infrastructure and handle updates, backups and changes for you. Prefer to run it yourself? We transfer the whole project to your own accounts, code included. Your call, no lock-in.`,
       },
       {
         q: `Is SEO included?`,
@@ -730,7 +730,7 @@ export const pl: Dictionary = {
       },
       {
         q: `Czy zajmujecie się hostingiem, domenami i utrzymaniem?`,
-        a: `Hosting i domenę konfigurujemy w ramach startu i przekazujemy Ci klucze. Wszystko zostaje na kontach, które należą do Ciebie. Po starcie możesz prowadzić stronę sam albo skorzystać z miesięcznej opieki nad stroną z sekcji cennika. Wtedy hosting, aktualizacje, kopie zapasowe i drobne zmiany są po naszej stronie. Twój wybór, bez przywiązywania Cię do nas na siłę.`,
+        a: `Tak, wszystko konfigurujemy w ramach startu. Domena jest zawsze zarejestrowana na Ciebie. W ramach miesięcznej opieki utrzymujemy stronę na naszej profesjonalnej infrastrukturze i zajmujemy się za Ciebie aktualizacjami, kopiami zapasowymi i zmianami. Wolisz prowadzić ją sam? Przenosimy cały projekt, razem z kodem, na Twoje własne konta. Twój wybór, bez przywiązywania Cię do nas na siłę.`,
       },
       {
         q: `Czy SEO jest w cenie?`,
