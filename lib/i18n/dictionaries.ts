@@ -230,6 +230,7 @@ export const en = {
         includes: [
           `Multi-section site (up to ~7 sections/pages)`,
           `Everything in Launch`,
+          `Two language versions included (e.g. Polish + English)`,
           `Editable content: update text & images yourself`,
           `Funnel instrumentation & post-launch report`,
           `Technical SEO foundation`,
@@ -306,7 +307,7 @@ export const en = {
       },
       {
         q: `Do you design logos or provide photos?`,
-        a: `Not as part of a website project. Logo design is always a separate project with its own quote and its own timeline, and it never counts toward your website's delivery window. If you don't have a logo yet, we can launch with your business name set in the site's typeface and swap the logo in later. Photos always come from you: your own, a photographer's, or stock you've licensed. No photos at all? We design the site around type, color and motion instead.`,
+        a: `Not as part of a website project. Logo design is always a separate project (from 1 000 zł) with its own quote and its own timeline, and it never counts toward your website's delivery window. If you don't have a logo yet, we can launch with your business name set in the site's typeface and swap the logo in later. Photos always come from you: your own, a photographer's, or stock you've licensed. No photos at all? We design the site around type, color and motion instead.`,
       },
     ],
   },
@@ -668,6 +669,7 @@ export const pl: Dictionary = {
         includes: [
           `Wielosekcyjna strona (do ~7 sekcji/podstron)`,
           `Wszystko z pakietu Start`,
+          `Dwie wersje językowe w cenie (np. polska + angielska)`,
           `Edytowalne treści: samodzielnie zmieniasz teksty i zdjęcia`,
           `Pomiar ścieżki klienta + raport po starcie`,
           `Techniczne fundamenty SEO`,
@@ -744,7 +746,7 @@ export const pl: Dictionary = {
       },
       {
         q: `Czy projektujecie logo albo dostarczacie zdjęcia?`,
-        a: `Nie w ramach projektu strony. Projekt logo to zawsze osobne zlecenie z własną wyceną i własnym harmonogramem, które nigdy nie wlicza się do terminu realizacji strony. Jeśli nie masz jeszcze logo, możemy uruchomić stronę z nazwą firmy złożoną krojem pisma strony i podmienić ją na logo później. Zdjęcia zawsze dostarczasz Ty: własne, od fotografa albo licencjonowane zdjęcia stockowe. Nie masz żadnych zdjęć? Projektujemy stronę opartą na typografii, kolorze i ruchu.`,
+        a: `Nie w ramach projektu strony. Projekt logo to zawsze osobne zlecenie (od 1 000 zł) z własną wyceną i własnym harmonogramem, które nigdy nie wlicza się do terminu realizacji strony. Jeśli nie masz jeszcze logo, możemy uruchomić stronę z nazwą firmy złożoną krojem pisma strony i podmienić ją na logo później. Zdjęcia zawsze dostarczasz Ty: własne, od fotografa albo licencjonowane zdjęcia stockowe. Nie masz żadnych zdjęć? Projektujemy stronę opartą na typografii, kolorze i ruchu.`,
       },
     ],
   },
