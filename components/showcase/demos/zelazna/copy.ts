@@ -182,7 +182,7 @@ export const pl = {
     email: "kontakt@zelazna.example",
     phone: "+48 22 000 00 00",
     disclaimer:
-      "Żelazna jest marką fikcyjną, stworzoną przez Webcraft jako projekt koncepcyjny. Klub, ceny, grafik i osoby nie istnieją.",
+      "Żelazna jest marką fikcyjną, stworzoną przez Weturn jako projekt koncepcyjny. Klub, ceny, grafik i osoby nie istnieją.",
   },
 };
 
@@ -292,7 +292,7 @@ export const en: typeof pl = {
     email: "kontakt@zelazna.example",
     phone: "+48 22 000 00 00",
     disclaimer:
-      "Żelazna is a fictional brand, built by Webcraft as a concept project. The club, the prices, the timetable and the people do not exist.",
+      "Żelazna is a fictional brand, built by Weturn as a concept project. The club, the prices, the timetable and the people do not exist.",
   },
 };
 

@@ -7,7 +7,7 @@ import { useLocale } from "@/components/i18n/LanguageProvider";
  *
  * WHY THIS LIVES HERE AND NOT IN lib/i18n/dictionaries.ts
  * That file is imported by the site shell, so everything in it ships to every
- * visitor of the Webcraft homepage. This is ~8kb of copy for a fictional dental
+ * visitor of the Weturn homepage. This is ~8kb of copy for a fictional dental
  * clinic that most visitors never open. The demo is deliberately a lazy chunk
  * (see PROJECT_STATE on the 233kb first-load budget) and its copy belongs in
  * that chunk with it. The PATTERN is copied from dictionaries.ts on purpose:
@@ -44,7 +44,7 @@ export type Claim = { text: string; bold: string[] };
 export const en = {
   meta: {
     disclaimer:
-      "A demo project by Webcraft studio · Stomatologia Wiśniowa is a fictional brand. This page shows what the studio builds.",
+      "A demo project by Weturn studio · Stomatologia Wiśniowa is a fictional brand. This page shows what the studio builds.",
     langLabel: "Language",
   },
 
@@ -324,7 +324,7 @@ export const en = {
     addressA: "ul. Wiśniowa, Warsaw",
     addressB: "Mokotów",
     note: "The brand, the team and the contact details are fictional. This page is not medical advice.",
-    credit: "Concept project · Webcraft",
+    credit: "Concept project · Weturn",
   },
 
   bar: {
@@ -359,7 +359,7 @@ export const en = {
 export const pl: typeof en = {
   meta: {
     disclaimer:
-      "Projekt demonstracyjny studia Webcraft · Stomatologia Wiśniowa to marka fikcyjna. Strona prezentuje możliwości studia.",
+      "Projekt demonstracyjny studia Weturn · Stomatologia Wiśniowa to marka fikcyjna. Strona prezentuje możliwości studia.",
     langLabel: "Język",
   },
 
@@ -639,7 +639,7 @@ export const pl: typeof en = {
     addressA: "ul. Wiśniowa, Warszawa",
     addressB: "Mokotów",
     note: "Marka, zespół i dane kontaktowe są fikcyjne. Strona nie stanowi porady medycznej.",
-    credit: "Projekt koncepcyjny · Webcraft",
+    credit: "Projekt koncepcyjny · Weturn",
   },
 
   bar: {

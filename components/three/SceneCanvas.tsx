@@ -22,7 +22,7 @@ export default function SceneCanvas() {
       { }
       <motion.img
         src="/logo-w.svg"
-        alt="Webcraft logo"
+        alt="Weturn logo"
         animate={{ opacity: ready ? 0 : 0.9 }}
         transition={{ duration: 0.8 }}
         className="absolute left-1/2 top-1/2 w-[52%] max-w-[420px] -translate-x-1/2 -translate-y-1/2"

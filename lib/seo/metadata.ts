@@ -1,7 +1,7 @@
 /**
  * Shared metadata helpers (CP4_17-seo).
  *
- * WHY THE TITLES CHANGED. The old title was the brand line — "Webcraft —
+ * WHY THE TITLES CHANGED. The old title was the brand line — "Weturn —
  * Strony, które zamieniają wejścia w sprzedaż". It reads well and nobody
  * types it into Google. A title has two jobs: match the query, then sell the
  * click. So the query-shaped phrase goes first and the brand line survives as
@@ -25,7 +25,7 @@ export const OG_IMAGE = {
   url: "/og.png",
   width: 1200,
   height: 630,
-  alt: "Webcraft — strony, które zamieniają wyświetlenia w sprzedaż",
+  alt: "Weturn — strony, które zamieniają wyświetlenia w sprzedaż",
 };
 
 /**
@@ -65,9 +65,9 @@ export function pageMetadata({
   path?: string;
 }): Metadata {
   return {
-    // `absolute` on purpose: the root layout sets template "%s | Webcraft",
+    // `absolute` on purpose: the root layout sets template "%s | Weturn",
     // and every title below already ends in the brand. Without this you get
-    // "… | Webcraft | Webcraft", which Google truncates and users read as a bug.
+    // "… | Weturn | Weturn", which Google truncates and users read as a bug.
     title: { absolute: title },
     description,
     alternates: { canonical: path },
@@ -75,7 +75,7 @@ export function pageMetadata({
       title,
       description,
       url: abs(path),
-      siteName: "Webcraft",
+      siteName: "Weturn",
       locale: DEFAULT_LOCALE === "pl" ? "pl_PL" : "en_US",
       type: "website",
       images: [OG_IMAGE],

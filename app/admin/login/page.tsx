@@ -77,7 +77,7 @@ export default function AdminLogin() {
   return (
     <main className="grid min-h-dvh place-items-center px-6">
       <div className="glass w-full max-w-[400px] rounded-panel p-8">
-        <p className="eyebrow">Webcraft</p>
+        <p className="eyebrow">Weturn</p>
         <h1 className="mt-2 font-display text-2xl font-medium text-ink">Sign in</h1>
         <p className="mt-2 text-[14px] text-ink-soft">
           {stage === "email"

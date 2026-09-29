@@ -1,5 +1,5 @@
 -- ============================================================================
--- Webcraft — post-setup verification (CP6-backend)
+-- Weturn — post-setup verification (CP6-backend)
 -- Run this in the Supabase SQL editor AFTER schema.sql.
 -- Every row must say PASS. A FAIL means the data is not protected yet.
 --

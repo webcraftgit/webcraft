@@ -1,7 +1,7 @@
 import * as THREE from "three";
 
 /**
- * The Webcraft "W" mark — traced programmatically from the source logo
+ * The Weturn "W" mark — traced programmatically from the source logo
  * (OpenCV contour extraction, simplified). Design space: 300 x 169, Y-down.
  * The top-right edge steps like pixels, echoing the dissolve in the source mark.
  */

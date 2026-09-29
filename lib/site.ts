@@ -13,7 +13,7 @@
  * Google would be told the real pages are duplicates of someone else's site.
  * Set NEXT_PUBLIC_SITE_URL in the host's env before the first deploy.
  */
-const FALLBACK_SITE_URL = "https://webcraft.studio"; // TODO(launch): real domain
+const FALLBACK_SITE_URL = "https://weturn.studio"; // TODO(launch): real domain
 
 export const SITE_URL = (
   process.env.NEXT_PUBLIC_SITE_URL || FALLBACK_SITE_URL
@@ -26,14 +26,14 @@ export const SITE_URL_IS_PLACEHOLDER =
   process.env.NEXT_PUBLIC_SITE_URL.includes("localhost") ||
   process.env.NEXT_PUBLIC_SITE_URL === FALLBACK_SITE_URL;
 
-export const CONTACT_EMAIL = "hello@webcraft.studio"; // TODO: real address before launch
+export const CONTACT_EMAIL = "hello@weturn.studio"; // TODO: real address before launch
 
 /** Studio identity, used by the JSON-LD graph. Keep in step with /privacy and
  *  with the Google Business Profile — an entity that describes itself
  *  differently in three places is an entity search engines cannot resolve. */
 export const ORG = {
-  name: "Webcraft",
-  legalName: "Webcraft", // TODO(launch): registered name if/when one exists
+  name: "Weturn",
+  legalName: "Weturn", // TODO(launch): registered name if/when one exists
   /** City-level only. There is no public street address yet, and inventing one
    *  is worse than omitting it — see the Wiśniowa demo's address note. */
   city: "Warszawa",

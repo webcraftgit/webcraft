@@ -136,7 +136,7 @@ export const en = {
       { name: "Blackwood Distillery Shop", place: "Craigellachie, Speyside" },
     ],
     disclaimer:
-      "Blackwood is a fictional brand, built by Webcraft to demonstrate a concept site. Please drink responsibly.",
+      "Blackwood is a fictional brand, built by Weturn to demonstrate a concept site. Please drink responsibly.",
   },
 };
 
@@ -235,7 +235,7 @@ export const pl: typeof en = {
       { name: "Sklep przy destylarni Blackwood", place: "Craigellachie, Speyside" },
     ],
     disclaimer:
-      "Blackwood to fikcyjna marka, stworzona przez Webcraft jako projekt koncepcyjny. Pij odpowiedzialnie.",
+      "Blackwood to fikcyjna marka, stworzona przez Weturn jako projekt koncepcyjny. Pij odpowiedzialnie.",
   },
 };
 

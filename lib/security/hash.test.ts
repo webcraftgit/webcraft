@@ -2,7 +2,7 @@ import { describe, it, expect, vi, afterEach } from "vitest";
 import { clientIp, hashIp } from "./hash";
 
 const reqWith = (headers: Record<string, string>) =>
-  new Request("https://webcraft.test/api", { headers });
+  new Request("https://weturn.test/api", { headers });
 
 describe("clientIp", () => {
   it("prefers the platform connection header over a spoofable XFF", () => {

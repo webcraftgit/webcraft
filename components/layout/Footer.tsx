@@ -36,7 +36,7 @@ export default function Footer() {
               className="text-body font-semibold tracking-[0.14em] text-ink"
               style={{ fontFamily: "var(--font-display)" }}
             >
-              WEBCRAFT
+              WETURN
             </span>
           </p>
           <p className="mt-1 text-small text-ink-soft">{t.footer.tagline}</p>
@@ -65,7 +65,7 @@ export default function Footer() {
             {CONTACT_EMAIL}
           </a>
           <p className="mt-1">
-            © {new Date().getFullYear()} Webcraft. {t.footer.rights}
+            © {new Date().getFullYear()} Weturn. {t.footer.rights}
           </p>
           <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1 md:justify-end">
             <Link href="/privacy" className="transition-colors hover:text-ink">

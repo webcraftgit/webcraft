@@ -21,7 +21,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       <header className="sticky top-0 z-10 border-b border-[var(--glass-border)] bg-[rgba(5,8,15,0.85)] backdrop-blur">
         <div className="mx-auto flex max-w-[1200px] items-center gap-6 px-6 py-4">
           <Link href="/admin" className="font-display text-[17px] font-medium text-ink">
-            Webcraft <span className="text-brand-400">admin</span>
+            Weturn <span className="text-brand-400">admin</span>
           </Link>
           <nav className="flex gap-4 text-[14px]">
             <Link href="/admin" className="text-ink-soft hover:text-ink">Overview</Link>
