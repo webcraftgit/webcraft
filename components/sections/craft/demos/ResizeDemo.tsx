@@ -223,7 +223,7 @@ function WidthReadout({
   useMotionValueEvent(width, "change", (v) => setW(Math.round(v * scale)));
   useEffect(() => setW(Math.round(width.get() * scale)), [width, scale]);
   return (
-    <span className="pointer-events-none absolute bottom-2 right-2.5 font-mono text-[10.5px] tabular-nums text-ink-soft/80">
+    <span className="pointer-events-none absolute bottom-2 right-2.5 font-mono text-[10.5px] tabular-nums text-ink-soft">
       {w}px
     </span>
   );

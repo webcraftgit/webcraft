@@ -16,7 +16,18 @@ type LenisLike = {
     target: number,
     options?: { duration?: number; easing?: (t: number) => number; immediate?: boolean }
   ) => void;
+  /** pause / resume wheel + touch scrolling (scroll lock for overlays) */
+  stop: () => void;
+  start: () => void;
 };
+
+/** Freeze page scrolling behind an overlay (mobile menu, demo player). */
+export function lockScroll(locked: boolean) {
+  if (typeof document === "undefined") return;
+  document.documentElement.style.overflow = locked ? "hidden" : "";
+  if (locked) window.__lenis?.stop();
+  else window.__lenis?.start();
+}
 
 declare global {
   interface Window {
@@ -47,6 +58,23 @@ export function scrollWindowTo(
 // fixed navbar (~64px) + a little breathing room, kept in sync with FAQSection's own constant
 const NAV_CLEARANCE = 96;
 
+/** The element an in-page href ("#contact", "/#contact") points at on THIS
+ *  page, or null for anything else (other pages, missing ids). Synchronous, so
+ *  a click handler can decide whether to preventDefault before scrolling. */
+export function hashTarget(href: string): HTMLElement | null {
+  if (typeof window === "undefined" || typeof document === "undefined") return null;
+  const hashIndex = href.indexOf("#");
+  if (hashIndex === -1) return null;
+
+  const path = href.slice(0, hashIndex);
+  const id = href.slice(hashIndex + 1);
+  if (!id) return null;
+  // only handle same-page anchors, not "/other-page#section"
+  if (path && path !== window.location.pathname) return null;
+
+  return document.getElementById(id);
+}
+
 /**
  * Smooth-scroll to an in-page anchor ("#contact", "/#contact") through the
  * same Lenis-aware path as scrollWindowTo, instead of letting the browser's
@@ -56,18 +84,9 @@ const NAV_CLEARANCE = 96;
  * scrolling was handled), so callers know whether to preventDefault.
  */
 export function scrollToHash(href: string, opts: { duration?: number } = {}): boolean {
-  if (typeof window === "undefined" || typeof document === "undefined") return false;
-  const hashIndex = href.indexOf("#");
-  if (hashIndex === -1) return false;
-
-  const path = href.slice(0, hashIndex);
-  const id = href.slice(hashIndex + 1);
-  if (!id) return false;
-  // only handle same-page anchors, not "/other-page#section"
-  if (path && path !== "/" && path !== window.location.pathname) return false;
-
-  const el = document.getElementById(id);
+  const el = hashTarget(href);
   if (!el) return false;
+  const id = el.id;
 
   // A section can nominate the element that actually matters (a form, a card)
   // with [data-scroll-focus]. Landing on the SECTION top drops the visitor at

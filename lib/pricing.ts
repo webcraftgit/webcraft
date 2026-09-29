@@ -81,3 +81,12 @@ export function estimate(tierId: TierId | null, readiness: ContentReadiness | nu
       | null,
   };
 }
+
+/**
+ * Non-website requests the contact form can be about. Services lists video
+ * and print, but the form's "What are we building?" only offered the three
+ * website tiers, so those visitors had nothing to pick. These have no
+ * published price, so they carry no estimate.
+ */
+export const SERVICE_IDS = ["video", "print", "other"] as const;
+export type ServiceKind = (typeof SERVICE_IDS)[number];

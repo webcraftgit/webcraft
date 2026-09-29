@@ -162,7 +162,7 @@ export default function FunnelPanel({ active, reduced }: Props) {
         })}
       </div>
 
-      <p className="mt-5 text-label leading-relaxed text-ink-soft/80">
+      <p className="mt-5 text-label leading-relaxed text-ink-soft">
         {t.process.funnel.footnote}
       </p>
     </aside>

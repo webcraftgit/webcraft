@@ -30,6 +30,8 @@ export const en = {
     openMenu: `Open menu`,
     closeMenu: `Close menu`,
     language: `Language`,
+    menu: `Menu`,
+    contact: `Contact`,
   },
   hero: {
     eyebrow: `Weturn · Digital Studio`,
@@ -120,14 +122,17 @@ export const en = {
     demoLabel: (name: string) => `${name} demo site`,
     demos: {
       blackwood: {
+        name: `Blackwood · Speyside Single Malt`,
         blurb: `A Speyside single malt distillery. Concept site with a real-time 3D warehouse scene.`,
         facts: [`Concept site`, `Real-time 3D scene`],
       },
       wisniowa: {
+        name: `Wiśniowa · dental practice`,
         blurb: `A dental practice that reads like a quiet studio: warm off-white, editorial serif and a deep green that never raises its voice. The whole site is built around a clearly labelled booking prototype.`,
         facts: [`Booking prototype`, `Published price list`, `Warm clinical minimalism`],
       },
       nokturn: {
+        name: `Nokturn · clothing store`,
         blurb: `An alternative clothing label built as a working shop: variants, per-size stock, a real cart and offers that actually apply, all wrapped in a deliberately quiet interface.`,
         facts: [`Working cart`, `Per-size stock`, `Variant switching`],
       },
@@ -189,7 +194,22 @@ export const en = {
     upToPre: `typically up to`,
     mostProjects: `Most projects`,
     ctaPrefix: `Start with`,
-    footnote: `Every price above is a real starting point, not bait. The exact quote comes after a short discovery call, is fixed before work starts and is itemized so you can trim scope instead of quality. Founding-rate projects agree to let us publish the finished work as a case study.`,
+    footnote: `Every price above is a real starting point, not bait. The range shows where projects of that scope typically land.`,
+    /** Key terms, pulled out of the footnote so they are not missed. */
+    terms: [
+      {
+        title: `Fixed quote, before any work`,
+        body: `Agreed after a short discovery call and itemized, so you can trim scope instead of quality.`,
+      },
+      {
+        title: `Pay in two halves`,
+        body: `50% to start, 50% at launch. Never the full amount up front.`,
+      },
+      {
+        title: `The founding-rate deal`,
+        body: `Founding-rate projects agree to let us publish the finished work as a case study.`,
+      },
+    ],
     tiers: {
       launch: {
         name: `Launch`,
@@ -228,7 +248,6 @@ export const en = {
         ],
       },
     },
-    split: `Pay in 2: 50% to start, 50% at launch`,
     care: {
       title: `Care plan`,
       perMonth: `/month`,
@@ -258,7 +277,7 @@ export const en = {
         a: `Published starting prices are right above in the pricing section, currently at founding rates while our portfolio fills. The exact number is fixed after a short discovery call, before any work starts, and the quote is itemized so you can trim scope instead of quality. No hourly surprises.`,
       },
       {
-        q: `Why does this cost more than the 3 000 zł websites I've seen?`,
+        q: `Why does this cost more than the 3 000 PLN websites I've seen?`,
         a: `Because it's a different product. Most cheap offers are a pre-made template with your logo and text dropped in. That's fast, and fine if it's all you need. What you see on this site is custom: the layout, motion, 3D and the whole funnel are designed around your business, not a theme's. That takes real design and build time, which is what you're paying for. If a template is genuinely the right call for you, we'll tell you and point you somewhere cheaper rather than sell you something you don't need.`,
       },
       {
@@ -290,7 +309,7 @@ export const en = {
   contact: {
     eyebrow: `Contact`,
     heading: `Tell us what the site should achieve.`,
-    intro: `Three fields, no phone number required, no obligation on the other side of the send button. You'll get an honest reply, even if the honest reply is that you don't need us yet.`,
+    intro: `Three required fields, no phone number, no obligation on the other side of the send button. You'll get an honest reply, even if the honest reply is that you don't need us yet.`,
     replyPromise: `We reply within one business day.`,
     preferEmailPre: `Prefer email? `,
     sentTitle: `Got it, thank you!`,
@@ -310,6 +329,18 @@ export const en = {
     submit: `Send it`,
     sending: `Sending…`,
     microcopy: `No newsletter, no follow-up sequence. Just one human reply.`,
+    otherProject: `Something else`,
+    required: `required`,
+    privacyPre: `We use your details only to answer this inquiry. `,
+    privacyLink: `Privacy policy`,
+    privacyPost: `.`,
+    errors: {
+      name: `Please tell us your name.`,
+      email: `Please enter your email address.`,
+      emailInvalid: `That email address doesn't look right.`,
+      message: `Please tell us a little about the project.`,
+      messageShort: `A few more words, please (at least 10 characters).`,
+    },
     fallbackPre: `The form backend isn't live yet. Please email us directly at `,
     fallbackPost: `. Same one-business-day promise applies.`,
     errorPre: `Something went wrong on our side. Try again, or email `,
@@ -334,6 +365,7 @@ export const en = {
   footer: {
     tagline: `Websites that turn views into sales.`,
     rights: `All rights reserved.`,
+    navLabel: `Footer`,
   },
   sticky: {
     cta: `Start a project`,
@@ -410,6 +442,12 @@ export const en = {
     settingsLink: `Cookie settings`,
   },
   currency: `PLN`,
+  /** Browser-tab titles per path, applied client-side when the language is
+   *  switched (server metadata is always Polish — see lib/i18n/config). */
+  titles: {
+    "/": `Website design & development, Warsaw | Weturn`,
+    "/privacy": `Privacy policy | Weturn`,
+  } as Record<string, string>,
 };
 
 export type Dictionary = typeof en;
@@ -427,6 +465,8 @@ export const pl: Dictionary = {
     openMenu: `Otwórz menu`,
     closeMenu: `Zamknij menu`,
     language: `Język`,
+    menu: `Menu`,
+    contact: `Kontakt`,
   },
   hero: {
     eyebrow: `Weturn · Studio cyfrowe`,
@@ -517,14 +557,17 @@ export const pl: Dictionary = {
     demoLabel: (name: string) => `Strona demo ${name}`,
     demos: {
       blackwood: {
+        name: `Blackwood · Speyside Single Malt`,
         blurb: `Destylarnia single malt ze Speyside. Strona koncepcyjna ze sceną 3D magazynu renderowaną w czasie rzeczywistym.`,
         facts: [`Strona koncepcyjna`, `Scena 3D w czasie rzeczywistym`],
       },
       wisniowa: {
+        name: `Wiśniowa · stomatologia`,
         blurb: `Gabinet stomatologiczny poprowadzony jak spokojne studio: ciepła biel, szeryfowy krój i stonowana zieleń. Całość zbudowana wokół wyraźnie oznaczonego prototypu umawiania wizyt.`,
         facts: [`Prototyp rezerwacji`, `Jawny cennik`, `Ciepły, kliniczny minimalizm`],
       },
       nokturn: {
+        name: `Nokturn · sklep odzieżowy`,
         blurb: `Marka odzieżowa zbudowana jak działający sklep: warianty, stany magazynowe na rozmiarach, prawdziwy koszyk i rabaty, które faktycznie się naliczają, a to wszystko w celowo spokojnym interfejsie.`,
         facts: [`Działający koszyk`, `Stany na rozmiarach`, `Wybór wariantów`],
       },
@@ -586,7 +629,21 @@ export const pl: Dictionary = {
     upToPre: `zwykle do`,
     mostProjects: `Najczęściej wybierane`,
     ctaPrefix: `Zacznij od`,
-    footnote: `Każda cena powyżej to realny punkt startowy, nie przynęta. Dokładna wycena powstaje po krótkiej rozmowie wstępnej, jest ustalana przed startem prac i rozpisana pozycjami, żebyś mógł ciąć zakres, a nie jakość. Projekty w stawce założycielskiej zgadzają się na publikację gotowej pracy jako case study.`,
+    footnote: `Każda cena powyżej to realny punkt startowy, nie przynęta. Przedział pokazuje, gdzie zwykle zamykają się projekty o takim zakresie.`,
+    terms: [
+      {
+        title: `Stała wycena przed startem prac`,
+        body: `Ustalana po krótkiej rozmowie wstępnej i rozpisana pozycjami, żebyś mógł ciąć zakres, a nie jakość.`,
+      },
+      {
+        title: `Płatność w dwóch częściach`,
+        body: `50% na start, 50% przy uruchomieniu. Nigdy całość z góry.`,
+      },
+      {
+        title: `Warunek stawki założycielskiej`,
+        body: `Projekty w stawce założycielskiej zgadzają się na publikację gotowej pracy jako case study.`,
+      },
+    ],
     tiers: {
       launch: {
         name: `Start`,
@@ -625,7 +682,6 @@ export const pl: Dictionary = {
         ],
       },
     },
-    split: `Płatność w 2 ratach: 50% na start, 50% przy uruchomieniu`,
     care: {
       title: `Opieka nad stroną`,
       perMonth: `/mies.`,
@@ -687,7 +743,7 @@ export const pl: Dictionary = {
   contact: {
     eyebrow: `Kontakt`,
     heading: `Powiedz nam, co strona ma osiągnąć.`,
-    intro: `Trzy pola, bez obowiązkowego numeru telefonu i bez zobowiązań po kliknięciu „Wyślij”. Dostaniesz uczciwą odpowiedź, nawet jeśli będzie brzmiała: „jeszcze nas nie potrzebujesz”.`,
+    intro: `Trzy wymagane pola, bez numeru telefonu i bez zobowiązań po kliknięciu „Wyślij”. Dostaniesz uczciwą odpowiedź, nawet jeśli będzie brzmiała: „jeszcze nas nie potrzebujesz”.`,
     replyPromise: `Odpowiadamy w ciągu jednego dnia roboczego.`,
     preferEmailPre: `Wolisz e-mail? `,
     sentTitle: `Gotowe, dziękujemy!`,
@@ -707,6 +763,18 @@ export const pl: Dictionary = {
     submit: `Wyślij`,
     sending: `Wysyłanie…`,
     microcopy: `Bez newslettera i automatycznych follow-upów. Tylko jedna odpowiedź od człowieka.`,
+    otherProject: `Coś innego`,
+    required: `wymagane`,
+    privacyPre: `Twoje dane wykorzystamy wyłącznie do odpowiedzi na to zapytanie. `,
+    privacyLink: `Polityka prywatności`,
+    privacyPost: `.`,
+    errors: {
+      name: `Podaj, proszę, imię i nazwisko.`,
+      email: `Podaj, proszę, adres e-mail.`,
+      emailInvalid: `Ten adres e-mail wygląda na niepoprawny.`,
+      message: `Napisz, proszę, kilka słów o projekcie.`,
+      messageShort: `Jeszcze kilka słów, proszę (co najmniej 10 znaków).`,
+    },
     fallbackPre: `Formularz nie jest jeszcze podłączony. Napisz do nas bezpośrednio na `,
     fallbackPost: `. Obowiązuje ta sama obietnica jednego dnia roboczego.`,
     errorPre: `Coś poszło nie tak po naszej stronie. Spróbuj ponownie albo napisz na `,
@@ -731,6 +799,7 @@ export const pl: Dictionary = {
   footer: {
     tagline: `Strony, które zamieniają wyświetlenia w sprzedaż.`,
     rights: `Wszelkie prawa zastrzeżone.`,
+    navLabel: `Stopka`,
   },
   sticky: {
     cta: `Rozpocznij projekt`,
@@ -804,6 +873,10 @@ export const pl: Dictionary = {
     settingsLink: `Ustawienia plików cookie`,
   },
   currency: `zł`,
+  titles: {
+    "/": `Tworzenie stron internetowych Warszawa | Weturn`,
+    "/privacy": `Polityka prywatności | Weturn`,
+  },
 };
 
 export const DICTS: Record<Locale, Dictionary> = { en, pl };

@@ -51,7 +51,12 @@ export default function PricingSection() {
               key={tier.id}
               className={cn(
                 "glass relative flex flex-col rounded-panel p-7 transition-colors duration-300 hover:border-[var(--glass-border-hover)]",
-                tier.highlight && "border-[rgba(56,189,248,0.35)]"
+                /* the recommended tier has to read as recommended at a glance —
+                   a slightly brighter border alone did not. Brighter edge, a
+                   cyan wash from the top and a glow; on desktop it also sits
+                   a step higher than its neighbours. */
+                tier.highlight &&
+                  "border-[rgba(56,189,248,0.6)] bg-[linear-gradient(180deg,rgba(56,189,248,0.12),rgba(14,24,41,0.55)_45%)] shadow-[0_0_0_1px_rgba(56,189,248,0.25),0_30px_80px_-30px_rgba(56,189,248,0.45)] lg:-translate-y-3"
               )}
             >
               {/* rim-light hairline */}
@@ -78,7 +83,7 @@ export default function PricingSection() {
 
               <p className="mt-5">
                 <span className="text-small text-ink-soft">{t.pricing.from}&nbsp;</span>
-                <span className="font-display text-[clamp(1.7rem,2.4vw,2.1rem)] font-medium text-brand-300">
+                <span className="font-display text-[clamp(2rem,3vw,2.6rem)] font-medium leading-none text-brand-300">
                   {price(tier.from)}
                 </span>
               </p>
@@ -86,25 +91,7 @@ export default function PricingSection() {
                 {t.pricing.upToPre} {price(tier.upTo)} · {t.pricing.tiers[tier.id].weeks}
               </p>
 
-              {/* split payment — lowers felt commitment, not the price (CP4.4) */}
-              <p className="mt-3 inline-flex items-center gap-2 rounded-full border border-[var(--glass-border)] bg-[rgba(5,8,15,0.4)] px-3 py-1 text-small text-ink-soft">
-                <svg
-                  className="h-3.5 w-3.5 shrink-0 text-brand-400"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden
-                >
-                  <rect x="2" y="5" width="20" height="14" rx="2" />
-                  <path d="M2 10h20" />
-                </svg>
-                {t.pricing.split}
-              </p>
-
-              <ul className="mt-6 flex-1 space-y-2.5">
+              <ul className="mt-6 flex-1 space-y-2.5 border-t border-[var(--glass-border)] pt-6">
                 {t.pricing.tiers[tier.id].includes.map((line) => (
                   <li key={line} className="flex gap-2.5 text-ui leading-snug text-ink-soft">
                     <svg
@@ -139,6 +126,32 @@ export default function PricingSection() {
             </article>
           ))}
         </div>
+
+        {/* Key terms. These used to be the second half of a grey footnote
+            (fixed quote, case-study condition) and a chip repeated on every
+            card (50/50) — the three things a buyer most needs to know. */}
+        <ul data-reveal className="mt-8 grid gap-4 md:grid-cols-3 md:gap-6">
+          {t.pricing.terms.map((term) => (
+            <li key={term.title} className="flex gap-3">
+              <svg
+                className="mt-1 h-4 w-4 shrink-0 text-accent-green"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.4"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden
+              >
+                <path d="M5 13l4 4L19 7" />
+              </svg>
+              <div>
+                <p className="text-ui font-medium text-ink">{term.title}</p>
+                <p className="mt-1 text-small leading-relaxed text-ink-soft">{term.body}</p>
+              </div>
+            </li>
+          ))}
+        </ul>
 
         {/* CP5.4: care plan — monthly hosting + maintenance + small changes.
             One price (no range), scope guard in the note. */}
@@ -193,12 +206,12 @@ export default function PricingSection() {
               ))}
             </ul>
           </div>
-          <p className="mt-5 text-small leading-relaxed text-ink-soft/85">
+          <p className="mt-5 text-small leading-relaxed text-ink-soft">
             {t.pricing.care.note}
           </p>
         </aside>
 
-        <p data-reveal className="mt-8 max-w-[64ch] text-small leading-relaxed text-ink-soft/85">
+        <p data-reveal className="mt-8 max-w-[64ch] text-small leading-relaxed text-ink-soft">
           {t.pricing.footnote}
         </p>
       </div>

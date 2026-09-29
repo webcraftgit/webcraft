@@ -90,6 +90,18 @@ export default function Hero() {
         animate="visible"
         className="container-x pointer-events-none relative z-10 flex flex-col items-center pt-16 text-center"
       >
+        {/* Legibility scrim. The lead paragraph sits on the glossy face of the
+            W and a field of cubes; a text-shadow alone left it fighting the
+            highlights. A soft, edgeless dark pool behind the copy calms the
+            area under the text without reading as a box. */}
+        <span
+          aria-hidden
+          className="pointer-events-none absolute left-1/2 top-[58%] -z-10 h-[70%] w-[min(110%,760px)] -translate-x-1/2 -translate-y-1/2"
+          style={{
+            background:
+              "radial-gradient(closest-side, rgba(5,8,15,0.62) 0%, rgba(5,8,15,0.38) 55%, rgba(5,8,15,0) 100%)",
+          }}
+        />
         <motion.h1 variants={revealItem} className="heading-display max-w-[13ch]">
           {t.hero.titleA}{" "}
           <span className="text-[var(--accent-green)]">{t.hero.titleAccent}</span>
@@ -103,21 +115,25 @@ export default function Hero() {
         </motion.p>
         <motion.div
           variants={revealItem}
-          className="pointer-events-auto mt-10 flex flex-wrap items-center justify-center gap-4"
+          className="pointer-events-auto mt-10 flex w-full flex-col items-center justify-center gap-3 sm:w-auto sm:flex-row sm:gap-4"
         >
-          <MagneticButton href="#contact">{t.hero.ctaPrimary}</MagneticButton>
-          <MagneticButton href="#craft" variant="ghost">
+          {/* phones: both buttons one width, stacked — they used to size to
+              their labels and read as two unrelated pills */}
+          <MagneticButton href="#contact" wrapperClassName="w-full max-w-[320px] sm:w-auto" className="w-full sm:w-auto">
+            {t.hero.ctaPrimary}
+          </MagneticButton>
+          <MagneticButton href="#craft" variant="ghost" wrapperClassName="w-full max-w-[320px] sm:w-auto" className="w-full sm:w-auto">
             {t.hero.ctaGhost}
           </MagneticButton>
         </motion.div>
       </motion.div>
 
-      {/* Scroll cue */}
+      {/* Scroll cue — a mouse, so only for devices that have one */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1.6, duration: 1 }}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2"
+        className="absolute bottom-8 left-1/2 hidden -translate-x-1/2 [@media(hover:hover)_and_(pointer:fine)]:block"
         aria-hidden
       >
         <div className="flex h-10 w-6 items-start justify-center rounded-full border border-[var(--glass-border)] p-1.5">

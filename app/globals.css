@@ -68,12 +68,22 @@ html.lenis, html.lenis body { height: auto; }
 
   .eyebrow { @apply text-[13px] font-medium uppercase tracking-[0.08em] text-brand-500; }
 
+  /* ORDER MATTERS: prefixed first, standard LAST. With the standard property
+   * first, the CSS minifier merged the pair and kept only the -webkit- one,
+   * which Chrome ignores — so no glass surface on the site was blurred at
+   * all in Chrome (text under the navbar read straight through it). */
   .glass {
     background: var(--glass-bg);
-    backdrop-filter: blur(16px) saturate(1.2);
     -webkit-backdrop-filter: blur(16px) saturate(1.2);
+    backdrop-filter: blur(16px) saturate(1.2);
     border: 1px solid var(--glass-border);
     box-shadow: var(--shadow-soft);
+  }
+
+  /* The fixed navbar sits over 40–96px headings as they scroll under it;
+   * at the shared 55% the letterforms stayed legible through the bar. */
+  .glass-nav {
+    background: rgba(8, 13, 24, 0.82);
   }
 
   /* CP4_64: word-spacing. Clash Display's space is narrow, and the negative

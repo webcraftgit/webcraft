@@ -164,7 +164,7 @@ export default function ProcessSection() {
               );
             })}
             </ol>
-            <p className="mt-8 pl-16 text-small text-ink-soft/70 md:pl-20">
+            <p className="mt-8 pl-16 text-small text-ink-soft md:pl-20">
               {t.process.footnote}
             </p>
           </div>

@@ -8,6 +8,9 @@
  */
 
 export const TIERS = ["launch", "business", "signature"] as const;
+/** Non-website project kinds (lib/pricing SERVICE_IDS). No DB column yet —
+ *  the contact route prefixes them onto the stored message. */
+export const SERVICES = ["video", "print", "other"] as const;
 export const READINESS = ["ready", "partly", "none"] as const;
 export const BUDGETS = ["lt5k", "b5to10k", "b10to20k", "gt20k", "unsure"] as const;
 export const LOCALES = ["pl", "en"] as const;
