@@ -25,6 +25,7 @@ import { useMediaQuery, usePrefersReducedMotion } from "@/hooks/useMediaQuery";
 import "@fontsource-variable/bodoni-moda/wght.css";
 import "@fontsource-variable/jetbrains-mono/wght.css";
 import "@fontsource/unifrakturmaguntia/latin-400.css";
+import "./fonts.css";
 import "./hero.css";
 
 import {
@@ -136,12 +137,11 @@ const T = {
 };
 
 /** The wordmark, and nothing else — see the note above on Polish diacritics.
- *  Metal Macabre is the brand's chosen face, but its licence (1001fonts FFC)
- *  forbids publishing or converting it, so it is not in this repo. The
- *  @font-face that pointed at a drop-in path was removed: with no file behind
- *  it, it only produced two 404s on every page that mounted this demo.
- *  To bring it back, see public/fonts/README.txt. */
-const WORDMARK = '"UnifrakturMaguntia", "Bodoni Moda Variable", Georgia, serif';
+ *  Metal Macabre is the brand's face, self-hosted as the original .ttf from
+ *  public/fonts/ (declared in fonts.css); UnifrakturMaguntia is the fallback.
+ *  See public/fonts/README.txt. */
+const WORDMARK =
+  '"Metal Macabre", "UnifrakturMaguntia", "Bodoni Moda Variable", Georgia, serif';
 const DISPLAY = '"Bodoni Moda Variable", "Times New Roman", Times, serif';
 const UI = '"Inter Variable", "Helvetica Neue", Helvetica, Arial, sans-serif';
 const MONO = '"JetBrains Mono Variable", ui-monospace, SFMono-Regular, Menlo, monospace';

@@ -1,0 +1,16 @@
+/* NOKTURN — display face.
+ *
+ * Metal Macabre (1001fonts, Free For Commercial Use licence). The licence
+ * forbids modifying the font, so it ships as the original, unconverted .ttf —
+ * no woff2. It is 26 KB, so that costs next to nothing. UnifrakturMaguntia
+ * stays behind it in the stack as the fallback while it loads.
+ *
+ * font-display: swap — the wordmark is decorative and must never block the
+ * catalogue from painting. */
+@font-face {
+  font-family: "Metal Macabre";
+  src: url("/fonts/metal-macabre.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
