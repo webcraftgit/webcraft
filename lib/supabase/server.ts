@@ -1,7 +1,7 @@
 import "server-only";
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { cookies } from "next/headers";
-import { asAdminCookie } from "./cookie-options";
+import { asSessionCookie } from "./cookie-options";
 
 /**
  * Request-scoped client carrying the signed-in admin's JWT. RLS applies, so
@@ -26,7 +26,7 @@ export async function supabaseServer() {
           // Server Components can't set cookies; middleware refreshes the
           // session instead. Swallowing here is the documented pattern.
           try {
-            list.forEach(({ name, value, options }) => store.set(name, value, asAdminCookie(options)));
+            list.forEach(({ name, value, options }) => store.set(name, value, asSessionCookie(options)));
           } catch {}
         },
       },

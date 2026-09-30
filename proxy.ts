@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
-import { asAdminCookie } from "@/lib/supabase/cookie-options";
+import { asSessionCookie } from "@/lib/supabase/cookie-options";
 
 /**
  * Session refresh + /admin gate (CP6-backend).
@@ -38,8 +38,8 @@ export async function proxy(req: NextRequest) {
         setAll: (list: { name: string; value: string; options: CookieOptions }[]) => {
           list.forEach(({ name, value }) => req.cookies.set(name, value));
           res = NextResponse.next({ request: req });
-          // admin lifetime: 30 days since the last visit (cookie-options.ts)
-          list.forEach(({ name, value, options }) => res.cookies.set(name, value, asAdminCookie(options)));
+          // session cookies: the login dies when the browser is closed
+          list.forEach(({ name, value, options }) => res.cookies.set(name, value, asSessionCookie(options)));
         },
       },
     }

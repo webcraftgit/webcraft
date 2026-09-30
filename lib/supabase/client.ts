@@ -1,7 +1,6 @@
 "use client";
 import { createBrowserClient, type CookieOptions } from "@supabase/ssr";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { ADMIN_SESSION_MAX_AGE_S } from "./cookie-options";
 
 /**
  * Browser client — anon key only. RLS gives it nothing without a session.
@@ -22,12 +21,12 @@ export const supabaseBrowser = (): SupabaseClient | null => {
 
   /**
    * The login itself is written here, in the browser, so this is where the
-   * admin session lifetime has to start. We take over the cookie read/write
-   * and give every live auth cookie a Max-Age of ADMIN_SESSION_MAX_AGE_S
-   * (30 days) instead of the library's 400. (`maxAge: 0` is the library
-   * expiring a cookie on sign-out; we keep that so signing out still works.)
-   * The server side matches this in proxy.ts and lib/supabase/server.ts via
-   * asAdminCookie().
+   * "sign out when the window closes" behaviour has to start. We take over the
+   * cookie read/write and simply never attach a Max-Age or Expires to a live
+   * auth cookie — that makes it a *session* cookie the browser discards on
+   * close. (`maxAge: 0` is the library expiring a cookie on sign-out; we keep
+   * that so signing out still works.) The server side matches this in
+   * proxy.ts and lib/supabase/server.ts via asSessionCookie().
    *
    * The values are base64url (cookie-safe), so no percent-encoding is needed
    * and both sides read the exact same string.
@@ -50,7 +49,8 @@ export const supabaseBrowser = (): SupabaseClient | null => {
           const deleting = options?.maxAge === 0;
           let str = `${name}=${value}; Path=${options?.path ?? "/"}; SameSite=${options?.sameSite ?? "Lax"}`;
           if (options?.secure) str += "; Secure";
-          str += deleting ? "; Max-Age=0" : `; Max-Age=${ADMIN_SESSION_MAX_AGE_S}`; // 0 = sign-out
+          if (deleting) str += "; Max-Age=0"; // let sign-out expire the cookie
+          // otherwise: no Max-Age / Expires → dies when the browser closes
           document.cookie = str;
         }
       },
