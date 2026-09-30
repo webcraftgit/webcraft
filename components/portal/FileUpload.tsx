@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import type { PortalFile } from "@/lib/portal/data";
-import { MAX_BYTES, MAX_FILES, checkUpload, formatBytes, mimeOf, type UploadKind } from "@/lib/portal/uploads";
+import { MAX_BYTES, MAX_FILES, PREVIEWABLE, checkUpload, formatBytes, mimeOf, type UploadKind } from "@/lib/portal/uploads";
 import { confirmUploadAction, removeUploadAction, requestUploadAction } from "@/app/portal/[token]/actions";
 
 type Lang = "pl" | "en";
@@ -64,7 +64,7 @@ function put(url: string, file: File, mime: string, onProgress: (p: number) => v
 }
 
 export default function FileUpload({
-  token, kind, lang, files, onChange, labelledBy,
+  token, kind, lang, files, onChange, labelledBy, preview = false,
 }: {
   token: string;
   kind: UploadKind;
@@ -72,6 +72,8 @@ export default function FileUpload({
   files: PortalFile[];
   onChange: (update: (prev: PortalFile[]) => PortalFile[]) => void;
   labelledBy: string;
+  /** Admin preview: same checks, but the file never leaves the browser. */
+  preview?: boolean;
 }) {
   const t = T[lang];
   const input = useRef<HTMLInputElement>(null);
@@ -87,6 +89,13 @@ export default function FileUpload({
     const mime = mimeOf(file.name, file.type);
     const local = checkUpload({ kind, mime, size: file.size }, countBefore);
     if (local) return patch(key, { error: t.errors[local] ?? t.errors.default });
+
+    if (preview) {
+      const shown = PREVIEWABLE.has(mime) ? URL.createObjectURL(file) : null;
+      onChange((prev) => [...prev, { id: key, kind, original_name: file.name, size_bytes: file.size, mime, preview: shown }]);
+      setPending((list) => list.filter((x) => x.key !== key));
+      return;
+    }
 
     const slot = await requestUploadAction(token, { kind, mime, size: file.size }).catch(() => null);
     if (!slot?.ok) return patch(key, { error: t.errors[slot?.reason ?? ""] ?? t.errors.default });
@@ -116,6 +125,10 @@ export default function FileUpload({
   }
 
   async function remove(f: PortalFile) {
+    if (preview) {
+      if (f.preview?.startsWith("blob:")) URL.revokeObjectURL(f.preview);
+      return onChange((prev) => prev.filter((x) => x.id !== f.id));
+    }
     setRemoving(f.id);
     const r = await removeUploadAction(token, f.id).catch(() => null);
     setRemoving(null);

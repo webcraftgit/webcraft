@@ -61,12 +61,18 @@ export default async function Projects({ searchParams }: { searchParams: Promise
             One private portal link per client. Send it after the contract is signed and the deposit is paid.
           </p>
         </div>
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Same tab on purpose: a new tab has no sign-in mark and would sign the admin out (TabSessionGuard). */}
+          <span className="text-[13px] text-ink-soft">Preview questionnaire:</span>
+          <a href="/admin/preview?lang=pl" className="rounded-full border border-[var(--glass-border)] px-3.5 py-1.5 text-[13px] text-ink-soft hover:text-ink">PL</a>
+          <a href="/admin/preview?lang=en" className="rounded-full border border-[var(--glass-border)] px-3.5 py-1.5 text-[13px] text-ink-soft hover:text-ink">EN</a>
         <a
           href={showArchived ? "/admin/projects" : "/admin/projects?show=all"}
           className="rounded-full border border-[var(--glass-border)] px-3.5 py-1.5 text-[13px] text-ink-soft hover:text-ink"
         >
           {showArchived ? "Hide archived" : "Show archived"}
         </a>
+        </div>
       </div>
 
       <form action={createProject} className="glass mb-8 flex flex-wrap items-end gap-3 rounded-card p-5">

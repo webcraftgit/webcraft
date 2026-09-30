@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   CLOCK_NOTE, INTRO, QUESTIONS, SECTIONS, THANK_YOU,
@@ -44,6 +45,8 @@ const T = {
     change: "Chcesz coś zmienić? Odpisz na naszego maila, a poprawimy to razem na rozmowie startowej.",
     chooseOne: "Wybierz jedną opcję",
     unsaved: "Masz niezapisane zmiany.",
+    preview: "Podgląd: tak widzi to klient. Nic, co tu wpiszesz lub dodasz, nie zostanie zapisane.",
+    previewBack: "Wróć do projektów",
   },
   en: {
     portal: "Client portal",
@@ -70,6 +73,8 @@ const T = {
     change: "Need to change something? Reply to our email and we'll sort it out together on the kickoff call.",
     chooseOne: "Choose one option",
     unsaved: "You have unsaved changes.",
+    preview: "Preview: this is what the client sees. Nothing you type or add here is saved.",
+    previewBack: "Back to projects",
   },
 } as const;
 
@@ -79,7 +84,12 @@ const REVIEW = SECTIONS.length; // index of the review step, after the 10 sectio
 const inputCls =
   "w-full rounded-input border border-[var(--glass-border)] bg-[rgba(5,8,15,0.55)] px-4 py-3 text-[15px] text-ink outline-none transition-colors placeholder:text-ink-soft/60 focus:border-brand-400";
 
-export default function IntakeForm({ token, portal }: { token: string; portal: Portal }) {
+/**
+ * `preview` (admin only, /admin/preview): the same form with nothing saved.
+ * Answers stay in the page, uploads stay in the browser, and "Send" just shows
+ * the thank-you screen, so the admin sees exactly what a client gets.
+ */
+export default function IntakeForm({ token, portal, preview = false }: { token: string; portal: Portal; preview?: boolean }) {
   const [lang, setLang] = useState<Lang>(portal.locale);
   const [answers, setAnswers] = useState<Answers>(portal.answers);
   const [step, setStep] = useState(0);
@@ -116,6 +126,7 @@ export default function IntakeForm({ token, portal }: { token: string; portal: P
     if (inFlight.current || !dirty.current) return;
     const payload = dirty.current;
     dirty.current = null;
+    if (preview) return; // nothing to save; no "Saved" either, the banner says so
     inFlight.current = true;
     setSave("saving");
     try {
@@ -136,7 +147,7 @@ export default function IntakeForm({ token, portal }: { token: string; portal: P
     }
     // Typed more while the request was out, or it failed: go again.
     if (dirty.current) schedule(SAVE_DELAY_MS * 2);
-  }, [token, schedule]);
+  }, [token, schedule, preview]);
 
   useEffect(() => {
     flushRef.current = flush;
@@ -186,6 +197,10 @@ export default function IntakeForm({ token, portal }: { token: string; portal: P
     if (timer.current) clearTimeout(timer.current);
     setSending(true);
     setSendError(false);
+    if (preview) {
+      setSending(false);
+      return setSubmitted(true);
+    }
     try {
       const r = await submitIntakeAction(token, answers);
       if (r.ok || r.reason === "locked") {
@@ -202,6 +217,13 @@ export default function IntakeForm({ token, portal }: { token: string; portal: P
 
   // ── Views ───────────────────────────────────────────────────────────────
   const header = (
+    <>
+    {preview && (
+      <div role="note" className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-card border border-amber-400/40 bg-amber-400/10 px-4 py-3 text-[13.5px] text-ink">
+        <span>{t.preview}</span>
+        <Link href="/admin/projects" className="font-medium text-brand-300 underline underline-offset-4 hover:text-ink">{t.previewBack}</Link>
+      </div>
+    )}
     <header className="flex flex-wrap items-center justify-between gap-4">
       <div>
         <p className="eyebrow">Weturn · {t.portal}</p>
@@ -228,6 +250,7 @@ export default function IntakeForm({ token, portal }: { token: string; portal: P
         ))}
       </div>
     </header>
+    </>
   );
 
   if (submitted) {
@@ -341,7 +364,7 @@ export default function IntakeForm({ token, portal }: { token: string; portal: P
                 {sectionQs(step).map((q) => (
                   <QuestionCard
                     key={q.id} q={q} lang={lang} answers={answers} update={update}
-                    token={token} files={uploaded} setFiles={setUploaded}
+                    token={token} files={uploaded} setFiles={setUploaded} preview={preview}
                   />
                 ))}
               </div>
@@ -380,10 +403,11 @@ export default function IntakeForm({ token, portal }: { token: string; portal: P
 }
 
 function QuestionCard({
-  q, lang, answers, update, token, files, setFiles,
+  q, lang, answers, update, token, files, setFiles, preview,
 }: {
   q: Question; lang: Lang; answers: Answers; update: (k: string, v: string | boolean) => void;
   token: string; files: PortalFile[]; setFiles: (u: (prev: PortalFile[]) => PortalFile[]) => void;
+  preview: boolean;
 }) {
   const t = T[lang];
   const hintId = `${q.id}-hint`;
@@ -402,7 +426,7 @@ function QuestionCard({
       {q.files && (
         <div className="mt-4">
           <FileUpload
-            token={token} kind={q.files.kind} lang={lang}
+            token={token} kind={q.files.kind} lang={lang} preview={preview}
             files={files}
             onChange={(u) => {
               setFiles(u);
