@@ -320,7 +320,7 @@ export default function IntakeForm({ token, portal }: { token: string; portal: P
           </ol>
         </nav>
 
-        <div ref={top} tabIndex={-1} className="scroll-mt-24 outline-none">
+        <div ref={top} tabIndex={-1} className="scroll-mt-24 outline-none focus-visible:outline-none">
           <label className="mb-6 block lg:hidden">
             <span className="mb-1.5 block text-[13px] text-ink-soft">{t.step(step + 1, REVIEW + 1)}</span>
             <select value={step} onChange={(e) => go(Number(e.target.value))} className={inputCls}>
