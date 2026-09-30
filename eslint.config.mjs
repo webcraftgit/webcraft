@@ -20,10 +20,17 @@ const patched = next.map((c) =>
 );
 
 // Next 16 ships eslint-config-next as a native flat config (core-web-vitals +
-// typescript + react + a11y). Spread it after our ignores.
+// typescript + react + a11y). Spread it after our ignores. `.claude/` holds
+// Claude Code worktrees (full repo copies), which must not be linted twice.
 const config = [
   {
-    ignores: [".next/**", "node_modules/**", "public/**", "next-env.d.ts"],
+    ignores: [
+      ".next/**",
+      "node_modules/**",
+      "public/**",
+      "next-env.d.ts",
+      ".claude/**",
+    ],
   },
   ...patched,
 ];
