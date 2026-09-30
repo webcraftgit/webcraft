@@ -228,7 +228,7 @@ export const en = {
         tagline: `A full site built around your sales funnel.`,
         weeks: `2 weeks`,
         includes: [
-          `Multi-section site (up to ~7 sections/pages)`,
+          `Multi-page site (up to 7 pages)`,
           `Everything in Launch`,
           `Two language versions included (e.g. Polish + English)`,
           `Editable content: update text & images yourself`,
@@ -667,7 +667,7 @@ export const pl: Dictionary = {
         tagline: `Kompletna strona zbudowana wokół Twojej ścieżki klienta.`,
         weeks: `2 tygodnie`,
         includes: [
-          `Wielosekcyjna strona (do ~7 sekcji/podstron)`,
+          `Rozbudowana strona (do 7 podstron)`,
           `Wszystko z pakietu Start`,
           `Dwie wersje językowe w cenie (np. polska + angielska)`,
           `Edytowalne treści: samodzielnie zmieniasz teksty i zdjęcia`,
