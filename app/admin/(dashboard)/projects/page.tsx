@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/supabase/server";
 import { SITE_URL } from "@/lib/site";
@@ -121,7 +122,9 @@ export default async function Projects({ searchParams }: { searchParams: Promise
             >
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <p className="font-display text-[18px] font-medium text-ink">{r.client_name}</p>
+                  <Link href={`/admin/projects/${r.id}`} className="font-display text-[18px] font-medium text-ink hover:text-brand-300">
+                    {r.client_name} <span aria-hidden className="text-ink-soft">→</span>
+                  </Link>
                   <p className="mt-0.5 text-[13px] text-ink-soft">
                     {PACKAGE_LABEL[r.package]} · portal in {r.locale === "pl" ? "Polish" : "English"} · created {date(r.created_at)}
                   </p>

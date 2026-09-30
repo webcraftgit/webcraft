@@ -403,14 +403,22 @@ function QuestionCard({
         <div className="mt-4">
           <FileUpload
             token={token} kind={q.files.kind} lang={lang}
-            files={files} onChange={setFiles} labelledBy={`${q.id}-title`}
+            files={files}
+            onChange={(u) => {
+              setFiles(u);
+              // An upload replaces the fallback; untick it so the brief isn't contradictory.
+              if (answers[q.files!.fallbackKey] === true) update(q.files!.fallbackKey, false);
+            }}
+            labelledBy={`${q.id}-title`}
           />
         </div>
       )}
 
       <div className="mt-4 space-y-4">
         {q.fields.map((f) =>
-          f.showIf && answers[f.showIf.key] !== f.showIf.equals ? null : (
+          (f.showIf && answers[f.showIf.key] !== f.showIf.equals) ||
+          // "No logo / no photos" makes no sense once files are in.
+          (q.files && f.key === q.files.fallbackKey && files.some((x) => x.kind === q.files!.kind)) ? null : (
             <FieldInput
               key={f.key}
               f={f}
