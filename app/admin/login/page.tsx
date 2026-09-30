@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabase/client";
+import { markTabSignedIn } from "@/components/admin/TabSessionGuard";
 
 /**
  * Admin sign-in — email one-time code (CP6-backend).
@@ -67,6 +68,7 @@ export default function AdminLogin() {
       setError("That code is wrong or has expired. Request a new one.");
       return;
     }
+    markTabSignedIn(); // this tab may now use the dashboard (TabSessionGuard)
     router.replace("/admin");
     router.refresh();
   }

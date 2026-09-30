@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/supabase/server";
 import SignOutButton from "@/components/admin/SignOutButton";
+import TabSessionGuard from "@/components/admin/TabSessionGuard";
 
 export const dynamic = "force-dynamic"; // a cached dashboard is a leaked dashboard
 
@@ -17,6 +18,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   if (!isAdmin) redirect("/admin/login?denied=1");
 
   return (
+    <TabSessionGuard>
     <div className="min-h-dvh">
       <header className="sticky top-0 z-10 border-b border-[var(--glass-border)] bg-[rgba(5,8,15,0.85)] backdrop-blur">
         <div className="mx-auto flex max-w-[1200px] items-center gap-6 px-6 py-4">
@@ -36,5 +38,6 @@ export default async function DashboardLayout({ children }: { children: React.Re
       </header>
       <main className="mx-auto max-w-[1200px] px-6 py-10">{children}</main>
     </div>
+    </TabSessionGuard>
   );
 }
