@@ -11,6 +11,10 @@ import { fileURLToPath } from "node:url";
  *    `import "server-only"` could not otherwise be imported by a Node test.
  *  - `@` → the project root, mirroring the tsconfig `@/*` path so tests can
  *    import modules the same way the app does.
+ *
+ * Excludes: `.claude/` holds Claude Code worktrees (full repo copies, each
+ * with its own node_modules), so a run from the main checkout would otherwise
+ * pick up their stale copies of our tests plus third-party package tests.
  */
 const root = fileURLToPath(new URL(".", import.meta.url)).replace(/[/\\]$/, "");
 
@@ -18,7 +22,7 @@ export default defineConfig({
   test: {
     environment: "node",
     include: ["**/*.test.ts"],
-    exclude: ["node_modules", ".next"],
+    exclude: ["**/node_modules/**", ".next/**", ".claude/**"],
   },
   resolve: {
     alias: [
