@@ -137,9 +137,8 @@ const T = {
 };
 
 /** The wordmark, and nothing else — see the note above on Polish diacritics.
- *  Metal Macabre is the brand's chosen face; it is not redistributable through
- *  npm, so fonts.css declares it against a drop-in path and the stack falls
- *  through to UnifrakturMaguntia until the file is in public/fonts/.
+ *  Metal Macabre is the brand's face, self-hosted as the original .ttf from
+ *  public/fonts/ (declared in fonts.css); UnifrakturMaguntia is the fallback.
  *  See public/fonts/README.txt. */
 const WORDMARK =
   '"Metal Macabre", "UnifrakturMaguntia", "Bodoni Moda Variable", Georgia, serif';
