@@ -23,9 +23,15 @@ A private page per client project on the Weturn site. Phase 1 replaces the Tally
 | 7 | Admin `/admin/projects`: list, create (name, package, language), copy link, revoke/new link, status | done |
 | 8 | Admin project page: answers, missing required items, files with downloads, **Download brief input (.md)** | done |
 | 9 | Kit side: intake README, `/brief-to-plan` reads the export, MANUAL EN/PL + PDFs | done (agency-kit 06ffae4, pushed) |
-| 10 | End-to-end test on localhost against the real Supabase, then deploy | |
+| 10 | End-to-end test on localhost against the real Supabase, then deploy | done (live on webcraft-listyfi.vercel.app, 2026-09-30) |
 
 **Database:** `supabase/portal.sql` has been run in Supabase (2026-09-30). Re-run it after any change to that file; it is safe to re-run.
+
+## Going live: notes
+
+- Vercel needs, for **Production** (and Preview): `NEXT_PUBLIC_SUPABASE_URL` (`https://<ref>.supabase.co`, **.co**), `NEXT_PUBLIC_SUPABASE_ANON_KEY` (`sb_publishable_…`), `SUPABASE_SERVICE_ROLE_KEY` (`sb_secret_…`) and `IP_HASH_SECRET`. The public ones are baked into the build, so redeploy after any change. Quick check: the `connect-src` in the live Content-Security-Policy header shows the Supabase host the build used.
+- `NEXT_PUBLIC_SITE_URL` stays unset until weturn.studio is connected. Portal links in admin then use the host admin is opened on (`lib/portal/origin.ts`). Once the domain is live, set it, and links switch to the real domain automatically.
+- Local and live share one Supabase project: test projects made locally show up in the live admin too.
 
 ## Phase 2: checkpoints (later)
 
