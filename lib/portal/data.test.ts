@@ -7,16 +7,32 @@ import { newToken } from "./token";
  * update…select, rpc). Enough to test the portal's rules without a database.
  */
 type Row = Record<string, unknown>;
-const h = vi.hoisted(() => ({ tables: {} as Record<string, Row[]>, rpcAllow: true, calls: [] as string[] }));
+const h = vi.hoisted(() => ({
+  tables: {} as Record<string, Row[]>,
+  rpcAllow: true,
+  calls: [] as string[],
+  /** storage objects: path → what storage "recorded" */
+  objects: new Map<string, { size: number; contentType: string }>(),
+}));
 
 function table(name: string) {
   const filters: ((r: Row) => boolean)[] = [];
-  let op: { kind: "select" } | { kind: "update"; patch: Row } = { kind: "select" };
+  let op: { kind: "select" } | { kind: "update"; patch: Row } | { kind: "insert"; row: Row } | { kind: "delete" } = { kind: "select" };
   const rows = () => (h.tables[name] ??= []).filter((r) => filters.every((f) => f(r)));
   const run = () => {
     if (op.kind === "update") {
       const hit = rows();
       hit.forEach((r) => Object.assign(r, (op as { patch: Row }).patch));
+      return hit;
+    }
+    if (op.kind === "insert") {
+      const row = { id: `f${Math.random().toString(16).slice(2)}`, ...op.row };
+      h.tables[name].push(row);
+      return [row];
+    }
+    if (op.kind === "delete") {
+      const hit = rows();
+      h.tables[name] = h.tables[name].filter((r) => !hit.includes(r));
       return hit;
     }
     return rows();
@@ -27,6 +43,9 @@ function table(name: string) {
     neq: (k: string, v: unknown) => (filters.push((r) => r[k] !== v), b),
     order: () => b,
     maybeSingle: async () => ({ data: run()[0] ?? null, error: null }),
+    single: async () => ({ data: run()[0] ?? null, error: null }),
+    insert: (row: Row) => ((op = { kind: "insert", row }), h.calls.push(`insert:${name}`), b),
+    delete: () => ((op = { kind: "delete" }), h.calls.push(`delete:${name}`), b),
     update: (patch: Row) => ((op = { kind: "update", patch }), h.calls.push(`update:${name}`), b),
     upsert: async (row: Row) => {
       h.calls.push(`upsert:${name}`);
@@ -42,10 +61,27 @@ function table(name: string) {
 }
 
 vi.mock("@/lib/supabase/admin", () => ({
-  supabaseAdmin: () => ({ from: table, rpc: async () => ({ data: h.rpcAllow, error: null }) }),
+  supabaseAdmin: () => ({
+    from: table,
+    rpc: async () => ({ data: h.rpcAllow, error: null }),
+    storage: {
+      from: () => ({
+        createSignedUploadUrl: async (path: string) => ({ data: { signedUrl: `https://storage.test/${path}?token=t` }, error: null }),
+        createSignedUrls: async (paths: string[]) => ({ data: paths.map((path) => ({ path, signedUrl: `https://storage.test/r/${path}` })), error: null }),
+        info: async (path: string) => {
+          const o = h.objects.get(path);
+          return o ? { data: o, error: null } : { data: null, error: { message: "not found" } };
+        },
+        remove: async (paths: string[]) => (paths.forEach((x) => { h.objects.delete(x); h.calls.push(`remove:${x}`); }), { error: null }),
+      }),
+    },
+  }),
 }));
 
-const { loadPortal, saveAnswers, submitIntake } = await import("./data");
+const { loadPortal, saveAnswers, submitIntake, requestUpload, confirmUpload, removeUpload } = await import("./data");
+
+const PID = "0b5e9a52-6f1c-4d8e-9a3b-2c7d1e4f5a60";
+const OTHER = "9f8e7d6c-5b4a-4c3d-8e2f-1a0b9c8d7e6f";
 
 const TOKEN = newToken();
 const REQUIRED: Record<string, string | boolean> = {
@@ -58,12 +94,13 @@ const REQUIRED: Record<string, string | boolean> = {
 beforeEach(() => {
   h.rpcAllow = true;
   h.calls = [];
+  h.objects = new Map();
   h.tables = {
     projects: [{
-      id: "p1", client_name: "Dentica", package: "business", locale: "pl",
+      id: PID, client_name: "Dentica", package: "business", locale: "pl",
       status: "intake", intake_submitted_at: null, access_token: TOKEN,
     }],
-    intake_answers: [{ project_id: "p1", answers: { q1: "Dentica", junk: "dropped" } }],
+    intake_answers: [{ project_id: PID, answers: { q1: "Dentica", junk: "dropped" } }],
     project_files: [],
   };
 });
@@ -120,8 +157,8 @@ describe("submitIntake", () => {
   it("counts uploaded files towards the logo and photo questions", async () => {
     const { "q24.none": _l, "q25.none": _p, ...noFallbacks } = REQUIRED;
     h.tables.project_files = [
-      { id: "f1", kind: "logo", original_name: "logo.svg", size_bytes: 10, project_id: "p1" },
-      { id: "f2", kind: "photo", original_name: "a.jpg", size_bytes: 10, project_id: "p1" },
+      { id: "f1", kind: "logo", original_name: "logo.svg", size_bytes: 10, project_id: PID },
+      { id: "f2", kind: "photo", original_name: "a.jpg", size_bytes: 10, project_id: PID },
     ];
     expect(await submitIntake(TOKEN, noFallbacks)).toEqual({ ok: true });
   });
@@ -131,5 +168,66 @@ describe("submitIntake", () => {
     expect(h.tables.projects[0].status).toBe("submitted");
     expect(h.tables.projects[0].intake_submitted_at).toBeTruthy();
     expect(await submitIntake(TOKEN, REQUIRED)).toEqual({ ok: false, reason: "locked" });
+  });
+});
+
+describe("uploads", () => {
+  /** Simulates the browser: ask for a slot, "PUT" the bytes, return the path. */
+  async function upload(kind: "logo" | "photo", mime: string, stored = { size: 1000, contentType: mime }) {
+    const slot = await requestUpload(TOKEN, { kind, mime, size: stored.size });
+    if (!slot.ok) throw new Error(slot.reason);
+    h.objects.set(slot.path, stored);
+    return slot.path;
+  }
+
+  it("issues a slot inside the project's own folder with a random name", async () => {
+    const r = await requestUpload(TOKEN, { kind: "photo", mime: "image/jpeg", size: 1000 });
+    expect(r.ok && r.path).toMatch(new RegExp(`^${PID}/photo/[0-9a-f-]{36}\.jpg$`));
+  });
+
+  it("refuses bad types, sizes and a locked intake before issuing a slot", async () => {
+    expect(await requestUpload(TOKEN, { kind: "photo", mime: "text/html", size: 10 })).toEqual({ ok: false, reason: "bad_type" });
+    expect(await requestUpload(TOKEN, { kind: "photo", mime: "image/png", size: 60e6 })).toEqual({ ok: false, reason: "too_big" });
+    h.tables.projects[0].status = "submitted";
+    expect(await requestUpload(TOKEN, { kind: "photo", mime: "image/png", size: 10 })).toEqual({ ok: false, reason: "locked" });
+  });
+
+  it("records a confirmed upload using storage's size and type, with a preview", async () => {
+    const path = await upload("photo", "image/jpeg", { size: 4321, contentType: "image/jpeg" });
+    const r = await confirmUpload(TOKEN, { path, name: "../Front door.jpg" });
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.file).toMatchObject({ kind: "photo", size_bytes: 4321, mime: "image/jpeg", original_name: "..Front door.jpg" });
+    expect(r.file.preview).toContain(path);
+    expect(h.tables.project_files).toHaveLength(1);
+  });
+
+  it("rejects a path from another project", async () => {
+    const path = `${OTHER}/photo/0b5e9a52-6f1c-4d8e-9a3b-2c7d1e4f5a61.jpg`;
+    h.objects.set(path, { size: 10, contentType: "image/jpeg" });
+    expect(await confirmUpload(TOKEN, { path, name: "x.jpg" })).toEqual({ ok: false, reason: "failed" });
+    expect(h.tables.project_files).toHaveLength(0);
+  });
+
+  it("deletes a file whose stored type doesn't match what was requested", async () => {
+    const path = await upload("photo", "image/jpeg", { size: 10, contentType: "text/html" });
+    expect(await confirmUpload(TOKEN, { path, name: "x.jpg" })).toEqual({ ok: false, reason: "bad_type" });
+    expect(h.objects.has(path)).toBe(false);
+    expect(h.tables.project_files).toHaveLength(0);
+  });
+
+  it("fails when nothing was actually uploaded", async () => {
+    const slot = await requestUpload(TOKEN, { kind: "logo", mime: "image/png", size: 10 });
+    expect(slot.ok && (await confirmUpload(TOKEN, { path: slot.path, name: "l.png" }))).toEqual({ ok: false, reason: "failed" });
+  });
+
+  it("removes a file and its row, but only its own", async () => {
+    const path = await upload("logo", "image/svg+xml");
+    const r = await confirmUpload(TOKEN, { path, name: "logo.svg" });
+    if (!r.ok) throw new Error(r.reason);
+    expect(await removeUpload(TOKEN, "someone-elses-file")).toEqual({ ok: false, reason: "failed" });
+    expect(await removeUpload(TOKEN, r.file.id)).toEqual({ ok: true });
+    expect(h.objects.has(path)).toBe(false);
+    expect(h.tables.project_files).toHaveLength(0);
   });
 });

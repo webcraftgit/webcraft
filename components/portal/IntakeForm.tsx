@@ -5,7 +5,8 @@ import {
   CLOCK_NOTE, INTRO, QUESTIONS, SECTIONS, THANK_YOU,
   missingRequired, progress, type Answers, type Field, type Question,
 } from "@/lib/portal/questions";
-import type { Portal } from "@/lib/portal/data";
+import type { Portal, PortalFile } from "@/lib/portal/data";
+import FileUpload from "./FileUpload";
 import { saveIntakeAction, submitIntakeAction } from "@/app/portal/[token]/actions";
 
 type Lang = "pl" | "en";
@@ -41,7 +42,6 @@ const T = {
     step: (i: number, n: number) => `Krok ${i} z ${n}`,
     sentOn: (d: string) => `Wysłano ${d}.`,
     change: "Chcesz coś zmienić? Odpisz na naszego maila, a poprawimy to razem na rozmowie startowej.",
-    uploadSoon: "Przesyłanie plików pojawi się tu wkrótce. Na razie zaznacz opcję poniżej albo wyślij pliki mailem.",
     chooseOne: "Wybierz jedną opcję",
     unsaved: "Masz niezapisane zmiany.",
   },
@@ -68,7 +68,6 @@ const T = {
     step: (i: number, n: number) => `Step ${i} of ${n}`,
     sentOn: (d: string) => `Sent on ${d}.`,
     change: "Need to change something? Reply to our email and we'll sort it out together on the kickoff call.",
-    uploadSoon: "File upload will appear here soon. For now, tick the option below or email us the files.",
     chooseOne: "Choose one option",
     unsaved: "You have unsaved changes.",
   },
@@ -90,9 +89,10 @@ export default function IntakeForm({ token, portal }: { token: string; portal: P
   const [sendError, setSendError] = useState(false);
 
   const t = T[lang];
+  const [uploaded, setUploaded] = useState<PortalFile[]>(portal.files);
   const files = useMemo(
-    () => portal.files.reduce<Record<string, number>>((c, f) => ({ ...c, [f.kind]: (c[f.kind] ?? 0) + 1 }), {}),
-    [portal.files]
+    () => uploaded.reduce<Record<string, number>>((c, f) => ({ ...c, [f.kind]: (c[f.kind] ?? 0) + 1 }), {}),
+    [uploaded]
   );
   const missing = useMemo(() => missingRequired(answers, files), [answers, files]);
   const pct = Math.round(progress(answers, files) * 100);
@@ -339,7 +339,10 @@ export default function IntakeForm({ token, portal }: { token: string; portal: P
               </h2>
               <div className="mt-6 space-y-5">
                 {sectionQs(step).map((q) => (
-                  <QuestionCard key={q.id} q={q} lang={lang} answers={answers} update={update} />
+                  <QuestionCard
+                    key={q.id} q={q} lang={lang} answers={answers} update={update}
+                    token={token} files={uploaded} setFiles={setUploaded}
+                  />
                 ))}
               </div>
               <div className="mt-8 flex justify-between gap-3">
@@ -377,8 +380,11 @@ export default function IntakeForm({ token, portal }: { token: string; portal: P
 }
 
 function QuestionCard({
-  q, lang, answers, update,
-}: { q: Question; lang: Lang; answers: Answers; update: (k: string, v: string | boolean) => void }) {
+  q, lang, answers, update, token, files, setFiles,
+}: {
+  q: Question; lang: Lang; answers: Answers; update: (k: string, v: string | boolean) => void;
+  token: string; files: PortalFile[]; setFiles: (u: (prev: PortalFile[]) => PortalFile[]) => void;
+}) {
   const t = T[lang];
   const hintId = `${q.id}-hint`;
   const single = q.fields.length === 1 && !q.fields[0].label && q.fields[0].kind !== "choice";
@@ -388,15 +394,18 @@ function QuestionCard({
       <legend className="sr-only">{`${q.n}. ${q.title[lang]}`}</legend>
       <div aria-hidden className="flex items-baseline gap-2">
         <span className="text-[13px] tabular-nums text-ink-soft">{q.n}.</span>
-        <span className="text-[16px] font-medium leading-snug text-ink">{q.title[lang]}</span>
+        <span id={`${q.id}-title`} className="text-[16px] font-medium leading-snug text-ink">{q.title[lang]}</span>
         {q.required && <span className="ml-auto shrink-0 text-[12px] text-brand-300">{t.required}</span>}
       </div>
       {q.hint && <p id={hintId} className="mt-1.5 text-[14px] leading-relaxed text-ink-soft">{q.hint[lang]}</p>}
 
       {q.files && (
-        <p className="mt-4 rounded-input border border-dashed border-[var(--glass-border)] p-4 text-[13.5px] text-ink-soft">
-          {t.uploadSoon}
-        </p>
+        <div className="mt-4">
+          <FileUpload
+            token={token} kind={q.files.kind} lang={lang}
+            files={files} onChange={setFiles} labelledBy={`${q.id}-title`}
+          />
+        </div>
       )}
 
       <div className="mt-4 space-y-4">
