@@ -20,7 +20,7 @@ A private page per client project on the Weturn site. Phase 1 replaces the Tally
 | 4 | Token + data layer (`lib/portal/`): token check, load/save answers, required-field check, save rate limit | done |
 | 5 | Client page `/portal/[token]`: PL/EN, sections with progress, autosave, "Send" with required check, thank-you state, noindex + no-referrer | done |
 | 6 | Uploads: logo + photos (signed URLs, type and size limits), "no logo / no photos" fallbacks | done |
-| 7 | Admin `/admin/projects`: list, create (name, package, language), copy link, revoke/new link, status | |
+| 7 | Admin `/admin/projects`: list, create (name, package, language), copy link, revoke/new link, status | built; click-through waits on admin login |
 | 8 | Admin project page: answers, missing required items, files with downloads, **Download brief input (.md)** | |
 | 9 | Kit side: intake README, `/brief-to-plan` reads the export, MANUAL EN/PL + PDFs | |
 | 10 | End-to-end test on localhost against the real Supabase, then deploy | |
