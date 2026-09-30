@@ -22,7 +22,7 @@ A private page per client project on the Weturn site. Phase 1 replaces the Tally
 | 6 | Uploads: logo + photos (signed URLs, type and size limits), "no logo / no photos" fallbacks | done |
 | 7 | Admin `/admin/projects`: list, create (name, package, language), copy link, revoke/new link, status | done |
 | 8 | Admin project page: answers, missing required items, files with downloads, **Download brief input (.md)** | done |
-| 9 | Kit side: intake README, `/brief-to-plan` reads the export, MANUAL EN/PL + PDFs | |
+| 9 | Kit side: intake README, `/brief-to-plan` reads the export, MANUAL EN/PL + PDFs | done (agency-kit 06ffae4, pushed) |
 | 10 | End-to-end test on localhost against the real Supabase, then deploy | |
 
 **Database:** `supabase/portal.sql` has been run in Supabase (2026-09-30). Re-run it after any change to that file; it is safe to re-run.
