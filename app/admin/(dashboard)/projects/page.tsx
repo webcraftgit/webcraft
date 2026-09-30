@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/supabase/server";
-import { SITE_URL } from "@/lib/site";
+import { portalOrigin } from "@/lib/portal/origin";
 import { missingRequired, progress, sanitizeAnswers, type FileCounts } from "@/lib/portal/questions";
 import { PROJECT_STATUSES, STATUS_LABEL, type ProjectStatus } from "@/lib/portal/status";
 import { CopyLink, ConfirmSubmit, Submit } from "@/components/admin/ProjectControls";
@@ -50,6 +50,7 @@ export default async function Projects({ searchParams }: { searchParams: Promise
   if (!showArchived) q = q.neq("status", "archived");
   const { data, error } = await q;
   const rows = (data ?? []) as Row[];
+  const origin = await portalOrigin();
 
   return (
     <>
@@ -113,7 +114,7 @@ export default async function Projects({ searchParams }: { searchParams: Promise
           const files = r.project_files.reduce<FileCounts>((c, f) => ({ ...c, [f.kind]: (c[f.kind] ?? 0) + 1 }), {});
           const pct = Math.round(progress(answers, files) * 100);
           const missing = missingRequired(answers, files).length;
-          const url = r.access_token ? `${SITE_URL}/portal/${r.access_token}` : null;
+          const url = r.access_token ? `${origin}/portal/${r.access_token}` : null;
 
           return (
             <li

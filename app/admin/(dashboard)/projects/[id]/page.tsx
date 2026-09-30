@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/supabase/server";
-import { SITE_URL } from "@/lib/site";
+import { portalOrigin } from "@/lib/portal/origin";
 import { loadProjectForAdmin, type AdminFile } from "@/lib/portal/admin";
 import { answerLines } from "@/lib/portal/export";
 import { QUESTIONS, SECTIONS, missingRequired, progress, type FileCounts } from "@/lib/portal/questions";
@@ -21,13 +21,14 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
   if (!db || !isAdmin) redirect("/admin/login");
 
   const p = await loadProjectForAdmin(db, (await params).id);
+  const origin = await portalOrigin();
   if (!p) notFound();
 
   const counts = p.files.reduce<FileCounts>((c, f) => ({ ...c, [f.kind]: (c[f.kind] ?? 0) + 1 }), {});
   const missing = missingRequired(p.answers, counts);
   const missingIds = new Set(missing.map((q) => q.id));
   const pct = Math.round(progress(p.answers, counts) * 100);
-  const url = p.access_token && p.status !== "archived" ? `${SITE_URL}/portal/${p.access_token}` : null;
+  const url = p.access_token && p.status !== "archived" ? `${origin}/portal/${p.access_token}` : null;
 
   return (
     <>
