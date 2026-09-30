@@ -17,8 +17,8 @@ A private page per client project on the Weturn site. Phase 1 replaces the Tally
 | 1 | Plan (this file) | done |
 | 2 | Database: `supabase/portal.sql` (projects, intake answers, files, storage bucket, RLS) | done |
 | 3 | Question definitions + tests (`lib/portal/questions.ts`) | done |
-| 4 | Token + data layer (`lib/portal/`): token check, load/save answers, required-field check, rate limit on bad tokens | |
-| 5 | Client page `/portal/[token]`: PL/EN, sections with progress, autosave, "Send" with required check, thank-you state, noindex + no-referrer | |
+| 4 | Token + data layer (`lib/portal/`): token check, load/save answers, required-field check, save rate limit | done |
+| 5 | Client page `/portal/[token]`: PL/EN, sections with progress, autosave, "Send" with required check, thank-you state, noindex + no-referrer | built; browser test waits on the SQL |
 | 6 | Uploads: logo + photos (signed URLs, type and size limits), "no logo / no photos" fallbacks | |
 | 7 | Admin `/admin/projects`: list, create (name, package, language), copy link, revoke/new link, status | |
 | 8 | Admin project page: answers, missing required items, files with downloads, **Download brief input (.md)** | |
@@ -34,3 +34,11 @@ A private page per client project on the Weturn site. Phase 1 replaces the Tally
 - Status timeline: "Day 3 of 10 · waiting on: your photos".
 - Email notifications (Resend): you get told when a client sends the form or approves. The client gets reminders on days 2, 3 and 5.
 - Revision rounds counted per package.
+
+## Testing before the admin screen exists
+
+```bash
+node --env-file=.env.local scripts/portal-test-project.mjs "Test client" business pl
+```
+
+It prints a `http://localhost:3000/portal/…` link for a new test project.
