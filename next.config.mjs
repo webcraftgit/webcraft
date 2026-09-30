@@ -85,6 +85,17 @@ const nextConfig = {
         source: "/admin/:path*",
         headers: [{ key: "Cache-Control", value: "no-store, max-age=0, must-revalidate" }],
       },
+      // Client portal: the URL itself is the secret (lib/portal/token.ts).
+      // no-referrer stops it leaking to any site a client clicks through to;
+      // it overrides the site-wide Referrer-Policy because it's listed later.
+      {
+        source: "/portal/:path*",
+        headers: [
+          { key: "Cache-Control", value: "no-store, max-age=0, must-revalidate" },
+          { key: "Referrer-Policy", value: "no-referrer" },
+          { key: "X-Robots-Tag", value: "noindex, nofollow" },
+        ],
+      },
     ];
   },
 };

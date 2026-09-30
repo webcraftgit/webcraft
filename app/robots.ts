@@ -33,7 +33,8 @@ export default function robots(): MetadataRoute.Robots {
         allow: "/",
         // /admin is already noindex + auth-gated; keeping it out of robots.txt
         // discovery too. /api is machine-only and returns no indexable HTML.
-        disallow: ["/admin", "/admin/", "/api/"],
+        // /portal links are private per-client secrets; never crawl them.
+        disallow: ["/admin", "/admin/", "/api/", "/portal/"],
       },
     ],
     sitemap: `${SITE_URL}/sitemap.xml`,
