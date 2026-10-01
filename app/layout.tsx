@@ -59,7 +59,13 @@ export const metadata: Metadata = {
   // the app/icon.* convention, because the convention emits hashed URLs that
   // app/manifest.ts cannot reference by a stable path.
   icons: {
-    icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
+    // Google's search-result favicon wants a square raster in a multiple of
+    // 48px and falls back to /favicon.ico; the SVG alone was not picked up.
+    icon: [
+      { url: "/favicon.ico", sizes: "16x16 32x32 48x48" },
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon.svg", type: "image/svg+xml" },
+    ],
     apple: [{ url: "/apple-icon.png", sizes: "180x180", type: "image/png" }],
   },
   manifest: "/manifest.webmanifest",
