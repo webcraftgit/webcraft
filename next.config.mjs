@@ -1,8 +1,8 @@
 /** @type {import('next').NextConfig} */
 
 // Security headers (CP6-backend). Everything here is a default-deny that we
-// then poke holes in for things the site actually uses — Fontshare (Clash
-// Display) and Supabase (auth + API). Add nothing without a reason.
+// then poke holes in for things the site actually uses — Supabase (auth +
+// API). Every font is self-hosted, so fonts and styles stay 'self'. Add nothing without a reason.
 //
 // CSP note, honestly stated: script-src keeps 'unsafe-inline' because Next's
 // bootstrap/flight payload is inlined and a nonce-based policy forces every
@@ -24,8 +24,8 @@ const csp = [
   // Without it the Blackwood models fail in PRODUCTION ONLY (dev has
   // 'unsafe-eval'), which is the same trap as the CP6 HDRI bug.
   "script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'" + (process.env.NODE_ENV === "development" ? " 'unsafe-eval'" : ""),
-  "style-src 'self' 'unsafe-inline' https://api.fontshare.com",
-  "font-src 'self' https://cdn.fontshare.com data:",
+  "style-src 'self' 'unsafe-inline'",
+  "font-src 'self' data:",
   // `https:` added CP4_3. Photos pointed at ANY off-domain host (Unsplash CDN,
   // S3, a client's asset host) were silently killed by a bare `'self'` — the
   // browser blocks the request before the network, so the <img> just never
@@ -44,7 +44,7 @@ const csp = [
   // that must allow blob:. Without it every embedded map fails ("Couldn't load
   // texture blob:…") and the models render flat white. blob: URLs can only be
   // minted by this page's own JS, so this opens no network destination.
-  `connect-src 'self' blob: ${SUPABASE_HOST} https://api.fontshare.com`.trim(),
+  `connect-src 'self' blob: ${SUPABASE_HOST}`.trim(),
   "upgrade-insecure-requests",
 ].join("; ");
 

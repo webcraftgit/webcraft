@@ -34,7 +34,7 @@ export const en = {
     contact: `Contact`,
   },
   hero: {
-    eyebrow: `Weturn · Digital Studio`,
+    eyebrow: `Website design & development · Warsaw`,
     titleA: `Websites that turn views into`,
     titleAccent: `sales`,
     titleEnd: `.`,
@@ -194,7 +194,7 @@ export const en = {
     upToPre: `typically up to`,
     mostProjects: `Most projects`,
     ctaPrefix: `Start with`,
-    footnote: `Every price above is a real starting point, not bait. The range shows where projects of that scope typically land.`,
+    footnote: `All prices are net (excl. VAT). Every price above is a real starting point, not bait. The range shows where projects of that scope typically land.`,
     /** Key terms, pulled out of the footnote so they are not missed. */
     terms: [
       {
@@ -474,7 +474,7 @@ export const pl: Dictionary = {
     contact: `Kontakt`,
   },
   hero: {
-    eyebrow: `Weturn · Studio cyfrowe`,
+    eyebrow: `Tworzenie stron internetowych · Warszawa`,
     titleA: `Strony, które zamieniają wyświetlenia w`,
     titleAccent: `sprzedaż`,
     titleEnd: `.`,
@@ -634,7 +634,7 @@ export const pl: Dictionary = {
     upToPre: `zwykle do`,
     mostProjects: `Najczęściej wybierane`,
     ctaPrefix: `Zacznij od`,
-    footnote: `Każda cena powyżej to realny punkt startowy, nie przynęta. Przedział pokazuje, gdzie zwykle zamykają się projekty o takim zakresie.`,
+    footnote: `Wszystkie ceny są cenami netto. Każda cena powyżej to realny punkt startowy, nie przynęta. Przedział pokazuje, gdzie zwykle zamykają się projekty o takim zakresie.`,
     terms: [
       {
         title: `Stała wycena przed startem prac`,

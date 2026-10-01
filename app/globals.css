@@ -19,7 +19,7 @@
   --shadow-soft: 0 12px 40px -12px rgba(0, 0, 0, 0.6);
   --shadow-lift: 0 24px 64px -20px rgba(2, 6, 16, 0.9);
 
-  --font-display: "Clash Display", ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-clash), "Clash Display", ui-sans-serif, system-ui, sans-serif;
   --font-body: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
 }
 

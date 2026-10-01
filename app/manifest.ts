@@ -6,8 +6,8 @@ import { DEFAULT_LOCALE } from "@/lib/i18n/config";
  * what gives an installed/pinned shortcut a real name and icon instead of a
  * screenshot of the page, and mobile-friendliness signals read it.
  *
- * The icon entries point at the files Next generates from app/icon.svg and
- * app/apple-icon.svg. Replace those two files and everything here follows.
+ * The icon entries point at /public/icon.svg and /public/apple-icon.png, the
+ * same two files app/layout.tsx declares. Replace those and everything follows.
  */
 export default function manifest(): MetadataRoute.Manifest {
   return {
@@ -22,7 +22,7 @@ export default function manifest(): MetadataRoute.Manifest {
     theme_color: "#05080F",
     icons: [
       { src: "/icon.svg", sizes: "any", type: "image/svg+xml" },
-      { src: "/apple-icon.svg", sizes: "180x180", type: "image/svg+xml" },
+      { src: "/apple-icon.png", sizes: "180x180", type: "image/png" },
     ],
   };
 }

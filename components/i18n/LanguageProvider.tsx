@@ -18,6 +18,7 @@ import {
 import { usePathname } from "next/navigation";
 import { DICTS, type Dictionary } from "@/lib/i18n/dictionaries";
 import { typeset } from "@/lib/i18n/typography";
+import { LANDINGS, type LandingPath } from "@/lib/seo/landings";
 
 /** What the UI renders: the dictionaries with no-break spaces applied (see
  *  lib/i18n/typography.ts). Built once — DICTS itself stays plain for the
@@ -82,7 +83,9 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     // language the visitor is actually reading. Next streams the metadata
     // <title> in after hydration (and again on client navigation), which
     // would overwrite a one-off assignment — so watch <head> and re-apply.
-    const title = TYPESET[locale].titles[pathname];
+    const title =
+      TYPESET[locale].titles[pathname] ??
+      (pathname in LANDINGS ? LANDINGS[pathname as LandingPath][locale].title : undefined);
     if (!title) return;
     const apply = () => {
       if (document.title !== title) document.title = title;

@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { CONTACT_EMAIL } from "@/lib/site";
-import { useT } from "@/components/i18n/LanguageProvider";
+import { useLocale, useT } from "@/components/i18n/LanguageProvider";
 import { useConsent } from "@/components/analytics/ConsentProvider";
+import { LANDINGS, LANDING_PATHS } from "@/lib/seo/landings";
 
 /**
  * Footer (CP4.2 minimal → CP5-i18n → CP6-backend).
@@ -24,6 +25,7 @@ const LINKS = [
 
 export default function Footer() {
   const t = useT();
+  const [locale] = useLocale();
   const { reopen } = useConsent();
   return (
     <footer className="relative border-t border-[rgba(56,189,248,0.12)]">
@@ -52,6 +54,23 @@ export default function Footer() {
                   className="inline-flex min-h-[44px] items-center text-small text-ink-soft transition-colors hover:text-ink md:min-h-0"
                 >
                   {t.nav[l.key]}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+
+        {/* Crawlable links to the landing pages: without them the only path
+            a crawler has to those URLs is the sitemap. */}
+        <nav aria-label={LANDINGS[LANDING_PATHS[0]][locale].relatedHeading}>
+          <ul className="flex flex-col">
+            {LANDING_PATHS.map((p) => (
+              <li key={p}>
+                <Link
+                  href={p}
+                  className="inline-flex min-h-[44px] items-center text-small text-ink-soft transition-colors hover:text-ink md:min-h-0 md:py-0.5"
+                >
+                  {LANDINGS[p][locale].label}
                 </Link>
               </li>
             ))}

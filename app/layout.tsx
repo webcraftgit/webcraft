@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import localFont from "next/font/local";
 import "@fontsource-variable/inter"; // self-hosted — no third-party font request
 import "./globals.css";
 import { LanguageProvider } from "@/components/i18n/LanguageProvider";
@@ -23,6 +24,25 @@ import { ROBOTS } from "@/lib/seo/metadata";
  * is Polish (DEFAULT_LOCALE). See lib/seo/metadata.ts for why there is no
  * hreflang block.
  */
+/**
+ * Clash Display, self-hosted (SEO pass, 2026-10-01). The hero H1 is set in it,
+ * so it sits on the LCP path. It used to come from api.fontshare.com: a
+ * render-blocking third-party stylesheet that then asked cdn.fontshare.com for
+ * the woff2, i.e. two extra handshakes on every cold load. The files in
+ * app/fonts are the unmodified woff2 originals Fontshare serves (free for
+ * commercial use). next/font preloads them and generates a metric-matched
+ * fallback, so the swap does not shift the layout. --font-display in
+ * globals.css reads the variable.
+ */
+const clashDisplay = localFont({
+  src: [
+    { path: "./fonts/ClashDisplay-Medium.woff2", weight: "500", style: "normal" },
+    { path: "./fonts/ClashDisplay-Semibold.woff2", weight: "600", style: "normal" },
+  ],
+  variable: "--font-clash",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
@@ -55,24 +75,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang={DEFAULT_LOCALE} suppressHydrationWarning>
-      <head>
-        {/* Clash Display is still a third-party, render-blocking request on the
-            LCP path — the hero H1 is set in it. Preconnecting BOTH hosts is a
-            stopgap: api.fontshare.com serves the CSS, cdn.fontshare.com serves
-            the woff2 the CSS then asks for, and only the first was warmed, so
-            the font file paid a fresh DNS+TLS handshake every cold load.
-            The real fix is self-hosting the woff2 (see docs/history/PROJECT_STATE_ARCHIVE.md, CP4_17)
-            — it also removes a CDN this project has already been burned by
-            twice (CP6-hdr-fix, CP3.9). */}
-        <link rel="preconnect" href="https://api.fontshare.com" />
-        <link rel="preconnect" href="https://cdn.fontshare.com" crossOrigin="anonymous" />
-        {/* Clash Display — free for commercial use via Fontshare */}
-        <link
-          href="https://api.fontshare.com/v2/css?f[]=clash-display@500,600&display=swap"
-          rel="stylesheet"
-        />
-      </head>
+    <html lang={DEFAULT_LOCALE} className={clashDisplay.variable} suppressHydrationWarning>
       <body>
         {/* Navbar + Lenis + consent live in app/(site)/layout.tsx, NOT here:
             /admin must never inherit smooth-scroll, the marketing chrome, or

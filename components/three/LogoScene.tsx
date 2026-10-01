@@ -136,7 +136,7 @@ class EnvErrorBoundary extends Component<
  *    In production that request fails intermittently (rate-limit, outage,
  *    DNS) and throws, killing the WebGL context.
  *
- * 2. CSP: next.config.mjs sets connect-src 'self' <supabase> <fontshare>.
+ * 2. CSP: next.config.mjs sets connect-src 'self' blob: <supabase>.
  *    raw.githack.com is not on that list, so the browser blocks the fetch
  *    with a CSP violation before it even hits the network.
  *

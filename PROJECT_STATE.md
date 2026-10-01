@@ -46,5 +46,5 @@ For a Lighthouse run, use `agency-kit/tools/qa/qa.mjs <url>`.
 - **Performance.**
   - The latest mobile Lighthouse score on vercel.app (2026-10-01) is Performance 43 and SEO 69. SEO is low only because of the intentional noindex.
   - The lab LCP is driven by the JS bundle, which includes the 3D scene, GSAP and Framer. The real paint is fast, but the simulated score charges for script time.
-  - Next steps: split or defer the 3D and animation bundles, and self-host Clash Display.
+  - Next steps: split or defer the 3D and animation bundles. (Clash Display is self-hosted since 2026-10-01.)
 - **Portal phase 2 follow-ups.** Screenshots attached to feedback comments; the 30-day-silence pause; Studio reading clock and checkpoint data from `/admin/api/projects`.

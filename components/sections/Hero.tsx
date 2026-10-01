@@ -101,6 +101,10 @@ export default function Hero() {
               "radial-gradient(closest-side, rgba(5,8,15,0.62) 0%, rgba(5,8,15,0.38) 55%, rgba(5,8,15,0) 100%)",
           }}
         />
+        {/* The query people type, stated on the page (SEO pass): the H1 is the
+            brand line, so without this the phrase in the <title> appeared
+            nowhere in the visible copy. */}
+        <p className="hero-reveal eyebrow mb-5">{t.hero.eyebrow}</p>
         <h1 className="hero-reveal heading-display max-w-[13ch]">
           {t.hero.titleA}{" "}
           <span className="text-[var(--accent-green)]">{t.hero.titleAccent}</span>

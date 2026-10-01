@@ -2,6 +2,7 @@ import { DICTS } from "@/lib/i18n/dictionaries";
 import { DEFAULT_LOCALE } from "@/lib/i18n/config";
 import { CARE_PLAN, FOUNDING_SLOTS, TIERS, fmt } from "@/lib/pricing";
 import { CONTACT_EMAIL, ORG, SITE_URL, SITE_URL_IS_PLACEHOLDER } from "@/lib/site";
+import { LANDINGS, LANDING_PATHS } from "@/lib/seo/landings";
 
 /**
  * /llms.txt (CP4_17-seo).
@@ -97,6 +98,7 @@ ${faq}
 ## Strony
 
 - [Strona główna](${SITE_URL}/): usługi, cennik, proces, FAQ, kontakt
+${LANDING_PATHS.map((p) => `- [${LANDINGS[p].pl.label}](${SITE_URL}${p}): ${LANDINGS[p].pl.description}`).join("\n")}
 - [Polityka prywatności](${SITE_URL}/privacy): co zbieramy i jak to wyłączyć
 `;
 

@@ -31,6 +31,7 @@ import { DEFAULT_LOCALE } from "@/lib/i18n/config";
 import { CARE_PLAN, TIERS } from "@/lib/pricing";
 import { CONTACT_EMAIL, ORG, SITE_URL } from "@/lib/site";
 import { abs } from "@/lib/seo/metadata";
+import { LANDINGS, type LandingPath } from "@/lib/seo/landings";
 
 const t = DICTS[DEFAULT_LOCALE];
 const lang = DEFAULT_LOCALE;
@@ -201,3 +202,53 @@ export const privacyGraph = {
     },
   ],
 };
+
+/**
+ * Graph for the indexable landing pages (lib/seo/landings.ts). Same rule as
+ * above: the FAQ and breadcrumb are built from the copy the page renders.
+ * The matching Service node rides along where one exists, so the page that
+ * ranks for "strony internetowe" carries the priced offers too.
+ */
+export function landingGraph(path: LandingPath) {
+  const c = LANDINGS[path][lang];
+  const url = abs(path);
+  const service =
+    path === "/strony-internetowe" ? services[0] : path === "/opieka-nad-strona" ? services[1] : null;
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      organization,
+      website,
+      {
+        "@type": "WebPage",
+        "@id": `${url}#webpage`,
+        url,
+        name: c.h1,
+        description: c.description,
+        inLanguage: lang,
+        isPartOf: { "@id": ID.site },
+        about: { "@id": ID.org },
+        breadcrumb: { "@id": `${url}#breadcrumb` },
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": `${url}#breadcrumb`,
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: ORG.name, item: SITE_URL },
+          { "@type": "ListItem", position: 2, name: c.label, item: url },
+        ],
+      },
+      {
+        "@type": "FAQPage",
+        "@id": `${url}#faq`,
+        inLanguage: lang,
+        mainEntity: c.faq.map((item) => ({
+          "@type": "Question",
+          name: item.q,
+          acceptedAnswer: { "@type": "Answer", text: item.a },
+        })),
+      },
+      ...(service ? [{ ...service, url }] : []),
+    ],
+  };
+}
