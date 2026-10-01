@@ -275,7 +275,7 @@ export const en = {
       },
       {
         q: `What does a project cost?`,
-        a: `Published starting prices are right above in the pricing section, currently at founding rates while our portfolio fills. The exact number is fixed after a short discovery call, before any work starts, and the quote is itemized so you can trim scope instead of quality. No hourly surprises.`,
+        a: `Published starting prices are right above in the pricing section, currently at founding rates while our portfolio fills. The exact number is fixed after a short discovery call, before any work starts, and the quote is itemized so you can trim scope instead of quality. Work outside the package, like an extra page, is billed at 200 zł/h and always quoted before we start, so there are no surprises on the invoice.`,
       },
       {
         q: `Why does this cost more than the 3 000 PLN websites I've seen?`,
@@ -714,7 +714,7 @@ export const pl: Dictionary = {
       },
       {
         q: `Ile kosztuje projekt?`,
-        a: `Ceny startowe znajdziesz powyżej, w sekcji cennika. Obecnie obowiązują stawki założycielskie, póki nasze portfolio się zapełnia. Dokładną kwotę ustalamy po krótkiej rozmowie wstępnej, przed rozpoczęciem prac, a wycena jest rozpisana pozycjami, żebyś mógł ciąć zakres, a nie jakość. Bez niespodzianek w rozliczeniu godzinowym.`,
+        a: `Ceny startowe znajdziesz powyżej, w sekcji cennika. Obecnie obowiązują stawki założycielskie, póki nasze portfolio się zapełnia. Dokładną kwotę ustalamy po krótkiej rozmowie wstępnej, przed rozpoczęciem prac, a wycena jest rozpisana pozycjami, żebyś mógł ciąć zakres, a nie jakość. Prace spoza pakietu, np. dodatkową podstronę, rozliczamy po 200 zł/h i zawsze wyceniamy przed rozpoczęciem, więc faktura Cię nie zaskoczy.`,
       },
       {
         q: `Dlaczego to kosztuje więcej niż strony za 3 000 zł, które widziałem?`,

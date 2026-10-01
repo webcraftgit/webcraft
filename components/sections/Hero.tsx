@@ -8,7 +8,6 @@ import SceneCanvas from "@/components/three/SceneCanvas";
 import MagneticButton from "@/components/ui/MagneticButton";
 import HeroCursorLight from "@/components/ui/HeroCursorLight";
 import { useT } from "@/components/i18n/LanguageProvider";
-import { revealContainer, revealItem } from "@/animations/variants";
 
 export default function Hero() {
   const t = useT();
@@ -82,12 +81,12 @@ export default function Hero() {
         <SceneCanvas />
       </div>
 
-      {/* Copy layer */}
-      <motion.div
+      {/* Copy layer. The entrance is a CSS animation (.hero-reveal in
+          globals.css), not framer: framer server-renders the copy at opacity 0
+          and fades it in only after hydration, so the LCP text waited ~5 s
+          behind the 3D bundle on a phone. CSS starts on the first paint. */}
+      <div
         data-hero-copy
-        variants={revealContainer}
-        initial="hidden"
-        animate="visible"
         className="container-x pointer-events-none relative z-10 flex flex-col items-center pt-16 text-center"
       >
         {/* Legibility scrim. The lead paragraph sits on the glossy face of the
@@ -102,20 +101,16 @@ export default function Hero() {
               "radial-gradient(closest-side, rgba(5,8,15,0.62) 0%, rgba(5,8,15,0.38) 55%, rgba(5,8,15,0) 100%)",
           }}
         />
-        <motion.h1 variants={revealItem} className="heading-display max-w-[13ch]">
+        <h1 className="hero-reveal heading-display max-w-[13ch]">
           {t.hero.titleA}{" "}
           <span className="text-[var(--accent-green)]">{t.hero.titleAccent}</span>
           {t.hero.titleEnd}
-        </motion.h1>
-        <motion.p
-          variants={revealItem}
-          className="hero-lead mt-6 max-w-[46ch] text-body text-ink/80"
-        >
+        </h1>
+        <p className="hero-reveal hero-lead mt-6 max-w-[46ch] text-body text-ink/80 [animation-delay:80ms]">
           {t.hero.subtitle}
-        </motion.p>
-        <motion.div
-          variants={revealItem}
-          className="pointer-events-auto mt-10 flex w-full flex-col items-center justify-center gap-3 sm:w-auto sm:flex-row sm:gap-4"
+        </p>
+        <div
+          className="hero-reveal pointer-events-auto mt-10 [animation-delay:160ms] flex w-full flex-col items-center justify-center gap-3 sm:w-auto sm:flex-row sm:gap-4"
         >
           {/* phones: both buttons one width, stacked — they used to size to
               their labels and read as two unrelated pills */}
@@ -125,8 +120,8 @@ export default function Hero() {
           <MagneticButton href="#craft" variant="ghost" wrapperClassName="w-full max-w-[320px] sm:w-auto" className="w-full sm:w-auto">
             {t.hero.ctaGhost}
           </MagneticButton>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
       {/* Scroll cue — a mouse, so only for devices that have one */}
       <motion.div
