@@ -26,7 +26,9 @@ vi.mock("@/lib/supabase/admin", () => ({
   }),
 }));
 
-import { createProject, deleteProject, replaceLink, setProjectStatus } from "./actions";
+import {
+  closeCheckpoint, createProject, deleteProject, replaceLink, sendCheckpoint, setProjectStatus, setWaitingOn, startClock,
+} from "./actions";
 
 const ID = "3f2504e0-4f89-41d3-9a0c-0305e82c3301";
 
@@ -46,6 +48,7 @@ function makeClient({ isAdmin = true } = {}) {
         select: () => b,
         eq: (k: string, v: unknown) => (call.eq!.push([k, v]), b),
         single: async () => ({ data: { id: ID }, error: null }),
+        maybeSingle: async () => ({ data: null, error: null }),
         then: (res: (v: unknown) => unknown) =>
           res(table === "project_files" && !call.op ? { data: h.files, error: null } : { error: null }),
       };
@@ -81,6 +84,14 @@ describe("project admin actions", () => {
     await expect(replaceLink(form({ id: ID }))).rejects.toThrow("forbidden");
     await expect(setProjectStatus(form({ id: ID, status: "active" }))).rejects.toThrow("forbidden");
     await expect(deleteProject(form({ id: ID }))).rejects.toThrow("forbidden");
+    await expect(startClock(form({ id: ID }))).rejects.toThrow("forbidden");
+    await expect(setWaitingOn(form({ id: ID, waiting_on: "photos" }))).rejects.toThrow("forbidden");
+    await expect(
+      sendCheckpoint(form({ id: ID, stage: "1", preview_url: "https://x.vercel.app" }))
+    ).rejects.toThrow("forbidden");
+    await expect(
+      closeCheckpoint(form({ id: ID, checkpoint_id: ID, status: "approved" }))
+    ).rejects.toThrow("forbidden");
     expect(h.calls).toEqual([]);
   });
 
@@ -109,6 +120,22 @@ describe("project admin actions", () => {
     await expect(setProjectStatus(form({ id: "1 or 1=1", status: "active" }))).rejects.toThrow("bad_request");
     await setProjectStatus(form({ id: ID, status: "archived" }));
     expect(h.calls.at(-1)).toMatchObject({ op: "update", arg: { status: "archived" } });
+  });
+
+  it("sendCheckpoint rejects bad stages and non-http preview links before touching the database", async () => {
+    await expect(sendCheckpoint(form({ id: ID, stage: "5", preview_url: "https://x.app" }))).rejects.toThrow("bad_request");
+    await expect(sendCheckpoint(form({ id: ID, stage: "2", preview_url: "javascript:alert(1)" }))).rejects.toThrow("bad_request");
+    await expect(sendCheckpoint(form({ id: "nope", stage: "2", preview_url: "https://x.app" }))).rejects.toThrow("bad_request");
+    expect(h.calls).toEqual([]);
+  });
+
+  it("closeCheckpoint only approves or withdraws, and only an open one", async () => {
+    await expect(closeCheckpoint(form({ id: ID, checkpoint_id: ID, status: "open" }))).rejects.toThrow("bad_request");
+    await closeCheckpoint(form({ id: ID, checkpoint_id: ID, status: "withdrawn" }));
+    const c = h.calls.find((x) => x.table === "project_checkpoints")!;
+    expect(c.op).toBe("update");
+    expect(c.arg).toMatchObject({ status: "withdrawn" });
+    expect(c.eq).toContainEqual(["status", "open"]);
   });
 
   it("deleteProject removes this project's files, then the project", async () => {

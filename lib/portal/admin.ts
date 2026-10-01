@@ -6,6 +6,7 @@ import { BUCKET } from "./data";
 import { sanitizeAnswers, type Answers } from "./questions";
 import { PREVIEWABLE } from "./uploads";
 import type { ProjectStatus } from "./status";
+import { CHECKPOINT_COLUMNS, toCheckpoint, type Checkpoint } from "./checkpoints";
 
 /**
  * One project, as admin sees it. The rows are read with the admin's JWT
@@ -28,6 +29,9 @@ export type AdminProject = {
   package: "launch" | "business" | "signature"; locale: "pl" | "en";
   status: ProjectStatus; access_token: string | null; intake_submitted_at: string | null;
   answers: Answers; answersUpdatedAt: string | null; files: AdminFile[];
+  clock_started_at: string | null; paused_days: number; waiting_since: string | null; waiting_on: string | null;
+  /** Every checkpoint, oldest first, withdrawn ones included (admin history). */
+  checkpoints: Checkpoint[];
 };
 
 export async function loadProjectForAdmin(
@@ -40,19 +44,20 @@ export async function loadProjectForAdmin(
 
   const { data: p, error } = await db
     .from("projects")
-    .select("id, created_at, client_name, package, locale, status, access_token, intake_submitted_at")
+    .select("id, created_at, client_name, package, locale, status, access_token, intake_submitted_at, clock_started_at, paused_days, waiting_since, waiting_on")
     .eq("id", id)
     .maybeSingle();
   if (error) console.error("[admin project] read failed", error.code, error.message);
   if (!p) return null;
 
-  const [ans, files] = await Promise.all([
+  const [ans, files, cps] = await Promise.all([
     db.from("intake_answers").select("answers, updated_at").eq("project_id", id).maybeSingle(),
     db
       .from("project_files")
       .select("id, kind, original_name, size_bytes, mime, created_at, storage_path")
       .eq("project_id", id)
       .order("created_at", { ascending: true }),
+    db.from("project_checkpoints").select(CHECKPOINT_COLUMNS).eq("project_id", id).order("created_at", { ascending: true }),
   ]);
 
   type Row = Omit<AdminFile, "view" | "download"> & { storage_path: string };
@@ -74,7 +79,8 @@ export async function loadProjectForAdmin(
   }
 
   return {
-    ...(p as Omit<AdminProject, "answers" | "answersUpdatedAt" | "files">),
+    ...(p as Omit<AdminProject, "answers" | "answersUpdatedAt" | "files" | "checkpoints">),
+    checkpoints: (cps.data ?? []).map((r) => toCheckpoint(r as Record<string, unknown>)),
     answers: sanitizeAnswers(ans.data?.answers),
     answersUpdatedAt: ans.data?.updated_at ?? null,
     files: rows.map(({ storage_path, ...f }) => ({

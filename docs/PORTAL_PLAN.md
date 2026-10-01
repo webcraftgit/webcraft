@@ -33,13 +33,27 @@ A private page per client project on the Weturn site. Phase 1 replaces the Tally
 - `NEXT_PUBLIC_SITE_URL` stays unset until weturn.studio is connected. Portal links in admin then use the host admin is opened on (`lib/portal/origin.ts`). Once the domain is live, set it, and links switch to the real domain automatically.
 - Local and live share one Supabase project: test projects made locally show up in the live admin too.
 
-## Phase 2: checkpoints (later)
+## Phase 2: checkpoints
 
-- Checkpoint page per stage: preview link, "Approve" / "Request changes", one consolidated feedback list (the rule from `checkpoints-and-revisions.md`).
-- Comments for clients without a Vercel account (kit retro open item #2).
-- Status timeline: "Day 3 of 10 · waiting on: your photos".
-- Email notifications (Resend): you get told when a client sends the form or approves. The client gets reminders on days 2, 3 and 5.
-- Revision rounds counted per package.
+The rules live in `lib/portal/checkpoints.ts`. They mirror `agency-kit/docs/process/checkpoints-and-revisions.md`, and a test enforces the round table.
+
+| # | Step | Status |
+|---|---|---|
+| 1 | Database: `project_checkpoints` + clock columns on `projects` (section 6–7 of `supabase/portal.sql`) | built; **re-run portal.sql before deploying** |
+| 2 | Status timeline: "Day 3 of 10 · Waiting on: your feedback on Homepage". Business days, PL holidays, the clock pauses while we wait on the client (`lib/portal/days.ts`, `clock.ts`) | built |
+| 3 | Checkpoint card in the portal: preview link, **Approve** / **Request changes** with ONE list of comments (where, which screen, what), draft kept in the browser | built |
+| 4 | Comments for clients without a Vercel account (kit retro item #2): the comment list in step 3 | built |
+| 5 | Revision rounds per package and stage; the client sees "round 1 of 2", past the limit sees the 200 zł/h note | built |
+| 6 | Admin: start the clock, "waiting on" text, send a preview for review (optionally emails the client), mark approved / withdraw, rounds table | built |
+| 7 | Email (Resend, `lib/email.ts`): admin notices (form sent, approved, changes), client email on each checkpoint | built; needs env vars |
+| 8 | Daily job `/api/cron/portal` (`vercel.json`): reminders on business days 2 and 3, auto-approve on day 5, **only after both reminders were delivered** | built; needs `CRON_SECRET` |
+
+**Going live with phase 2**, in this order:
+1. Run `supabase/portal.sql` again in the Supabase SQL editor. The new code reads the new columns, so deploying first would break every portal link.
+2. In Vercel (Production + Preview), add `RESEND_API_KEY`, `EMAIL_FROM`, `ADMIN_EMAIL` and `CRON_SECRET` (see `.env.example`). Until weturn.studio is verified in Resend, `EMAIL_FROM` is `Weturn <onboarding@resend.dev>` and only the admin notices are delivered. Client emails are refused, so reminders don't go out and nothing is auto-approved. Send clients the portal link yourself.
+3. Deploy (push to main).
+
+Later: screenshots attached to comments, the "silent 30+ days = paused" rule, Studio reading the clock and checkpoints.
 
 ## Testing before the admin screen exists
 

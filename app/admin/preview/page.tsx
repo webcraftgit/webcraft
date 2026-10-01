@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/supabase/server";
-import type { Portal } from "@/lib/portal/data";
+import { EMPTY_CLOCK, type Portal } from "@/lib/portal/data";
 import IntakeForm from "@/components/portal/IntakeForm";
 import TabSessionGuard from "@/components/admin/TabSessionGuard";
 
@@ -33,6 +33,8 @@ export default async function PreviewQuestionnaire({
     submittedAt: null,
     answers: {},
     files: [],
+    clock: EMPTY_CLOCK,
+    checkpoints: [],
   };
 
   return (

@@ -6,6 +6,16 @@ import { rateLimit } from "@/lib/security/rate-limit";
 import { isToken } from "./token";
 import { missingRequired, sanitizeAnswers, type Answers, type FileCounts } from "./questions";
 import { MIME_EXT, PREVIEWABLE, checkUpload, cleanName, type UploadError, type UploadKind } from "./uploads";
+import {
+  CHECKPOINT_COLUMNS, FEEDBACK_MAX, rounds, sanitizeFeedback, toCheckpoint,
+  type Checkpoint, type ClockFields,
+} from "./checkpoints";
+import { syncWaiting } from "./clock";
+import { publicOrigin } from "./origin";
+import { checkpointAnsweredNotice, intakeSubmittedNotice } from "./emails";
+import { notifyAdmin } from "@/lib/email";
+import { str } from "@/lib/security/validation";
+import { after } from "next/server";
 
 export const BUCKET = "portal-uploads";
 /** Thumbnail links in the portal live this long; a reload makes new ones. */
@@ -41,13 +51,30 @@ export type Portal = {
   submittedAt: string | null;
   answers: Answers;
   files: PortalFile[];
+  /** Phase 2: the project clock and the checkpoints the client reviews. */
+  clock: ClockFields & { waitingOn: string | null };
+  /** Oldest first. Withdrawn ones are left out: the client never saw them. */
+  checkpoints: Checkpoint[];
 };
+
+/** For pages that build a Portal by hand (admin preview). */
+export const EMPTY_CLOCK: Portal["clock"] = { clockStartedAt: null, pausedDays: 0, waitingSince: null, waitingOn: null };
 
 /** Answers are editable until the client presses "Send". */
 export const isEditable = (p: Pick<Portal, "status">) => p.status === "intake";
 
 export const fileCounts = (files: PortalFile[]): FileCounts =>
   files.reduce<FileCounts>((c, f) => ({ ...c, [f.kind]: (c[f.kind] ?? 0) + 1 }), {});
+
+/** Runs work after the response when there is one (`after` throws outside a
+ *  request, e.g. in unit tests); otherwise just starts it. Never throws. */
+function later(fn: () => Promise<unknown>) {
+  try {
+    after(fn);
+  } catch {
+    void fn().catch(() => {});
+  }
+}
 
 type Resolved = { db: SupabaseClient; portal: Portal; rows: FileRow[] };
 
@@ -58,19 +85,25 @@ async function resolve(token: unknown): Promise<Resolved | null> {
 
   const { data: p, error } = await db
     .from("projects")
-    .select("id, client_name, package, locale, status, intake_submitted_at")
+    .select("id, client_name, package, locale, status, intake_submitted_at, clock_started_at, paused_days, waiting_since, waiting_on")
     .eq("access_token", token)
     .neq("status", "archived")
     .maybeSingle();
   if (error) console.error("[portal] project lookup failed", error.code, error.message);
   if (!p) return null;
 
-  const [answers, files] = await Promise.all([
+  const [answers, files, cps] = await Promise.all([
     db.from("intake_answers").select("answers").eq("project_id", p.id).maybeSingle(),
     db
       .from("project_files")
       .select("id, kind, original_name, size_bytes, mime, storage_path")
       .eq("project_id", p.id)
+      .order("created_at", { ascending: true }),
+    db
+      .from("project_checkpoints")
+      .select(CHECKPOINT_COLUMNS)
+      .eq("project_id", p.id)
+      .neq("status", "withdrawn")
       .order("created_at", { ascending: true }),
   ]);
 
@@ -89,6 +122,13 @@ async function resolve(token: unknown): Promise<Resolved | null> {
       // keys in the database never reach the form.
       answers: sanitizeAnswers(answers.data?.answers),
       files: rows.map((r) => toFile(r, null)),
+      clock: {
+        clockStartedAt: p.clock_started_at ?? null,
+        pausedDays: p.paused_days ?? 0,
+        waitingSince: p.waiting_since ?? null,
+        waitingOn: p.waiting_on ?? null,
+      },
+      checkpoints: (cps.data ?? []).map((r) => toCheckpoint(r as Record<string, unknown>)),
     },
   };
 }
@@ -175,7 +215,71 @@ export async function submitIntake(token: unknown, raw: unknown): Promise<Submit
     console.error("[portal] submit failed", error.code, error.message);
     return { ok: false, reason: "failed" };
   }
-  return data?.length ? { ok: true } : { ok: false, reason: "locked" };
+  if (!data?.length) return { ok: false, reason: "locked" };
+
+  // After the response: the client shouldn't wait on our mail provider.
+  const n = intakeSubmittedNotice(r.portal.clientName, `${publicOrigin()}/admin/projects/${r.portal.id}`);
+  later(() => notifyAdmin(n.subject, n.text));
+  return { ok: true };
+}
+
+// ── Checkpoints ─────────────────────────────────────────────────────────────
+
+export type RespondResult =
+  | { ok: true; checkpoint: Checkpoint }
+  | { ok: false; reason: "not_found" | "closed" | "empty" | "rate_limited" | "failed" };
+
+/**
+ * The client's answer to an open checkpoint: approve it, or send ONE
+ * consolidated list of comments (which uses a revision round). Either way
+ * the checkpoint closes; the next preview is a new checkpoint.
+ */
+export async function respondToCheckpoint(
+  token: unknown,
+  body: { id: unknown; action: unknown; items?: unknown; name?: unknown }
+): Promise<RespondResult> {
+  const r = await resolve(token);
+  if (!r) return { ok: false, reason: "not_found" };
+
+  const cp = r.portal.checkpoints.find((c) => c.id === body.id);
+  if (!cp || cp.status !== "open") return { ok: false, reason: "closed" };
+  if (body.action !== "approve" && body.action !== "changes") return { ok: false, reason: "failed" };
+
+  const approve = body.action === "approve";
+  const items = approve ? [] : sanitizeFeedback(body.items);
+  if (!approve && !items.length) return { ok: false, reason: "empty" };
+  if (!(await rateLimit(r.db, `portal:respond:${r.portal.id}`, 30, 3600))) return { ok: false, reason: "rate_limited" };
+
+  const by = str(body.name, FEEDBACK_MAX.name) || null;
+  // Counted BEFORE this answer: is this round past the included ones?
+  const extra = !approve && rounds(r.portal.package, r.portal.checkpoints, cp.stage).extra;
+
+  // `.eq("status", "open")` makes it atomic: two tabs can't answer twice.
+  const { data, error } = await r.db
+    .from("project_checkpoints")
+    .update({
+      status: approve ? "approved" : "changes",
+      decided_at: new Date().toISOString(),
+      decided_by: by,
+      feedback: items,
+    })
+    .eq("id", cp.id)
+    .eq("project_id", r.portal.id)
+    .eq("status", "open")
+    .select(CHECKPOINT_COLUMNS);
+  if (error) {
+    console.error("[portal] checkpoint answer failed", error.code, error.message);
+    return { ok: false, reason: "failed" };
+  }
+  if (!data?.length) return { ok: false, reason: "closed" };
+
+  await syncWaiting(r.db, r.portal.id);
+  const n = checkpointAnsweredNotice({
+    clientName: r.portal.clientName, stage: cp.stage, pkg: r.portal.package, approved: approve,
+    by: by ?? "", items: items.length, extra, adminUrl: `${publicOrigin()}/admin/projects/${r.portal.id}`,
+  });
+  later(() => notifyAdmin(n.subject, n.text));
+  return { ok: true, checkpoint: toCheckpoint(data[0] as Record<string, unknown>) };
 }
 
 // ── Uploads ─────────────────────────────────────────────────────────────────

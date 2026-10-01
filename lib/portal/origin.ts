@@ -19,3 +19,14 @@ export async function portalOrigin(): Promise<string> {
   const proto = h.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
   return `${proto === "http" ? "http" : "https"}://${host}`;
 }
+
+/**
+ * Origin for links in emails sent without an admin request behind them (the
+ * client's own actions, the daily reminder job). Never trusts a Host header.
+ * Until the real domain is set, Vercel's production URL stands in for it.
+ */
+export function publicOrigin(): string {
+  if (!SITE_URL_IS_PLACEHOLDER) return SITE_URL;
+  const vercel = process.env.VERCEL_PROJECT_PRODUCTION_URL;
+  return vercel ? `https://${vercel}` : SITE_URL;
+}

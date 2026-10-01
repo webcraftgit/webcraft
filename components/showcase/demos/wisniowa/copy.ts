@@ -9,7 +9,7 @@ import { useLocale } from "@/components/i18n/LanguageProvider";
  * That file is imported by the site shell, so everything in it ships to every
  * visitor of the Weturn homepage. This is ~8kb of copy for a fictional dental
  * clinic that most visitors never open. The demo is deliberately a lazy chunk
- * (see PROJECT_STATE on the 233kb first-load budget) and its copy belongs in
+ * (see docs/history/PROJECT_STATE_ARCHIVE.md on the 233kb first-load budget) and its copy belongs in
  * that chunk with it. The PATTERN is copied from dictionaries.ts on purpose:
  * `en` is the typed source of truth and `pl` is declared `typeof en`, so a key
  * added to one language and not the other fails the build. Same drift guard,

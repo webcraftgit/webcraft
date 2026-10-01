@@ -8,6 +8,7 @@ import { QUESTIONS, SECTIONS, missingRequired, progress, type FileCounts } from 
 import { STATUS_LABEL } from "@/lib/portal/status";
 import { formatBytes } from "@/lib/portal/uploads";
 import { CopyLink } from "@/components/admin/ProjectControls";
+import CheckpointsPanel from "@/components/admin/CheckpointsPanel";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +17,13 @@ const PACKAGE_LABEL = { launch: "Launch", business: "Business", signature: "Sign
 const when = (iso: string) =>
   new Date(iso).toLocaleString("pl-PL", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
 
-export default async function ProjectPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function ProjectPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ mail?: string }>;
+}) {
   const { db, isAdmin } = await requireAdmin();
   if (!db || !isAdmin) redirect("/admin/login");
 
@@ -50,6 +57,8 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
       </div>
 
       {url && <div className="mt-5 max-w-[720px]"><CopyLink url={url} /></div>}
+
+      {p.status !== "intake" && <CheckpointsPanel p={p} mail={(await searchParams).mail} />}
 
       <div className="mt-8 grid items-start gap-6 lg:grid-cols-[1fr_340px]">
         {/* ── Answers ─────────────────────────────────────────────────── */}

@@ -37,7 +37,7 @@ import DragSpin from "@/components/showcase/DragSpin";
  * aims LEFT of the bottle (baked into each beat's look target) to push the
  * bottle right of centre.
  *
- * Rules that still bind (PROJECT_STATE.md):
+ * Rules that still bind (docs/history/PROJECT_STATE_ARCHIVE.md):
  *  - Max 2 WebGL canvases site-wide. This demo owns one.
  *  - Preview card is poster-gated (livePreview:false) — none of this loads on `/`.
  *  - GLBs load as useGLTF(url, "/draco/") — the CDN decoder is CSP-blocked.

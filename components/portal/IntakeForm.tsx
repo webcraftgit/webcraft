@@ -8,16 +8,11 @@ import {
 } from "@/lib/portal/questions";
 import type { Portal, PortalFile } from "@/lib/portal/data";
 import FileUpload from "./FileUpload";
+import { PACKAGE_NAME } from "@/lib/portal/checkpoints";
 import { saveIntakeAction, submitIntakeAction } from "@/app/portal/[token]/actions";
 
 type Lang = "pl" | "en";
 type SaveState = "idle" | "saving" | "saved" | "error" | "locked";
-
-const PACKAGE: Record<Portal["package"], { pl: string; en: string }> = {
-  launch: { pl: "Start", en: "Launch" },
-  business: { pl: "Biznes", en: "Business" },
-  signature: { pl: "Premium", en: "Signature" },
-};
 
 const T = {
   pl: {
@@ -231,7 +226,7 @@ export default function IntakeForm({ token, portal, preview = false }: { token: 
           {portal.clientName}
         </h1>
         <p className="mt-1 text-[14px] text-ink-soft">
-          {t.questionnaire} · {PACKAGE[portal.package][lang]}
+          {t.questionnaire} · {PACKAGE_NAME[portal.package][lang]}
         </p>
       </div>
       <div role="group" aria-label="Język / Language" className="flex rounded-full border border-[var(--glass-border)] p-1">

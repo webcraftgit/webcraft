@@ -1,6 +1,6 @@
 "use server";
 
-import { confirmUpload, removeUpload, requestUpload, saveAnswers, submitIntake } from "@/lib/portal/data";
+import { confirmUpload, removeUpload, requestUpload, respondToCheckpoint, saveAnswers, submitIntake } from "@/lib/portal/data";
 
 /**
  * Server Actions are public POST endpoints, so they carry no trust of their
@@ -26,4 +26,11 @@ export async function confirmUploadAction(token: string, body: { path: unknown; 
 
 export async function removeUploadAction(token: string, fileId: unknown) {
   return removeUpload(token, fileId);
+}
+
+export async function respondCheckpointAction(
+  token: string,
+  body: { id: unknown; action: unknown; items?: unknown; name?: unknown }
+) {
+  return respondToCheckpoint(token, body);
 }

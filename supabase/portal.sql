@@ -135,3 +135,70 @@ create policy intake_answers_admin_read on public.intake_answers for select to a
 drop policy if exists project_files_admin_read on public.project_files;
 create policy project_files_admin_read on public.project_files for select to authenticated using (public.is_admin());
 -- answers and files are written only by the portal (service role).
+
+-- ============================================================================
+-- PHASE 2: checkpoints, revision rounds and the project clock.
+-- Rules: lib/portal/checkpoints.ts (mirrors agency-kit
+-- docs/process/checkpoints-and-revisions.md). Same security model as above:
+-- the client writes through the service role after the token check; admin
+-- reads and writes with its JWT.
+-- ============================================================================
+
+-- ---------------------------------------------------------------------------
+-- 6. Clock fields. Day N is counted in business days from clock_started_at,
+--    minus the days spent waiting on the client:
+--      paused_days   = finished waits, in business days
+--      waiting_since = start of the current wait (null = not waiting)
+--    A wait is "a checkpoint is open" or "waiting_on is set" (lib/portal/clock.ts).
+-- ---------------------------------------------------------------------------
+alter table public.projects add column if not exists clock_started_at timestamptz;
+alter table public.projects add column if not exists waiting_on      text;
+alter table public.projects add column if not exists waiting_since   timestamptz;
+alter table public.projects add column if not exists paused_days     integer not null default 0;
+
+alter table public.projects drop constraint if exists projects_waiting_on_len;
+alter table public.projects add constraint projects_waiting_on_len check (char_length(waiting_on) <= 200);
+alter table public.projects drop constraint if exists projects_paused_days_range;
+alter table public.projects add constraint projects_paused_days_range check (paused_days between 0 and 1000);
+
+-- ---------------------------------------------------------------------------
+-- 7. Checkpoints. One row per preview we send for review. The client answers
+--    with Approve, or with ONE consolidated feedback list ("changes"), which
+--    uses one revision round for that stage.
+-- ---------------------------------------------------------------------------
+create table if not exists public.project_checkpoints (
+  id              uuid primary key default gen_random_uuid(),
+  created_at      timestamptz not null default now(),
+  project_id      uuid not null references public.projects(id) on delete cascade,
+
+  stage           smallint not null check (stage between 1 and 4),
+  preview_url     text not null check (preview_url ~ '^https?://' and char_length(preview_url) <= 500),
+  note            text not null default '' check (char_length(note) <= 4000),
+
+  status          text not null default 'open'
+                    check (status in ('open','changes','approved','auto_approved','withdrawn')),
+  decided_at      timestamptz,
+  decided_by      text check (char_length(decided_by) <= 120),
+  feedback        jsonb not null default '[]'::jsonb
+                    check (jsonb_typeof(feedback) = 'array' and pg_column_size(feedback) <= 131072),
+
+  reminders_sent  smallint not null default 0 check (reminders_sent between 0 and 2),
+  last_reminder_at timestamptz
+);
+
+create index if not exists project_checkpoints_project_idx on public.project_checkpoints (project_id, created_at);
+create index if not exists project_checkpoints_open_idx on public.project_checkpoints (status) where status = 'open';
+
+alter table public.project_checkpoints enable row level security;
+alter table public.project_checkpoints force row level security;
+revoke all on public.project_checkpoints from anon, public;
+
+drop policy if exists project_checkpoints_admin_read   on public.project_checkpoints;
+drop policy if exists project_checkpoints_admin_insert on public.project_checkpoints;
+drop policy if exists project_checkpoints_admin_update on public.project_checkpoints;
+drop policy if exists project_checkpoints_admin_delete on public.project_checkpoints;
+create policy project_checkpoints_admin_read   on public.project_checkpoints for select to authenticated using (public.is_admin());
+create policy project_checkpoints_admin_insert on public.project_checkpoints for insert to authenticated with check (public.is_admin());
+create policy project_checkpoints_admin_update on public.project_checkpoints for update to authenticated
+  using (public.is_admin()) with check (public.is_admin());
+create policy project_checkpoints_admin_delete on public.project_checkpoints for delete to authenticated using (public.is_admin());

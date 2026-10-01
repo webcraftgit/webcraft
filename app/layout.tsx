@@ -62,7 +62,7 @@ export default function RootLayout({
             stopgap: api.fontshare.com serves the CSS, cdn.fontshare.com serves
             the woff2 the CSS then asks for, and only the first was warmed, so
             the font file paid a fresh DNS+TLS handshake every cold load.
-            The real fix is self-hosting the woff2 (see PROJECT_STATE CP4_17)
+            The real fix is self-hosting the woff2 (see docs/history/PROJECT_STATE_ARCHIVE.md, CP4_17)
             — it also removes a CDN this project has already been burned by
             twice (CP6-hdr-fix, CP3.9). */}
         <link rel="preconnect" href="https://api.fontshare.com" />

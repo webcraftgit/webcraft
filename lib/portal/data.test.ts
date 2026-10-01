@@ -78,7 +78,7 @@ vi.mock("@/lib/supabase/admin", () => ({
   }),
 }));
 
-const { loadPortal, saveAnswers, submitIntake, requestUpload, confirmUpload, removeUpload } = await import("./data");
+const { loadPortal, saveAnswers, submitIntake, requestUpload, confirmUpload, removeUpload, respondToCheckpoint } = await import("./data");
 
 const PID = "0b5e9a52-6f1c-4d8e-9a3b-2c7d1e4f5a60";
 const OTHER = "9f8e7d6c-5b4a-4c3d-8e2f-1a0b9c8d7e6f";
@@ -102,6 +102,7 @@ beforeEach(() => {
     }],
     intake_answers: [{ project_id: PID, answers: { q1: "Dentica", junk: "dropped" } }],
     project_files: [],
+    project_checkpoints: [],
   };
 });
 
@@ -229,5 +230,56 @@ describe("uploads", () => {
     expect(await removeUpload(TOKEN, r.file.id)).toEqual({ ok: true });
     expect(h.objects.has(path)).toBe(false);
     expect(h.tables.project_files).toHaveLength(0);
+  });
+});
+
+describe("respondToCheckpoint", () => {
+  const CP = "c0ffee00-0000-4000-8000-000000000001";
+  const open = (over: Row = {}) => ({
+    id: CP, project_id: PID, created_at: "2026-10-05T09:00:00Z", stage: 2, preview_url: "https://p.vercel.app",
+    note: "", status: "open", decided_at: null, decided_by: null, feedback: [], reminders_sent: 0, ...over,
+  });
+  beforeEach(() => {
+    Object.assign(h.tables.projects[0], {
+      status: "active", clock_started_at: "2026-10-01T08:00:00Z", paused_days: 0,
+      waiting_since: "2026-10-05T09:00:00Z", waiting_on: null,
+    });
+    h.tables.project_checkpoints = [open()];
+  });
+
+  it("approves an open checkpoint and ends the wait", async () => {
+    const r = await respondToCheckpoint(TOKEN, { id: CP, action: "approve", name: "Anna" });
+    expect(r.ok && r.checkpoint.status).toBe("approved");
+    expect(h.tables.project_checkpoints[0]).toMatchObject({ status: "approved", decided_by: "Anna" });
+    expect(h.tables.projects[0].waiting_since).toBeNull();
+  });
+
+  it("stores one sanitised list of changes and refuses an empty one", async () => {
+    expect(await respondToCheckpoint(TOKEN, { id: CP, action: "changes", items: [{ text: "  " }] })).toEqual({ ok: false, reason: "empty" });
+    const r = await respondToCheckpoint(TOKEN, {
+      id: CP, action: "changes", items: [{ where: "Hero", device: "mobile", text: "Too big" }, { text: "" }],
+    });
+    expect(r.ok).toBe(true);
+    expect(h.tables.project_checkpoints[0].feedback).toEqual([{ where: "Hero", device: "mobile", text: "Too big" }]);
+  });
+
+  it("refuses a second answer, a closed checkpoint and another project's checkpoint", async () => {
+    await respondToCheckpoint(TOKEN, { id: CP, action: "approve" });
+    expect(await respondToCheckpoint(TOKEN, { id: CP, action: "changes", items: [{ text: "x" }] })).toEqual({ ok: false, reason: "closed" });
+    h.tables.project_checkpoints = [open({ project_id: OTHER })];
+    expect(await respondToCheckpoint(TOKEN, { id: CP, action: "approve" })).toEqual({ ok: false, reason: "closed" });
+    expect(await respondToCheckpoint(newToken(), { id: CP, action: "approve" })).toEqual({ ok: false, reason: "not_found" });
+  });
+
+  it("rejects unknown actions and respects the rate limit", async () => {
+    expect(await respondToCheckpoint(TOKEN, { id: CP, action: "delete" })).toEqual({ ok: false, reason: "failed" });
+    h.rpcAllow = false;
+    expect(await respondToCheckpoint(TOKEN, { id: CP, action: "approve" })).toEqual({ ok: false, reason: "rate_limited" });
+    expect(h.tables.project_checkpoints[0].status).toBe("open");
+  });
+
+  it("hides withdrawn checkpoints from the client", async () => {
+    h.tables.project_checkpoints = [open({ status: "withdrawn" })];
+    expect((await loadPortal(TOKEN))?.checkpoints).toEqual([]);
   });
 });

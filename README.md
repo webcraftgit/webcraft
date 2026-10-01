@@ -6,11 +6,7 @@ Premium marketing site. Next.js App Router · TypeScript · Tailwind · GSAP · 
 
 ## Status
 
-Active development.
-
-**Built:** hero with traced 3D logo and cursor-reactive particles (R3F), services and process sections, contact form with Supabase backend, admin dashboard, consent tracking.
-
-**In progress:** mobile layout and sizing for the 3D scenes, Blackwood showcase demo, final copy (current text is placeholder).
+Built and live: the marketing site (PL/EN), the contact form with a Supabase backend, the /admin dashboard, consent-based analytics and the client portal (questionnaire and uploads). Portal phase 2 (clock, checkpoints, revision rounds, email) is built; see `docs/PORTAL_PLAN.md` for how to switch it on.
 
 ## Run it
 
