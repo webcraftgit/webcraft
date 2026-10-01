@@ -30,7 +30,7 @@ A private page per client project on the Weturn site. Phase 1 replaces the Tally
 ## Going live: notes
 
 - Vercel needs, for **Production** (and Preview): `NEXT_PUBLIC_SUPABASE_URL` (`https://<ref>.supabase.co`, **.co**), `NEXT_PUBLIC_SUPABASE_ANON_KEY` (`sb_publishable_…`), `SUPABASE_SERVICE_ROLE_KEY` (`sb_secret_…`) and `IP_HASH_SECRET`. The public ones are baked into the build, so redeploy after any change. Quick check: the `connect-src` in the live Content-Security-Policy header shows the Supabase host the build used.
-- `NEXT_PUBLIC_SITE_URL` stays unset until weturn.studio is connected. Portal links in admin then use the host admin is opened on (`lib/portal/origin.ts`). Once the domain is live, set it, and links switch to the real domain automatically.
+- `NEXT_PUBLIC_SITE_URL=https://weturnstudio.app` is set for Production (2026-10-01), so admin portal links use the real domain. On previews and locally it is unset, and links use the host admin is opened on (`lib/portal/origin.ts`).
 - Local and live share one Supabase project: test projects made locally show up in the live admin too.
 
 ## Phase 2: checkpoints
@@ -50,7 +50,7 @@ The rules live in `lib/portal/checkpoints.ts`. They mirror `agency-kit/docs/proc
 
 **Going live with phase 2**, in this order:
 1. Run `supabase/portal.sql` again in the Supabase SQL editor. The new code reads the new columns, so deploying first would break every portal link.
-2. In Vercel (Production + Preview), add `RESEND_API_KEY`, `EMAIL_FROM`, `ADMIN_EMAIL` and `CRON_SECRET` (see `.env.example`). Until weturn.studio is verified in Resend, `EMAIL_FROM` is `Weturn <onboarding@resend.dev>` and only the admin notices are delivered. Client emails are refused, so reminders don't go out and nothing is auto-approved. Send clients the portal link yourself.
+2. In Vercel (Production + Preview), add `RESEND_API_KEY`, `EMAIL_FROM`, `ADMIN_EMAIL` and `CRON_SECRET` (see `.env.example`). Until weturnstudio.app is verified in Resend, `EMAIL_FROM` is `Weturn <onboarding@resend.dev>` and only the admin notices are delivered. Client emails are refused, so reminders don't go out and nothing is auto-approved. Send clients the portal link yourself.
 3. Deploy (push to main).
 
 Later: screenshots attached to comments, the "silent 30+ days = paused" rule, Studio reading the clock and checkpoints.

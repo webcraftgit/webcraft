@@ -5,7 +5,7 @@ import "server-only";
  *
  * Env:
  *   RESEND_API_KEY  required to send anything
- *   EMAIL_FROM      e.g. "Weturn <studio@weturn.studio>". Until a domain is
+ *   EMAIL_FROM      e.g. "Weturn <studio@weturnstudio.app>". Until a domain is
  *                   verified in Resend, "Weturn <onboarding@resend.dev>" works,
  *                   but Resend then delivers ONLY to the Resend account's own
  *                   address: admin notices arrive, client emails are refused.

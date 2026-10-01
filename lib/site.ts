@@ -9,14 +9,14 @@
  *
  * ⚠️ THE FALLBACK IS A SENTINEL AND MUST NOT REACH PRODUCTION. It is a
  * deliberately unreachable host (RFC 2606 .invalid), NOT the real domain: the
- * real domain is weturn.studio, set via NEXT_PUBLIC_SITE_URL in the host's env.
+ * real domain is weturnstudio.app, set via NEXT_PUBLIC_SITE_URL in the host's env.
  * The two must stay different — SITE_URL_IS_PLACEHOLDER below treats "env equals
- * the fallback" as unconfigured, so if the fallback were weturn.studio, setting
+ * the fallback" as unconfigured, so if the fallback were weturnstudio.app, setting
  * the real production URL would wrongly noindex the live site. Shipping with the
  * sentinel points canonicals/OG/sitemap at a dead host; a real deploy always
- * sets NEXT_PUBLIC_SITE_URL=https://weturn.studio first.
+ * sets NEXT_PUBLIC_SITE_URL=https://weturnstudio.app first.
  */
-const FALLBACK_SITE_URL = "https://example.invalid"; // sentinel — real domain is weturn.studio (set via env)
+const FALLBACK_SITE_URL = "https://example.invalid"; // sentinel — real domain is weturnstudio.app (set via env)
 
 export const SITE_URL = (
   process.env.NEXT_PUBLIC_SITE_URL || FALLBACK_SITE_URL

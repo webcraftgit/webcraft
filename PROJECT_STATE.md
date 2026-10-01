@@ -12,7 +12,7 @@ The current picture of this repo, kept short. The full checkpoint-by-checkpoint 
 
 ## Hosting and services
 
-- **Vercel**: the project is `webcraft` and the live URL is `webcraft-listyfi.vercel.app`. weturn.studio is not connected yet. Until it is, `NEXT_PUBLIC_SITE_URL` stays unset, so the site is noindex on purpose.
+- **Vercel**: the project is `webcraft` (team `listyfi`, Pro plan) and the live URL is **https://weturnstudio.app** (bought through Vercel; `www.` redirects to it; `webcraft-listyfi.vercel.app` still works). `NEXT_PUBLIC_SITE_URL=https://weturnstudio.app` is set for Production only, so previews stay noindex.
 - **Supabase**: one project shared by local and live. Its schema lives in `supabase/schema.sql` (site, admin, analytics) and `supabase/portal.sql` (portal). Both are idempotent, so re-run them after any edit.
 - **Resend**: portal email. Until a domain is verified, only admin notices are delivered.
 - **Vercel Cron**: `vercel.json` runs `/api/cron/portal` on weekday mornings to send checkpoint reminders.
@@ -41,7 +41,7 @@ For a Lighthouse run, use `agency-kit/tools/qa/qa.mjs <url>`.
 
 ## Open items
 
-- **Domain.** Connect weturn.studio, then set `NEXT_PUBLIC_SITE_URL`. Then verify the domain in Resend and set `EMAIL_FROM` to it.
+- **Domain.** weturnstudio.app is live (2026-10-01). Still to do: verify it in Resend and set `EMAIL_FROM` to it.
 - **Before launch.** Set the real contact email in `lib/site.ts`, and the registered legal name once one exists.
 - **Performance.**
   - The latest mobile Lighthouse score on vercel.app (2026-10-01) is Performance 43 and SEO 69. SEO is low only because of the intentional noindex.
