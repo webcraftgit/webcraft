@@ -29,7 +29,7 @@ export const SITE_URL_IS_PLACEHOLDER =
   process.env.NEXT_PUBLIC_SITE_URL.includes("localhost") ||
   process.env.NEXT_PUBLIC_SITE_URL === FALLBACK_SITE_URL;
 
-export const CONTACT_EMAIL = "hello@weturn.studio"; // TODO: real address before launch
+export const CONTACT_EMAIL = "krzysztof@weturnstudio.app";
 
 /** Studio identity, used by the JSON-LD graph. Keep in step with /privacy and
  *  with the Google Business Profile — an entity that describes itself
