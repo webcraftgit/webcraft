@@ -319,8 +319,8 @@ export const QUESTIONS: Question[] = [
     n: 25, id: "q25", section: 7, required: true,
     title: { pl: "Twoje zdjęcia", en: "Your photos" },
     hint: {
-      pl: "Twoje miejsce, zespół, realizacje. Nie robimy i nie wyszukujemy zdjęć. Użyj własnych, zatrudnij fotografa albo kup zdjęcia stockowe, które Ci się podobają.",
-      en: "Your space, your team, your work. We don't take or source photos. Use your own, hire a photographer, or buy stock photos you like.",
+      pl: "Twoje miejsce, zespół, realizacje. Nie robimy i nie wyszukujemy zdjęć. Użyj własnych, zatrudnij fotografa albo kup zdjęcia stockowe, które Ci się podobają. Nie masz zdjęć? Nawet kilka z telefonu robi dużą różnicę: wyślemy Ci listę ujęć.",
+      en: "Your space, your team, your work. We don't take or source photos. Use your own, hire a photographer, or buy stock photos you like. No photos? Even a few phone shots make a big difference: we'll send you a shot list.",
     },
     brief: ["brand.photos", "brand.photo_files"],
     fields: [{
