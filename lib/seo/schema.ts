@@ -29,7 +29,7 @@
 import { DICTS } from "@/lib/i18n/dictionaries";
 import { DEFAULT_LOCALE } from "@/lib/i18n/config";
 import { CARE_PLAN, TIERS } from "@/lib/pricing";
-import { CONTACT_EMAIL, ORG, SITE_URL } from "@/lib/site";
+import { CONTACT_EMAIL, CONTACT_PHONE_E164, ORG, SITE_URL } from "@/lib/site";
 import { abs } from "@/lib/seo/metadata";
 import { LANDINGS, type LandingPath } from "@/lib/seo/landings";
 
@@ -51,6 +51,7 @@ const organization = {
   name: ORG.name,
   url: SITE_URL,
   email: CONTACT_EMAIL,
+  telephone: CONTACT_PHONE_E164,
   logo: { "@type": "ImageObject", url: abs("/logo-w.svg") },
   image: abs("/og.png"),
   description: t.hero.subtitle,
@@ -69,6 +70,7 @@ const organization = {
     "@type": "ContactPoint",
     contactType: "sales",
     email: CONTACT_EMAIL,
+    telephone: CONTACT_PHONE_E164,
     availableLanguage: ["pl", "en"],
   },
 };

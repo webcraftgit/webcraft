@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { CONTACT_EMAIL } from "@/lib/site";
+import { CONTACT_EMAIL, CONTACT_PHONE, CONTACT_PHONE_E164 } from "@/lib/site";
 import { useLocale, useT } from "@/components/i18n/LanguageProvider";
 import { useConsent } from "@/components/analytics/ConsentProvider";
 import { LANDINGS, LANDING_PATHS } from "@/lib/seo/landings";
@@ -83,6 +83,13 @@ export default function Footer() {
             className="inline-flex min-h-[44px] items-center text-brand-300 transition-colors hover:text-brand-400 md:min-h-0"
           >
             {CONTACT_EMAIL}
+          </a>
+          <br />
+          <a
+            href={`tel:${CONTACT_PHONE_E164}`}
+            className="inline-flex min-h-[44px] items-center text-brand-300 transition-colors hover:text-brand-400 md:min-h-0"
+          >
+            {CONTACT_PHONE}
           </a>
           <p className="mt-1">
             © {new Date().getFullYear()} Weturn. {t.footer.rights}

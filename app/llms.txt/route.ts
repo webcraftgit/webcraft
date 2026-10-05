@@ -1,7 +1,7 @@
 import { DICTS } from "@/lib/i18n/dictionaries";
 import { DEFAULT_LOCALE } from "@/lib/i18n/config";
 import { CARE_PLAN, FOUNDING_SLOTS, TIERS, fmt } from "@/lib/pricing";
-import { CONTACT_EMAIL, ORG, SITE_URL, SITE_URL_IS_PLACEHOLDER } from "@/lib/site";
+import { CONTACT_EMAIL, CONTACT_PHONE, ORG, SITE_URL, SITE_URL_IS_PLACEHOLDER } from "@/lib/site";
 import { LANDINGS, LANDING_PATHS } from "@/lib/seo/landings";
 
 /**
@@ -52,7 +52,7 @@ export function GET() {
 
 ${ORG.name} to studio cyfrowe z siedzibą w mieście ${ORG.city} (${ORG.country}), pracujące
 zdalnie na terenie całego kraju. Strona główna: ${SITE_URL}
-Kontakt: ${CONTACT_EMAIL}
+Kontakt: ${CONTACT_EMAIL}, tel. ${CONTACT_PHONE}
 Języki obsługi: polski, angielski.
 
 ## Usługi

@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useReveal } from "@/hooks/useReveal";
 import { cn } from "@/lib/utils";
-import { CONTACT_EMAIL } from "@/lib/site";
+import { CONTACT_EMAIL, CONTACT_PHONE, CONTACT_PHONE_E164 } from "@/lib/site";
 import { useT, useLocale } from "@/components/i18n/LanguageProvider";
 import { currentAttribution, track } from "@/lib/analytics/track";
 import { email as validEmail } from "@/lib/security/validation";
@@ -235,6 +235,16 @@ export default function ContactSection() {
               className="font-medium text-brand-300 underline decoration-brand-500/40 underline-offset-4 hover:text-brand-400"
             >
               {CONTACT_EMAIL}
+            </a>
+          </p>
+
+          <p data-reveal className="mt-2 text-ui text-ink-soft">
+            <span className="hidden md:inline">{t.contact.preferPhonePre}</span>
+            <a
+              href={`tel:${CONTACT_PHONE_E164}`}
+              className="font-medium text-brand-300 underline decoration-brand-500/40 underline-offset-4 hover:text-brand-400"
+            >
+              {CONTACT_PHONE}
             </a>
           </p>
         </div>

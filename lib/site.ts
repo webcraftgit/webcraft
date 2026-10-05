@@ -31,6 +31,10 @@ export const SITE_URL_IS_PLACEHOLDER =
 
 export const CONTACT_EMAIL = "krzysztof@weturnstudio.app";
 
+/** Display form + E.164 for tel: links and JSON-LD. Keep the two in step. */
+export const CONTACT_PHONE = "+48 516 991 588";
+export const CONTACT_PHONE_E164 = "+48516991588";
+
 /** Studio identity, used by the JSON-LD graph. Keep in step with /privacy and
  *  with the Google Business Profile — an entity that describes itself
  *  differently in three places is an entity search engines cannot resolve. */
