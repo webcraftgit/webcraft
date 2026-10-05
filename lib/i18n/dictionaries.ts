@@ -314,7 +314,7 @@ export const en = {
   contact: {
     eyebrow: `Contact`,
     heading: `Tell us what the site should achieve.`,
-    intro: `Three required fields, no phone number, no obligation on the other side of the send button. You'll get an honest reply, even if the honest reply is that you don't need us yet.`,
+    intro: `Three required fields and no obligation on the other side of the send button. You'll get an honest reply, even if the honest reply is that you don't need us yet.`,
     replyPromise: `We reply within one business day.`,
     preferEmailPre: `Prefer email? `,
     preferPhonePre: `Rather talk? Call `,
@@ -754,7 +754,7 @@ export const pl: Dictionary = {
   contact: {
     eyebrow: `Kontakt`,
     heading: `Powiedz nam, co strona ma osiągnąć.`,
-    intro: `Trzy wymagane pola, bez numeru telefonu i bez zobowiązań po kliknięciu „Wyślij”. Dostaniesz uczciwą odpowiedź, nawet jeśli będzie brzmiała: „jeszcze nas nie potrzebujesz”.`,
+    intro: `Trzy wymagane pola i żadnych zobowiązań po kliknięciu „Wyślij”. Dostaniesz uczciwą odpowiedź, nawet jeśli będzie brzmiała: „jeszcze nas nie potrzebujesz”.`,
     replyPromise: `Odpowiadamy w ciągu jednego dnia roboczego.`,
     preferEmailPre: `Wolisz e-mail? `,
     preferPhonePre: `Wolisz porozmawiać? Zadzwoń: `,
