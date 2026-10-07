@@ -51,6 +51,11 @@ type Demo = {
    *  it on the first hover/focus/tap of the card, so a click that lands a
    *  second later finds most bytes already cached. Runs at most once. */
   prewarm?: () => Promise<unknown>;
+  /** Phones get a one-line note under the card that the demo is at its best
+   *  on a computer. For the heavy WebGL scene only: it runs on a phone (lean
+   *  mobile tier), but the full look needs a desktop GPU, and a visitor who
+   *  opens it on a phone should know that before judging the work by it. */
+  bestOnDesktop?: boolean;
 };
 
 // Brand names + non-text config stay here; tagline/facts come from the
@@ -62,6 +67,7 @@ const BASE: Omit<Demo, "name" | "tagline" | "facts">[] = [
     id: "blackwood",
     Site: BlackwoodSite,
     livePreview: false,
+    bestOnDesktop: true,
     // Centered banner survives object-cover at both card sizes, so one still
     // serves mobile (4:3) and desktop (16:9) — no separate posterImgMobile.
     posterImg: "/demo/blackwood/banner.svg",
@@ -413,6 +419,15 @@ export default function ShowcaseGallery() {
                 {d.name}
               </h3>
               <p className="mt-1.5 text-ui leading-relaxed text-ink-soft">{d.tagline}</p>
+              {d.bestOnDesktop && (
+                <p className="mt-3 flex items-center gap-2 text-small text-ink-soft md:hidden">
+                  <svg aria-hidden viewBox="0 0 24 24" className="h-4 w-4 shrink-0 text-brand-300" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="4" width="18" height="12" rx="1.5" />
+                    <path d="M8 20h8M12 16v4" />
+                  </svg>
+                  {t.showcase.bestOnDesktop}
+                </p>
+              )}
               <ul className="mt-4 flex flex-wrap gap-2">
                 {d.facts.map((f) => (
                   <li

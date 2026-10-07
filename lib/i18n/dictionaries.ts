@@ -118,6 +118,7 @@ export const en = {
     close: `Close`,
     openBadge: `Open fullscreen ↗`,
     playerCaption: `· concept site by Weturn · scroll, click, explore`,
+    bestOnDesktop: `Full 3D scene: best viewed on a computer`,
     openFullscreen: (name: string) => `Open the ${name} demo site fullscreen`,
     demoLabel: (name: string) => `${name} demo site`,
     demos: {
@@ -559,6 +560,7 @@ export const pl: Dictionary = {
     close: `Zamknij`,
     openBadge: `Otwórz pełny ekran ↗`,
     playerCaption: `· strona koncepcyjna studia Weturn · przewijaj, klikaj, odkrywaj`,
+    bestOnDesktop: `Pełna scena 3D: najlepiej wygląda na komputerze`,
     openFullscreen: (name: string) => `Otwórz stronę demo ${name} na pełnym ekranie`,
     demoLabel: (name: string) => `Strona demo ${name}`,
     demos: {
