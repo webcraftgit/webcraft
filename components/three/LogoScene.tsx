@@ -1,13 +1,13 @@
 "use client";
 
-import { Component, Suspense, useEffect, useRef, useState, type ReactNode } from "react";
-import { Canvas } from "@react-three/fiber";
+import { Component, Suspense, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { Canvas, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { Environment } from "@react-three/drei";
 import LogoMesh from "./LogoMesh";
 import FitGroup from "./FitGroup";
 import ParticleField from "./ParticleField";
-import { useIsMobile, useMediaQuery, usePrefersReducedMotion } from "@/hooks/useMediaQuery";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 
 /**
  * Graceful fallback when the HDR fails to load.
@@ -151,10 +151,52 @@ class EnvErrorBoundary extends Component<
  */
 const LOCAL_HDR = "/potsdamer_platz_1k.hdr";
 
+/**
+ * Compiles every shader in the scene in the background, then says so.
+ *
+ * Measured on a throttled phone (2026-10-08): mounting the hero blocked the
+ * main thread for ~2.7 s, and the profile put almost all of it in native GPU
+ * work, not JavaScript. The first frame compiled the physical clearcoat
+ * material, the particle material and the PMREM blur shaders one after the
+ * other, and the browser stalled on each link before it could draw. The page
+ * froze while that ran.
+ *
+ * compileAsync hands the programs to the driver and polls
+ * KHR_parallel_shader_compile until they are linked, so the main thread stays
+ * free. The canvas does not render (frameloop "never") until this resolves,
+ * which means the first real frame finds every program ready. Where the
+ * extension is missing, three falls back to the old blocking path, so nothing
+ * is worse than before.
+ *
+ * Rendered at the end of each environment branch, so it compiles against the
+ * final environment rather than the loading fallback.
+ */
+function CompileGate({ onCompiled }: { onCompiled: () => void }) {
+  const gl = useThree((s) => s.gl);
+  const scene = useThree((s) => s.scene);
+  const camera = useThree((s) => s.camera);
+  useEffect(() => {
+    let live = true;
+    gl.compileAsync(scene, camera)
+      .catch(() => {})
+      .finally(() => live && onCompiled());
+    return () => {
+      live = false;
+    };
+  }, [gl, scene, camera, onCompiled]);
+  return null;
+}
+
+const matches = (q: string) => window.matchMedia(q).matches;
+
 export default function LogoScene({ onReady }: { onReady?: () => void }) {
-  const isMobile = useIsMobile();
-  const reduced = usePrefersReducedMotion();
-  const isDesktop = useMediaQuery("(min-width: 1024px)", true);
+  /* Seeded from matchMedia on the first render (this component is client-only,
+     ssr: false, so there is no hydration to mismatch). The hooks start at
+     false, which made a phone's first render ask for the 1.5MB desktop HDR
+     before the effect corrected it to the 99KB one. */
+  const isMobile = useMediaQuery("(max-width: 767px)", matches("(max-width: 767px)"));
+  const reduced = useMediaQuery("(prefers-reduced-motion: reduce)", matches("(prefers-reduced-motion: reduce)"));
+  const isDesktop = useMediaQuery("(min-width: 1024px)", matches("(min-width: 1024px)"));
   // Desktop uses the HDR env map for reflections. If it fails to load, drop the
   // material's metalness so the W stays a lit blue solid instead of a shadow.
   const [envFailed, setEnvFailed] = useState(false);
@@ -170,12 +212,10 @@ export default function LogoScene({ onReady }: { onReady?: () => void }) {
    * So Android is routed to the lit (no-HDR) look ON PURPOSE: the brightened
    * EnvMapFallback rig above, with a matte-metal material (see hasEnvMap). It
    * loses the mirror reflection it was never getting anyway and gains a mark
-   * that is reliably visible. Detected client-side to avoid an SSR mismatch;
-   * desktop and iPhone still load and mirror the HDR exactly as before. */
-  const [isAndroid, setIsAndroid] = useState(false);
-  useEffect(() => {
-    setIsAndroid(/android/i.test(navigator.userAgent));
-  }, []);
+   * that is reliably visible. Read on the first render (client-only component),
+   * so Android never starts the HDR fetch it is about to throw away; desktop
+   * and iPhone still load and mirror the HDR exactly as before. */
+  const [isAndroid] = useState(() => /android/i.test(navigator.userAgent));
 
   /* Metallic (mirror) material only when we actually have a reflective
      environment: not on Android, and not after a genuine HDR load failure. */
@@ -187,6 +227,11 @@ export default function LogoScene({ onReady }: { onReady?: () => void }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [onScreen, setOnScreen] = useState(true);
   const [playerOpen, setPlayerOpen] = useState(false);
+  const [compiled, setCompiled] = useState(false);
+  const onCompiled = useCallback(() => {
+    setCompiled(true);
+    onReady?.();
+  }, [onReady]);
   useEffect(() => {
     const el = canvasRef.current;
     const io = el ? new IntersectionObserver(([e]) => setOnScreen(e.isIntersecting)) : null;
@@ -202,7 +247,7 @@ export default function LogoScene({ onReady }: { onReady?: () => void }) {
   return (
     <Canvas
       ref={canvasRef}
-      frameloop={onScreen && !playerOpen ? "always" : "never"}
+      frameloop={compiled && onScreen && !playerOpen ? "always" : "never"}
       camera={{ position: [0, 0, 320], fov: 45 }}
       /* MOBILE dpr 1.5 -> 2 (CP4_53). On a dpr-3 phone a 390x844 canvas was
          rendering into a 585x1266 buffer — half native — and every bevel edge
@@ -212,7 +257,6 @@ export default function LogoScene({ onReady }: { onReady?: () => void }) {
       dpr={[1, 2]}
       gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
       style={{ background: "transparent" }}
-      onCreated={() => onReady?.()}
       aria-hidden
     >
       <Suspense fallback={null}>
@@ -256,14 +300,23 @@ export default function LogoScene({ onReady }: { onReady?: () => void }) {
           /* Android never fetches the HDR: it renders it dark anyway (see the
              note above), so we skip the 99KB download and the failing decode
              and light the matte mark directly. */
-          <EnvMapFallback />
+          <>
+            <EnvMapFallback />
+            <CompileGate onCompiled={onCompiled} />
+          </>
         ) : (
           <EnvErrorBoundary
-            fallback={<EnvMapFallback />}
+            fallback={
+              <>
+                <EnvMapFallback />
+                <CompileGate onCompiled={onCompiled} />
+              </>
+            }
             onFail={() => setEnvFailed(true)}
           >
             <Suspense fallback={<EnvMapFallback />}>
               <Environment files={isMobile ? MOBILE_HDR : LOCAL_HDR} environmentRotation={isMobile ? MOBILE_ENV_ROT : undefined} />
+              <CompileGate onCompiled={onCompiled} />
             </Suspense>
           </EnvErrorBoundary>
         )}

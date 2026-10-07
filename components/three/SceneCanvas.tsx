@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { motion } from "framer-motion";
 
@@ -13,13 +13,55 @@ const LogoScene = dynamic(() => import("./LogoScene"), {
   loading: () => null,
 });
 
+/* PHONES WAIT FOR THE PAGE BEFORE THEY BUILD THE SCENE.
+ * Measured on a throttled mid-range phone (Lighthouse mobile, 2026-10-08):
+ * mounting the canvas costs one ~2.7 s main-thread task (three.js parse,
+ * shader compile, PMREM of the HDR) and it landed right in the middle of
+ * hydration, so the hero was frozen and unclickable while it ran. Total
+ * blocking time was 3.3 s with the scene and 70 ms without it.
+ *
+ * So on phones the scene is not requested until the page has loaded and the
+ * main thread has gone idle. The static W is already on screen and the
+ * cross-fade below hides the swap, so the visible change is only that the
+ * mark comes alive a moment later. Desktop has the CPU to mount it at once. */
+const PHONE = "(max-width: 767px)";
+const IDLE_TIMEOUT_MS = 3000;
+
+function whenIdleAfterLoad(run: () => void) {
+  let idleId = 0;
+  let timer = 0;
+  const schedule = () => {
+    if (typeof window.requestIdleCallback === "function") {
+      idleId = window.requestIdleCallback(run, { timeout: IDLE_TIMEOUT_MS });
+    } else {
+      // Safari has no requestIdleCallback
+      timer = window.setTimeout(run, 1200);
+    }
+  };
+  if (document.readyState === "complete") schedule();
+  else window.addEventListener("load", schedule, { once: true });
+  return () => {
+    window.removeEventListener("load", schedule);
+    if (idleId) window.cancelIdleCallback(idleId);
+    if (timer) window.clearTimeout(timer);
+  };
+}
+
 export default function SceneCanvas() {
   const [ready, setReady] = useState(false);
+  const [mount, setMount] = useState(false);
+
+  useEffect(() => {
+    if (!window.matchMedia(PHONE).matches) {
+      const id = requestAnimationFrame(() => setMount(true));
+      return () => cancelAnimationFrame(id);
+    }
+    return whenIdleAfterLoad(() => setMount(true));
+  }, []);
 
   return (
     <div className="relative h-full w-full">
       {/* Static fallback — visually complete before any JS */}
-      { }
       <motion.img
         src="/logo-w.svg"
         alt="Weturn logo"
@@ -32,7 +74,7 @@ export default function SceneCanvas() {
         transition={{ duration: 1.2 }}
         className="absolute inset-0"
       >
-        <LogoScene onReady={() => setReady(true)} />
+        {mount && <LogoScene onReady={() => setReady(true)} />}
       </motion.div>
     </div>
   );
