@@ -585,7 +585,9 @@ function useDialog(open: boolean, onClose: () => void) {
         ) ?? []
       ).filter((el) => el.offsetParent !== null);
 
-    focusables()[0]?.focus();
+    /* preventScroll: the drawer opens translated off-screen, and focusing
+       into it would scroll the overflow-hidden store root sideways. */
+    focusables()[0]?.focus({ preventScroll: true });
 
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -601,17 +603,17 @@ function useDialog(open: boolean, onClose: () => void) {
       const active = document.activeElement;
       if (e.shiftKey && (active === first || !panel.current?.contains(active))) {
         e.preventDefault();
-        last.focus();
+        last.focus({ preventScroll: true });
       } else if (!e.shiftKey && active === last) {
         e.preventDefault();
-        first.focus();
+        first.focus({ preventScroll: true });
       }
     };
 
     document.addEventListener("keydown", onKey, true);
     return () => {
       document.removeEventListener("keydown", onKey, true);
-      restoreTo.current?.focus?.();
+      restoreTo.current?.focus?.({ preventScroll: true });
     };
   }, [open, onClose]);
 
