@@ -105,6 +105,9 @@ describe("project admin actions", () => {
     const row = h.calls.at(-1)!.arg as Record<string, string>;
     expect(row).toMatchObject({ client_name: "Dentica", package: "business", locale: "en" });
     expect(row.access_token).toMatch(/^[A-Za-z0-9_-]{43}$/);
+
+    await expect(createProject(form({ client_name: "Kawiarnia", package: "entry", locale: "pl" }))).rejects.toThrow("REDIRECT");
+    expect(h.calls.at(-1)!.arg).toMatchObject({ package: "entry" });
   });
 
   it("replaceLink writes a different token each time", async () => {

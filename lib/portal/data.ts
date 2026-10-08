@@ -45,7 +45,7 @@ type FileRow = Omit<PortalFile, "preview"> & { storage_path: string };
 export type Portal = {
   id: string;
   clientName: string;
-  package: "launch" | "business" | "signature";
+  package: "launch" | "entry" | "business" | "signature";
   locale: "pl" | "en";
   status: "intake" | "submitted" | "active" | "launched" | "archived";
   submittedAt: string | null;

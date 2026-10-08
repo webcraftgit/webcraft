@@ -49,7 +49,7 @@ export async function GET(req: Request) {
 
   for (const row of data ?? []) {
     const cp = toCheckpoint(row as Record<string, unknown>);
-    const proj = (row as unknown as { projects: { client_name: string; package: "launch" | "business" | "signature"; locale: "pl" | "en"; status: string; access_token: string | null } }).projects;
+    const proj = (row as unknown as { projects: { client_name: string; package: "launch" | "entry" | "business" | "signature"; locale: "pl" | "en"; status: string; access_token: string | null } }).projects;
     const projectId = (row as { project_id: string }).project_id;
     if (proj.status === "archived") continue;
 

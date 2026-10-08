@@ -37,12 +37,14 @@ const T = {
     done: "Gotowe",
     roundsUsed: (u: number, i: number) => `Rundy poprawek: ${u} z ${i} w pakiecie`,
     fixesOnly: "Na tym etapie tylko poprawki błędów",
+    pickOne: "Wybierasz jeden kierunek, bez rundy poprawek",
     review: "Do sprawdzenia",
     openPreview: "Otwórz podgląd",
     replyBy: (d: string) => `Prosimy o odpowiedź do ${d}. Bez odpowiedzi uznamy ten etap za zaakceptowany.`,
     roundNow: (n: number, i: number) => `To będzie runda poprawek ${n} z ${i} w Twoim pakiecie.`,
     roundExtra: "Rundy w pakiecie na tym etapie są już wykorzystane. Kolejne zmiany wyceniamy (200 zł/h) i zawsze najpierw pytamy o zgodę.",
     roundFixes: "Na tym etapie poprawiamy błędy (np. literówki, coś nie działa). Nowe pomysły to osobna wycena.",
+    roundPickOne: "W Twoim pakiecie wybierasz jeden z kierunków taki, jaki jest. Zmiany w nim wyceniamy (200 zł/h) i zawsze najpierw pytamy o zgodę.",
     approve: "Akceptuję",
     changes: "Proszę o zmiany",
     approveTitle: "Akceptacja etapu",
@@ -100,12 +102,14 @@ const T = {
     done: "Done",
     roundsUsed: (u: number, i: number) => `Revision rounds: ${u} of ${i} included`,
     fixesOnly: "Fixes only at this stage",
+    pickOne: "You pick one direction, no revision round",
     review: "Ready for review",
     openPreview: "Open preview",
     replyBy: (d: string) => `Please reply by ${d}. If we don't hear back, we'll treat this stage as approved.`,
     roundNow: (n: number, i: number) => `This will be revision round ${n} of ${i} included in your package.`,
     roundExtra: "The rounds included for this stage are used up. Further changes are quoted (200 zł/h), and we always ask before starting.",
     roundFixes: "At this stage we fix bugs (typos, something not working). New ideas are quoted separately.",
+    roundPickOne: "In your package you pick one of the directions as it is. Changes to it are quoted (200 zł/h), and we always ask before starting.",
     approve: "Approve",
     changes: "Request changes",
     approveTitle: "Approve this stage",
@@ -265,7 +269,7 @@ export default function ProjectView({ token, portal, now: nowIso }: { token: str
                 state={state}
                 label={label}
 
-                detail={r.included === null ? t.fixesOnly : t.roundsUsed(r.used, r.included)}
+                detail={r.included === null ? t.fixesOnly : r.included === 0 ? t.pickOne : t.roundsUsed(r.used, r.included)}
               />
             );
           })}
@@ -483,7 +487,7 @@ function ReviewCard({
           ) : (
             <>
               <p className="mt-6 rounded-card border border-[var(--glass-border)] px-4 py-3 text-[13.5px] leading-relaxed text-ink-soft">
-                {r.included === null ? t.roundFixes : r.extra ? t.roundExtra : t.roundNow(r.used + 1, r.included)}
+                {r.included === null ? t.roundFixes : r.included === 0 ? t.roundPickOne : r.extra ? t.roundExtra : t.roundNow(r.used + 1, r.included)}
               </p>
               <details className="mt-4 text-[14px] text-ink-soft">
                 <summary className="cursor-pointer text-brand-300">{t.guideTitle}</summary>

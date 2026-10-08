@@ -12,7 +12,7 @@ import CheckpointsPanel from "@/components/admin/CheckpointsPanel";
 
 export const dynamic = "force-dynamic";
 
-const PACKAGE_LABEL = { launch: "Launch", business: "Business", signature: "Signature" } as const;
+const PACKAGE_LABEL = { launch: "Launch", entry: "Essentials", business: "Business", signature: "Signature" } as const;
 
 const when = (iso: string) =>
   new Date(iso).toLocaleString("pl-PL", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });

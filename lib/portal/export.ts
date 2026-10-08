@@ -27,7 +27,7 @@ export function answerLines(q: Question, a: Answers): AnswerLine[] {
   return lines;
 }
 
-const PACKAGE = { launch: "Launch", business: "Business", signature: "Signature" } as const;
+const PACKAGE = { launch: "Launch", entry: "Essentials", business: "Business", signature: "Signature" } as const;
 
 export function buildBriefInput(p: {
   clientName: string;

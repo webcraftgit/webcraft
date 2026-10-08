@@ -6,7 +6,7 @@ import TabSessionGuard from "@/components/admin/TabSessionGuard";
 
 export const dynamic = "force-dynamic";
 
-const PACKAGES = ["launch", "business", "signature"] as const;
+const PACKAGES = ["launch", "entry", "business", "signature"] as const;
 
 /**
  * The client questionnaire exactly as a client sees it, without making a

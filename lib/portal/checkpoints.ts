@@ -11,7 +11,7 @@ import { str } from "@/lib/security/validation";
  * on days 2 and 3, approval on day 5).
  */
 
-export type Package = "launch" | "business" | "signature";
+export type Package = "launch" | "entry" | "business" | "signature";
 export type Lang = "pl" | "en";
 type L = Record<Lang, string>;
 
@@ -40,19 +40,24 @@ export type Checkpoint = {
   remindersSent: number;
 };
 
-/** Package names as the website shows them (PL: Start / Biznes / Premium). */
+/** Package names as the website shows them (PL: Start / Wejście / Biznes / Premium). */
 export const PACKAGE_NAME: Record<Package, L> = {
   launch: { pl: "Start", en: "Launch" },
+  entry: { pl: "Wejście", en: "Essentials" },
   business: { pl: "Biznes", en: "Business" },
   signature: { pl: "Premium", en: "Signature" },
 };
 
 /** Days to delivery, as on the website and in the kit. */
-export const TOTAL_DAYS: Record<Package, number> = { launch: 5, business: 10, signature: 10 };
+export const TOTAL_DAYS: Record<Package, number> = { launch: 5, entry: 5, business: 10, signature: 10 };
 
-/** Included revision rounds. null = "fixes only" (pre-launch: bugs, not changes). */
+/**
+ * Included revision rounds. null = "fixes only" (pre-launch: bugs, not changes).
+ * 0 = no round: on Essentials the client picks one direction tile as it is.
+ */
 export const INCLUDED_ROUNDS: Record<Package, Partial<Record<Stage, number | null>>> = {
   launch: { 1: 1, 2: 2, 4: null },
+  entry: { 1: 0, 2: 1, 4: null },
   business: { 1: 1, 2: 2, 3: 2, 4: null },
   signature: { 1: 2, 2: 3, 3: 2, 4: null },
 };
@@ -62,8 +67,8 @@ export const FEEDBACK_DAYS = 5;
 /** Reminder n goes out on business day REMINDER_DAYS[n]. */
 export const REMINDER_DAYS = [2, 3] as const;
 
-/** Launch is one page, so the homepage and full-site checkpoints merge. */
-export const stagesFor = (pkg: Package): Stage[] => (pkg === "launch" ? [1, 2, 4] : [1, 2, 3, 4]);
+/** The 5-day packages (Launch: one page, Essentials: up to 4) merge the homepage and full-site checkpoints. */
+export const stagesFor = (pkg: Package): Stage[] => (TOTAL_DAYS[pkg] === 5 ? [1, 2, 4] : [1, 2, 3, 4]);
 
 export const STAGE: Record<0 | Stage | 5, { name: L; approve: L }> = {
   0: {
@@ -104,9 +109,12 @@ export const STAGE: Record<0 | Stage | 5, { name: L; approve: L }> = {
   },
 };
 
-/** Launch's checkpoint 2 covers the whole (single) page. */
-export const stageName = (stage: 0 | Stage | 5, pkg: Package, lang: Lang): string =>
-  stage === 2 && pkg === "launch" ? (lang === "pl" ? "Twoja strona" : "Your page") : STAGE[stage].name[lang];
+/** On the 5-day packages checkpoint 2 covers everything: Launch's one page, Essentials' whole site. */
+export function stageName(stage: 0 | Stage | 5, pkg: Package, lang: Lang): string {
+  if (stage === 2 && pkg === "launch") return lang === "pl" ? "Twoja strona" : "Your page";
+  if (stage === 2 && pkg === "entry") return lang === "pl" ? "Cała strona" : "Your site";
+  return STAGE[stage].name[lang];
+}
 
 // ── Feedback ────────────────────────────────────────────────────────────────
 

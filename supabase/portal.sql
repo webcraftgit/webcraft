@@ -30,7 +30,7 @@ create table if not exists public.projects (
   updated_at          timestamptz not null default now(),
 
   client_name         text not null check (char_length(client_name) between 1 and 120),
-  package             text not null check (package in ('launch','business','signature')),
+  package             text not null check (package in ('launch','entry','business','signature')),
   locale              text not null default 'pl' check (locale in ('pl','en')),
 
   status              text not null default 'intake'
@@ -202,3 +202,11 @@ create policy project_checkpoints_admin_insert on public.project_checkpoints for
 create policy project_checkpoints_admin_update on public.project_checkpoints for update to authenticated
   using (public.is_admin()) with check (public.is_admin());
 create policy project_checkpoints_admin_delete on public.project_checkpoints for delete to authenticated using (public.is_admin());
+
+-- ============================================================================
+-- 8. Essentials ("entry", PL Wejście), added 2026-10-08. The inline CHECK
+--    above only applies to new tables, so live databases swap it here.
+-- ============================================================================
+alter table public.projects drop constraint if exists projects_package_check;
+alter table public.projects add constraint projects_package_check
+  check (package in ('launch','entry','business','signature'));

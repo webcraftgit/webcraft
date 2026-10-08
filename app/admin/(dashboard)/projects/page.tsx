@@ -11,14 +11,14 @@ export const dynamic = "force-dynamic";
 
 type Row = {
   id: string; created_at: string; client_name: string;
-  package: "launch" | "business" | "signature"; locale: "pl" | "en";
+  package: "launch" | "entry" | "business" | "signature"; locale: "pl" | "en";
   status: ProjectStatus; access_token: string | null; token_created_at: string | null;
   intake_submitted_at: string | null;
   intake_answers: { answers: unknown } | { answers: unknown }[] | null;
   project_files: { kind: "logo" | "photo" }[];
 };
 
-const PACKAGE_LABEL = { launch: "Launch", business: "Business", signature: "Signature" } as const;
+const PACKAGE_LABEL = { launch: "Launch", entry: "Essentials", business: "Business", signature: "Signature" } as const;
 
 const badge: Record<ProjectStatus, string> = {
   intake: "border-brand-400/40 bg-brand-400/10 text-brand-300",
@@ -84,6 +84,7 @@ export default async function Projects({ searchParams }: { searchParams: Promise
           <label htmlFor="package" className="mb-1 block text-[12px] text-ink-soft">Package</label>
           <select id="package" name="package" defaultValue="business" className={field}>
             <option value="launch">Launch</option>
+            <option value="entry">Essentials</option>
             <option value="business">Business</option>
             <option value="signature">Signature</option>
           </select>

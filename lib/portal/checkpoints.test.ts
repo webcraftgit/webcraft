@@ -1,11 +1,12 @@
 import { describe, it, expect } from "vitest";
 import {
-  INCLUDED_ROUNDS, clockDay, isWaiting, reminderStep, rounds, sanitizeFeedback, stageName, stageState, stagesFor,
+  INCLUDED_ROUNDS, PACKAGE_NAME, TOTAL_DAYS, clockDay, isWaiting, reminderStep, rounds, sanitizeFeedback, stageName, stageState, stagesFor,
 } from "./checkpoints";
 
 describe("checkpoint rules (mirror agency-kit checkpoints-and-revisions.md)", () => {
   it("included rounds per package match the kit table", () => {
     expect(INCLUDED_ROUNDS.launch).toEqual({ 1: 1, 2: 2, 4: null });
+    expect(INCLUDED_ROUNDS.entry).toEqual({ 1: 0, 2: 1, 4: null });
     expect(INCLUDED_ROUNDS.business).toEqual({ 1: 1, 2: 2, 3: 2, 4: null });
     expect(INCLUDED_ROUNDS.signature).toEqual({ 1: 2, 2: 3, 3: 2, 4: null });
   });
@@ -15,6 +16,17 @@ describe("checkpoint rules (mirror agency-kit checkpoints-and-revisions.md)", ()
     expect(stagesFor("business")).toEqual([1, 2, 3, 4]);
     expect(stageName(2, "launch", "en")).toBe("Your page");
     expect(stageName(2, "business", "pl")).toBe("Strona główna");
+  });
+
+  it("Essentials: 5 days, merged like Launch, direction is a pick with no round", () => {
+    expect(TOTAL_DAYS.entry).toBe(5);
+    expect(PACKAGE_NAME.entry).toEqual({ pl: "Wejście", en: "Essentials" });
+    expect(stagesFor("entry")).toEqual([1, 2, 4]);
+    expect(stageName(2, "entry", "en")).toBe("Your site");
+    expect(stageName(2, "entry", "pl")).toBe("Cała strona");
+    expect(rounds("entry", [], 1)).toEqual({ used: 0, included: 0, extra: true });
+    expect(rounds("entry", [{ stage: 2, status: "changes" }], 2)).toEqual({ used: 1, included: 1, extra: true });
+    expect(rounds("entry", [], 4)).toEqual({ used: 0, included: null, extra: false });
   });
 
   it("counts rounds and flags the paid one", () => {

@@ -8,9 +8,9 @@
  */
 
 export const TIERS = ["launch", "entry", "business", "signature"] as const;
-/** Client-portal packages. Entry is not one yet: the portal's checkpoints,
- *  revision rounds and the projects.package CHECK only know these three. */
-export const PACKAGES = ["launch", "business", "signature"] as const;
+/** Client-portal packages (lib/portal/checkpoints.ts). Same list as TIERS;
+ *  the projects.package CHECK in supabase/portal.sql must match. */
+export const PACKAGES = ["launch", "entry", "business", "signature"] as const;
 /** Non-website project kinds (lib/pricing SERVICE_IDS). No DB column yet —
  *  the contact route prefixes them onto the stored message. */
 export const SERVICES = ["video", "print", "other"] as const;

@@ -26,7 +26,7 @@ export type AdminFile = {
 
 export type AdminProject = {
   id: string; created_at: string; client_name: string;
-  package: "launch" | "business" | "signature"; locale: "pl" | "en";
+  package: "launch" | "entry" | "business" | "signature"; locale: "pl" | "en";
   status: ProjectStatus; access_token: string | null; intake_submitted_at: string | null;
   answers: Answers; answersUpdatedAt: string | null; files: AdminFile[];
   clock_started_at: string | null; paused_days: number; waiting_since: string | null; waiting_on: string | null;
