@@ -43,10 +43,10 @@ export type TierId = "launch" | "entry" | "business" | "signature";
 
 export type Tier = {
   id: TierId;
-  /** founding rate — real price, "from" */
+  /** founding rate — real price, shown as "from" when there's an upTo */
   from: number;
   /** honest typical top of the range at this scope. Omitted on a fixed-scope
-   *  tier (Entry): the scope does not drift, so neither does the price. */
+   *  tier (Entry): the scope does not drift, so `from` is the flat price. */
   upTo?: number;
   highlight?: boolean;
 };

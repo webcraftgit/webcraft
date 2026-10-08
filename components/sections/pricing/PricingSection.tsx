@@ -82,7 +82,7 @@ export default function PricingSection() {
               </p>
 
               <p className="mt-5">
-                <span className="text-small text-ink-soft">{t.pricing.from}&nbsp;</span>
+                {tier.upTo !== undefined && <span className="text-small text-ink-soft">{t.pricing.from}&nbsp;</span>}
                 <span className="font-display text-[clamp(2rem,3vw,2.6rem)] font-medium leading-none text-brand-300">
                   {price(tier.from)}
                 </span>

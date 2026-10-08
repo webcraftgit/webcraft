@@ -20,8 +20,9 @@
  *  - A limited-time Offer wrapper on the founding rates. "First 10 slots" is
  *    real but not tracked against a date, and priceValidUntil would be a
  *    guess presented as a fact.
- *  - Exact `price` on the tiers. They are genuinely "from" numbers, so they
- *    are emitted as a PriceSpecification with minPrice/maxPrice.
+ *  - Exact `price` on the ranged tiers. They are genuinely "from" numbers, so
+ *    they are emitted with minPrice/maxPrice. Entry has a fixed scope and one
+ *    flat price, so it alone gets `price`.
  *  - postalAddress. There is no public street address; inventing one to
  *    satisfy a schema validator is the same mistake the Wiśniowa demo
  *    refuses to make with ul. Wiśniowa.
@@ -103,8 +104,7 @@ const services = [
       priceSpecification: {
         "@type": "PriceSpecification",
         priceCurrency: "PLN",
-        minPrice: tier.from,
-        ...(tier.upTo !== undefined && { maxPrice: tier.upTo }),
+        ...(tier.upTo === undefined ? { price: tier.from } : { minPrice: tier.from, maxPrice: tier.upTo }),
         valueAddedTaxIncluded: false,
       },
       availability: "https://schema.org/InStock",

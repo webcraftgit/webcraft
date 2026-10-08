@@ -352,7 +352,7 @@ export default function ContactSection() {
                   className="mt-5 rounded-input border border-brand-400/25 bg-brand-400/8 px-4 py-3 text-ui leading-relaxed text-ink-soft"
                   role="status"
                 >
-                  {range.high === null ? t.contact.estFromPre : t.contact.estPre}
+                  {range.high === null ? t.contact.estFixedPre : t.contact.estPre}
                   <span className="font-medium tabular-nums text-brand-300">
                     {price(range.low)}
                     {range.high !== null && `–${price(range.high)}`}

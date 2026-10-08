@@ -79,7 +79,7 @@ export const LANDINGS: Record<LandingPath, Record<Locale, LandingCopy>> = {
           h: "Cztery pakiety, jasne ceny",
           p: [
             `Start: jednostronicowa strona, która dobrze sprzedaje jedną rzecz. Od ${p(L.from)}, zwykle do ${p(L.upTo)}, gotowa w 1 tydzień.`,
-            `Wejście: mała strona do 4 podstron (Start, Usługi, O nas, Kontakt) o stałym zakresie. Od ${p(N.from)}, gotowa w ok. tydzień.`,
+            `Wejście: mała strona do 4 podstron (Start, Usługi, O nas, Kontakt) o stałym zakresie i stałej cenie: ${p(N.from)}, gotowa w ok. tydzień.`,
             `Biznes: rozbudowana strona do 7 podstron, dwie wersje językowe w cenie i panel do samodzielnej edycji treści. Od ${p(B.from)}, zwykle do ${p(B.upTo)}, gotowa w 2 tygodnie.`,
             `Premium: wszystko z pakietu Biznes plus autorskie sceny 3D i projekt interakcji szyty na miarę. Od ${p(S.from)}, zwykle do ${p(S.upTo)}, gotowa w 2 tygodnie.`,
             `Ceny netto, w stawkach założycielskich dla pierwszych ${FOUNDING_SLOTS} projektów. Dokładną kwotę ustalamy po krótkiej rozmowie, przed rozpoczęciem prac, a płatność dzielimy na 50% na start i 50% przy uruchomieniu.`,
@@ -152,7 +152,7 @@ export const LANDINGS: Record<LandingPath, Record<Locale, LandingCopy>> = {
           h: "Four packages, clear prices",
           p: [
             `Launch: a single page that sells one thing well. From ${e(L.from)}, typically up to ${e(L.upTo)}, live in 1 week.`,
-            `Essentials: a small site of up to 4 pages (Home, Services, About, Contact) with a fixed scope. From ${e(N.from)}, live in about a week.`,
+            `Essentials: a small site of up to 4 pages (Home, Services, About, Contact) with a fixed scope and a fixed price: ${e(N.from)}, live in about a week.`,
             `Business: a multi-page site (up to 7 pages), two languages included and a panel to edit content yourself. From ${e(B.from)}, typically up to ${e(B.upTo)}, live in 2 weeks.`,
             `Signature: everything in Business plus custom 3D scenes and bespoke interaction design. From ${e(S.from)}, typically up to ${e(S.upTo)}, live in 2 weeks.`,
             `Net prices (excl. VAT), at founding rates for our first ${FOUNDING_SLOTS} projects. The exact number is fixed after a short call, before any work starts, and payment splits 50% to start and 50% at launch.`,
@@ -335,7 +335,7 @@ export const LANDINGS: Record<LandingPath, Record<Locale, LandingCopy>> = {
           h: "Nasze ceny",
           list: [
             `Start (strona jednostronicowa): od ${p(L.from)}, zwykle do ${p(L.upTo)}, 1 tydzień`,
-            `Wejście (do 4 podstron, stały zakres): od ${p(N.from)}, ok. 1 tydzień`,
+            `Wejście (do 4 podstron, stały zakres): ${p(N.from)}, ok. 1 tydzień`,
             `Biznes (do 7 podstron, 2 języki, panel edycji): od ${p(B.from)}, zwykle do ${p(B.upTo)}, 2 tygodnie`,
             `Premium (wszystko z Biznes + sceny 3D): od ${p(S.from)}, zwykle do ${p(S.upTo)}, 2 tygodnie`,
             `Opieka nad stroną po starcie: ${p(CARE_PLAN.monthly)}/mies., opcjonalnie`,

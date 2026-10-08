@@ -341,8 +341,8 @@ export const en = {
     contentQ: `Texts for the site?`,
     budgetQ: `Budget in mind?`,
     estPre: `Projects like this typically land between `,
-    /** fixed-scope tier: one starting price, no range */
-    estFromPre: `Projects like this start at `,
+    /** fixed-scope tier: one flat price, no range */
+    estFixedPre: `Projects like this cost `,
     estOver: `, live within `,
     estEnd: `. Exact fixed quote after a short discovery call.`,
     nameLabel: `Name`,
@@ -797,7 +797,7 @@ export const pl: Dictionary = {
     contentQ: `Teksty na stronę?`,
     budgetQ: `Masz budżet w głowie?`,
     estPre: `Projekty tego typu zwykle mieszczą się między `,
-    estFromPre: `Projekty tego typu zaczynają się od `,
+    estFixedPre: `Projekty tego typu kosztują `,
     estOver: `, czas realizacji: `,
     estEnd: `. Dokładna, stała wycena po krótkiej rozmowie wstępnej.`,
     nameLabel: `Imię i nazwisko`,
