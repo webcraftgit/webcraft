@@ -108,7 +108,7 @@ export async function POST(req: Request) {
   }
 
   // Non-website requests (video / print / other) have no column of their own
-  // (the tier CHECK only allows the three website tiers). Tag the stored
+  // (the tier CHECK only allows the website tiers). Tag the stored
   // message instead, so the inbox shows what the inquiry is about without a
   // schema migration.
   const service = oneOf(body.service, SERVICES);

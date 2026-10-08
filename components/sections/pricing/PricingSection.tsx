@@ -6,7 +6,7 @@ import { TIERS, FOUNDING_SLOTS, CARE_PLAN, fmt } from "@/lib/pricing";
 import { useT, useLocale } from "@/components/i18n/LanguageProvider";
 
 /**
- * Pricing (CP4.2) — three transparent tiers at FOUNDING RATES.
+ * Pricing (CP4.2) — four transparent tiers at FOUNDING RATES.
  *
  * Honesty rules baked in: real published prices (no fake strikethroughs —
  * we never charged more, so nothing is "crossed out"), the no-portfolio
@@ -45,7 +45,7 @@ export default function PricingSection() {
           {t.pricing.introPost}
         </p>
 
-        <div className="mt-12 grid gap-5 md:mt-16 md:gap-6 lg:grid-cols-3">
+        <div className="mt-12 grid gap-5 md:mt-16 md:grid-cols-2 md:gap-6 xl:grid-cols-4">
           {TIERS.map((tier) => (
             <article
               key={tier.id}
@@ -56,7 +56,7 @@ export default function PricingSection() {
                    cyan wash from the top and a glow; on desktop it also sits
                    a step higher than its neighbours. */
                 tier.highlight &&
-                  "border-[rgba(56,189,248,0.6)] bg-[linear-gradient(180deg,rgba(56,189,248,0.12),rgba(14,24,41,0.55)_45%)] shadow-[0_0_0_1px_rgba(56,189,248,0.25),0_30px_80px_-30px_rgba(56,189,248,0.45)] lg:-translate-y-3"
+                  "border-[rgba(56,189,248,0.6)] bg-[linear-gradient(180deg,rgba(56,189,248,0.12),rgba(14,24,41,0.55)_45%)] shadow-[0_0_0_1px_rgba(56,189,248,0.25),0_30px_80px_-30px_rgba(56,189,248,0.45)] xl:-translate-y-3"
               )}
             >
               {/* rim-light hairline */}
@@ -88,7 +88,8 @@ export default function PricingSection() {
                 </span>
               </p>
               <p className="mt-1 text-small text-ink-soft">
-                {t.pricing.upToPre} {price(tier.upTo)} · {t.pricing.tiers[tier.id].weeks}
+                {tier.upTo !== undefined && `${t.pricing.upToPre} ${price(tier.upTo)} · `}
+                {t.pricing.tiers[tier.id].weeks}
               </p>
 
               <ul className="mt-6 flex-1 space-y-2.5 border-t border-[var(--glass-border)] pt-6">

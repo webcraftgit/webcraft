@@ -104,7 +104,7 @@ const services = [
         "@type": "PriceSpecification",
         priceCurrency: "PLN",
         minPrice: tier.from,
-        maxPrice: tier.upTo,
+        ...(tier.upTo !== undefined && { maxPrice: tier.upTo }),
         valueAddedTaxIncluded: false,
       },
       availability: "https://schema.org/InStock",

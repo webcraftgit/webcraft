@@ -11,7 +11,9 @@
  * ids below. Repricing is still a one-file edit here; retranslating is a
  * one-file edit there.
  *
- * Rate history: 4 900/11 900/24 900 → 3 900/9 900/19 900 → 3 500/9 900/19 900.
+ * Rate history: 4 900/11 900/24 900 → 3 900/9 900/19 900 → 3 500/9 900/19 900
+ * → 3 500/5 500/9 900/19 900 (Entry added to close the gap between Launch and
+ * Business; it is the fixed-scope offer the ads lead with).
  */
 import type { Locale } from "@/lib/i18n/config";
 
@@ -37,20 +39,22 @@ export function fmt(n: number, locale: Locale, currency: string) {
   return `${grouped}${String.fromCharCode(0xa0)}${currency}`;
 }
 
-export type TierId = "launch" | "business" | "signature";
+export type TierId = "launch" | "entry" | "business" | "signature";
 
 export type Tier = {
   id: TierId;
   /** founding rate — real price, "from" */
   from: number;
-  /** honest typical top of the range at this scope */
-  upTo: number;
+  /** honest typical top of the range at this scope. Omitted on a fixed-scope
+   *  tier (Entry): the scope does not drift, so neither does the price. */
+  upTo?: number;
   highlight?: boolean;
 };
 
 export const TIERS: Tier[] = [
   { id: "launch", from: 3500, upTo: 6500 },
-  { id: "business", from: 9900, upTo: 16000, highlight: true },
+  { id: "entry", from: 5500, highlight: true },
+  { id: "business", from: 9900, upTo: 16000 },
   { id: "signature", from: 19900, upTo: 36000 },
 ];
 
@@ -68,6 +72,8 @@ export type BudgetBand = (typeof BUDGET_IDS)[number];
 export function estimate(tierId: TierId | null, readiness: ContentReadiness | null) {
   if (!tierId) return null;
   const tier = TIERS.find((t) => t.id === tierId)!;
+  // fixed scope: no range to land in, and the copy is part of the scope
+  if (tier.upTo === undefined) return { tierId, low: tier.from, high: null, note: null };
   const bump = readiness === "none" ? 0.18 : readiness === "partly" ? 0.08 : 0;
   const low = Math.round((tier.from * (1 + bump)) / 100) * 100;
   return {

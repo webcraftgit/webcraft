@@ -37,11 +37,8 @@ export function GET() {
 
   const pricing = TIERS.map((tier) => {
     const d = t.pricing.tiers[tier.id];
-    return `- ${d.name} — ${t.pricing.from} ${fmt(tier.from, L, c)} (${t.pricing.upToPre} ${fmt(
-      tier.upTo,
-      L,
-      c
-    )}), ${d.weeks}. ${d.tagline}`;
+    const upTo = tier.upTo === undefined ? "" : ` (${t.pricing.upToPre} ${fmt(tier.upTo, L, c)})`;
+    return `- ${d.name} — ${t.pricing.from} ${fmt(tier.from, L, c)}${upTo}, ${d.weeks}. ${d.tagline}`;
   }).join("\n");
 
   const faq = t.faq.items.map((i) => `### ${i.q}\n${i.a}`).join("\n\n");

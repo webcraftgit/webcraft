@@ -66,7 +66,7 @@ create table if not exists public.inquiries (
   email             text not null check (char_length(email) between 3 and 200),
   message           text not null check (char_length(message) between 10 and 4000),
 
-  tier              text check (tier in ('launch','business','signature')),
+  tier              text check (tier in ('launch','entry','business','signature')),
   content_readiness text check (content_readiness in ('ready','partly','none')),
   budget            text check (budget in ('lt5k','b5to10k','b10to20k','gt20k','unsure')),
 

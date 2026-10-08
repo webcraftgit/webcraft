@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/supabase/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
-import { LOCALES, TIERS, oneOf, str, uuid } from "@/lib/security/validation";
+import { LOCALES, PACKAGES, oneOf, str, uuid } from "@/lib/security/validation";
 import { newToken } from "@/lib/portal/token";
 import { BUCKET } from "@/lib/portal/data";
 import { PROJECT_STATUSES } from "@/lib/portal/status";
@@ -35,7 +35,7 @@ function done() {
 export async function createProject(formData: FormData) {
   const db = await admin();
   const clientName = str(formData.get("client_name"), 120);
-  const pkg = oneOf(formData.get("package"), TIERS);
+  const pkg = oneOf(formData.get("package"), PACKAGES);
   const locale = oneOf(formData.get("locale"), LOCALES);
   if (!clientName || !pkg || !locale) throw new Error("bad_request");
 

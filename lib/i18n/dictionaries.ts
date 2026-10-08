@@ -224,6 +224,19 @@ export const en = {
           `Analytics + launch checklist`,
         ],
       },
+      entry: {
+        name: `Essentials`,
+        tagline: `A small site with a fixed scope and a fixed price.`,
+        weeks: `~1 week`,
+        includes: [
+          `Up to 4 pages: Home / Services / About / Contact`,
+          `Custom design + motion & micro-interactions`,
+          `Copywriting & structure, written for you`,
+          `Contact form wired to your inbox`,
+          `Analytics + launch checklist`,
+          `1 round of revisions`,
+        ],
+      },
       business: {
         name: `Business`,
         tagline: `A full site built around your sales funnel.`,
@@ -328,6 +341,8 @@ export const en = {
     contentQ: `Texts for the site?`,
     budgetQ: `Budget in mind?`,
     estPre: `Projects like this typically land between `,
+    /** fixed-scope tier: one starting price, no range */
+    estFromPre: `Projects like this start at `,
     estOver: `, live within `,
     estEnd: `. Exact fixed quote after a short discovery call.`,
     nameLabel: `Name`,
@@ -665,6 +680,19 @@ export const pl: Dictionary = {
           `Analityka + checklista startowa`,
         ],
       },
+      entry: {
+        name: `Wejście`,
+        tagline: `Mała strona o stałym zakresie i stałej cenie.`,
+        weeks: `~1 tydzień`,
+        includes: [
+          `Do 4 podstron: Start / Usługi / O nas / Kontakt`,
+          `Indywidualny projekt + ruch i mikrointerakcje`,
+          `Teksty i struktura, napisane za Ciebie`,
+          `Formularz podłączony do Twojej skrzynki`,
+          `Analityka + checklista startowa`,
+          `1 runda poprawek`,
+        ],
+      },
       business: {
         name: `Biznes`,
         tagline: `Kompletna strona zbudowana wokół Twojej ścieżki klienta.`,
@@ -769,6 +797,7 @@ export const pl: Dictionary = {
     contentQ: `Teksty na stronę?`,
     budgetQ: `Masz budżet w głowie?`,
     estPre: `Projekty tego typu zwykle mieszczą się między `,
+    estFromPre: `Projekty tego typu zaczynają się od `,
     estOver: `, czas realizacji: `,
     estEnd: `. Dokładna, stała wycena po krótkiej rozmowie wstępnej.`,
     nameLabel: `Imię i nazwisko`,
