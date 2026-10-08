@@ -18,7 +18,7 @@
  * see lib/i18n/config.ts.
  */
 import type { Metadata } from "next";
-import { SITE_URL, SITE_URL_IS_PLACEHOLDER } from "@/lib/site";
+import { ORG, SITE_URL, SITE_URL_IS_PLACEHOLDER } from "@/lib/site";
 import { DEFAULT_LOCALE } from "@/lib/i18n/config";
 
 export const OG_IMAGE = {
@@ -65,9 +65,9 @@ export function pageMetadata({
   path?: string;
 }): Metadata {
   return {
-    // `absolute` on purpose: the root layout sets template "%s | Weturn",
+    // `absolute` on purpose: the root layout sets template "%s | Weturn Studio",
     // and every title below already ends in the brand. Without this you get
-    // "… | Weturn | Weturn", which Google truncates and users read as a bug.
+    // "… | Weturn Studio | Weturn Studio", which Google truncates and users read as a bug.
     title: { absolute: title },
     description,
     alternates: { canonical: path },
@@ -75,7 +75,7 @@ export function pageMetadata({
       title,
       description,
       url: abs(path),
-      siteName: "Weturn",
+      siteName: ORG.brandName,
       locale: DEFAULT_LOCALE === "pl" ? "pl_PL" : "en_US",
       type: "website",
       images: [OG_IMAGE],

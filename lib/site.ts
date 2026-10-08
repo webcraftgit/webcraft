@@ -40,6 +40,10 @@ export const CONTACT_PHONE_E164 = "+48516991588";
  *  differently in three places is an entity search engines cannot resolve. */
 export const ORG = {
   name: "Weturn",
+  /** The name the domain (weturnstudio.app) carries. "Weturn" alone is a
+   *  generic word in search, so titles, og:site_name and the JSON-LD
+   *  alternateName use this to tie the brand query to this site. */
+  brandName: "Weturn Studio",
   legalName: "Weturn", // TODO(launch): registered name if/when one exists
   /** City-level only. There is no public street address yet, and inventing one
    *  is worse than omitting it — see the Wiśniowa demo's address note. */

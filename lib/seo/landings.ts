@@ -56,7 +56,7 @@ const [L, N, B, S] = [ranged("launch"), tier("entry"), ranged("business"), range
 export const LANDINGS: Record<LandingPath, Record<Locale, LandingCopy>> = {
   "/strony-internetowe": {
     pl: {
-      title: "Strony internetowe dla firm, Warszawa | Weturn",
+      title: "Strony internetowe dla firm, Warszawa | Weturn Studio",
       description: `Projektowanie i tworzenie stron internetowych dla firm: indywidualny projekt, teksty w cenie, start w 1–2 tygodnie. Od ${p(L.from)}, stała wycena przed startem.`,
       label: "Strony internetowe dla firm",
       eyebrow: "Tworzenie stron internetowych · Warszawa",
@@ -129,7 +129,7 @@ export const LANDINGS: Record<LandingPath, Record<Locale, LandingCopy>> = {
       relatedHeading: "Zobacz też",
     },
     en: {
-      title: "Websites for businesses, Warsaw | Weturn",
+      title: "Websites for businesses, Warsaw | Weturn Studio",
       description: `Custom website design and development for businesses: copywriting included, live in 1–2 weeks. From ${e(L.from)}, fixed quote before work starts.`,
       label: "Websites for businesses",
       eyebrow: "Website design & development · Warsaw",
@@ -205,7 +205,7 @@ export const LANDINGS: Record<LandingPath, Record<Locale, LandingCopy>> = {
 
   "/opieka-nad-strona": {
     pl: {
-      title: "Opieka nad stroną internetową | Weturn",
+      title: "Opieka nad stroną internetową | Weturn Studio",
       description: `Opieka nad stroną www za ${p(CARE_PLAN.monthly)}/mies.: hosting, aktualizacje, kopie zapasowe, bezpieczeństwo, monitoring i drobne zmiany robione za Ciebie. Bez umowy na lata.`,
       label: "Opieka nad stroną",
       eyebrow: "Opieka i utrzymanie stron www",
@@ -255,7 +255,7 @@ export const LANDINGS: Record<LandingPath, Record<Locale, LandingCopy>> = {
       relatedHeading: "Zobacz też",
     },
     en: {
-      title: "Website care & maintenance | Weturn",
+      title: "Website care & maintenance | Weturn Studio",
       description: `Website care for ${e(CARE_PLAN.monthly)}/month: hosting, updates, backups, security, monitoring and small changes done for you. No multi-year contract.`,
       label: "Website care",
       eyebrow: "Website care & maintenance",
@@ -308,7 +308,7 @@ export const LANDINGS: Record<LandingPath, Record<Locale, LandingCopy>> = {
 
   "/ile-kosztuje-strona-internetowa": {
     pl: {
-      title: "Ile kosztuje strona internetowa w 2026? Cennik | Weturn",
+      title: "Ile kosztuje strona internetowa w 2026? Cennik | Weturn Studio",
       description: `Ile kosztuje strona internetowa dla firmy: od czego zależy cena, szablon czy projekt indywidualny, ukryte koszty. Nasze ceny: od ${p(L.from)} do ${p(S.upTo)}.`,
       label: "Ile kosztuje strona internetowa",
       eyebrow: "Poradnik · Cennik stron www",
@@ -376,7 +376,7 @@ export const LANDINGS: Record<LandingPath, Record<Locale, LandingCopy>> = {
       relatedHeading: "Zobacz też",
     },
     en: {
-      title: "How much does a website cost in 2026? | Weturn",
+      title: "How much does a website cost in 2026? | Weturn Studio",
       description: `What a business website costs: what drives the price, template vs custom, hidden costs. Our prices: from ${e(L.from)} to ${e(S.upTo)}.`,
       label: "How much does a website cost",
       eyebrow: "Guide · Website pricing",

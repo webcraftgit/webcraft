@@ -33,6 +33,7 @@ import { CARE_PLAN, TIERS } from "@/lib/pricing";
 import { CONTACT_EMAIL, CONTACT_PHONE_E164, ORG, SITE_URL } from "@/lib/site";
 import { abs } from "@/lib/seo/metadata";
 import { LANDINGS, type LandingPath } from "@/lib/seo/landings";
+import { ABOUT, ABOUT_PATH } from "@/lib/seo/about";
 
 const t = DICTS[DEFAULT_LOCALE];
 const lang = DEFAULT_LOCALE;
@@ -50,6 +51,7 @@ const organization = {
   "@type": ["Organization", "ProfessionalService"],
   "@id": ID.org,
   name: ORG.name,
+  alternateName: ORG.brandName,
   url: SITE_URL,
   email: CONTACT_EMAIL,
   telephone: CONTACT_PHONE_E164,
@@ -81,6 +83,7 @@ const website = {
   "@id": ID.site,
   url: SITE_URL,
   name: ORG.name,
+  alternateName: ORG.brandName,
   inLanguage: lang,
   publisher: { "@id": ID.org },
 };
@@ -198,6 +201,23 @@ export const privacyGraph = {
       "@type": "WebPage",
       url: abs("/privacy"),
       name: "Polityka prywatności",
+      inLanguage: lang,
+      isPartOf: { "@id": ID.site },
+      about: { "@id": ID.org },
+    },
+  ],
+};
+
+export const aboutGraph = {
+  "@context": "https://schema.org",
+  "@graph": [
+    organization,
+    website,
+    {
+      "@type": "AboutPage",
+      url: abs(ABOUT_PATH),
+      name: ABOUT.pl.h1,
+      description: ABOUT.pl.description,
       inLanguage: lang,
       isPartOf: { "@id": ID.site },
       about: { "@id": ID.org },

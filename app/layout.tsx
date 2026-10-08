@@ -48,8 +48,8 @@ export const metadata: Metadata = {
   title: {
     // The brand line is the H1 on the page; the tab and the SERP get the
     // phrase people actually type. Template keeps sub-pages consistent.
-    default: "Tworzenie stron internetowych Warszawa | Weturn",
-    template: "%s | Weturn",
+    default: "Tworzenie stron internetowych Warszawa | Weturn Studio",
+    template: "%s | Weturn Studio",
   },
   description:
     "Projektujemy i budujemy strony, które zamieniają wyświetlenia w sprzedaż. Do tego opieka, wideo i materiały marki. Wycena ustalona przed startem prac.",

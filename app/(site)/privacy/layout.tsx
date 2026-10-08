@@ -16,7 +16,7 @@ import { privacyGraph } from "@/lib/seo/schema";
  * small site is a real business. Hiding it gains nothing.
  */
 export const metadata: Metadata = pageMetadata({
-  title: "Polityka prywatności | Weturn",
+  title: "Polityka prywatności | Weturn Studio",
   description:
     "Co zbieramy, po co i jak to wyłączyć. Opis tego, co faktycznie robi kod tej strony, bez formułek.",
   path: "/privacy",

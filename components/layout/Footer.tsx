@@ -5,6 +5,7 @@ import { CONTACT_EMAIL, CONTACT_PHONE, CONTACT_PHONE_E164 } from "@/lib/site";
 import { useLocale, useT } from "@/components/i18n/LanguageProvider";
 import { useConsent } from "@/components/analytics/ConsentProvider";
 import { LANDINGS, LANDING_PATHS } from "@/lib/seo/landings";
+import { ABOUT, ABOUT_PATH } from "@/lib/seo/about";
 
 /**
  * Footer (CP4.2 minimal → CP5-i18n → CP6-backend).
@@ -95,6 +96,9 @@ export default function Footer() {
             © {new Date().getFullYear()} Weturn. {t.footer.rights}
           </p>
           <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1 md:justify-end">
+            <Link href={ABOUT_PATH} className="inline-flex min-h-[44px] items-center transition-colors hover:text-ink md:min-h-0">
+              {ABOUT[locale].label}
+            </Link>
             <Link href="/privacy" className="inline-flex min-h-[44px] items-center transition-colors hover:text-ink md:min-h-0">
               {t.consent.policy}
             </Link>

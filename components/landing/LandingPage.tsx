@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useLocale } from "@/components/i18n/LanguageProvider";
 import Footer from "@/components/layout/Footer";
 import { LANDINGS, LANDING_PATHS, type LandingPath } from "@/lib/seo/landings";
+import { ABOUT, ABOUT_PATH } from "@/lib/seo/about";
 
 /**
  * Shared layout for the indexable landing pages (SEO pass, 2026-10-01).
@@ -13,10 +14,14 @@ import { LANDINGS, LANDING_PATHS, type LandingPath } from "@/lib/seo/landings";
  * text is in the server HTML at full opacity and the page is light enough to
  * be fast on a phone. Styling reuses the /privacy page's tokens so the two
  * read as one site.
+ *
+ * /about (lib/seo/about.ts) rides on the same template: same shape, and the
+ * same job of being read rather than watched.
  */
-export default function LandingPage({ path }: { path: LandingPath }) {
+export default function LandingPage({ path }: { path: LandingPath | typeof ABOUT_PATH }) {
   const [locale] = useLocale();
-  const c = LANDINGS[path][locale] ?? LANDINGS[path].pl;
+  const copy = path === ABOUT_PATH ? ABOUT : LANDINGS[path];
+  const c = copy[locale] ?? copy.pl;
   const related = LANDING_PATHS.filter((p) => p !== path);
 
   return (

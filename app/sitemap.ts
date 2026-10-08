@@ -1,11 +1,12 @@
 import type { MetadataRoute } from "next";
 import { SITE_URL } from "@/lib/site";
 import { LANDING_PATHS } from "@/lib/seo/landings";
+import { ABOUT_PATH } from "@/lib/seo/about";
 
 /**
  * sitemap.xml (CP4_17-seo).
  *
- * Home, the landing pages from lib/seo/landings.ts, and /privacy. Anchors are
+ * Home, the landing pages from lib/seo/landings.ts, /about and /privacy. Anchors are
  * not URLs, so `#services` or `#pricing` cannot rank on their own; the landing
  * pages are the real routes for those queries, and they are listed here from
  * the same LANDING_PATHS the footer links to, so the two cannot drift.
@@ -30,6 +31,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "monthly" as const,
       priority: 0.8,
     })),
+    { url: `${SITE_URL}${ABOUT_PATH}`, lastModified: now, changeFrequency: "yearly", priority: 0.5 },
     { url: `${SITE_URL}/privacy`, lastModified: now, changeFrequency: "yearly", priority: 0.3 },
   ];
 }
