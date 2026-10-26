@@ -40,10 +40,10 @@ export type Checkpoint = {
   remindersSent: number;
 };
 
-/** Package names as the website shows them (PL: Start / Wejście / Biznes / Premium). */
+/** Package names as the website shows them (PL: Start / Podstawa / Biznes / Premium). */
 export const PACKAGE_NAME: Record<Package, L> = {
   launch: { pl: "Start", en: "Launch" },
-  entry: { pl: "Wejście", en: "Essentials" },
+  entry: { pl: "Podstawa", en: "Essentials" },
   business: { pl: "Biznes", en: "Business" },
   signature: { pl: "Premium", en: "Signature" },
 };

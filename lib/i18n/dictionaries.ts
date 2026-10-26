@@ -681,7 +681,7 @@ export const pl: Dictionary = {
         ],
       },
       entry: {
-        name: `Wejście`,
+        name: `Podstawa`,
         tagline: `Mała strona o stałym zakresie i stałej cenie.`,
         weeks: `~1 tydzień`,
         includes: [

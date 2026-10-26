@@ -20,7 +20,7 @@ describe("checkpoint rules (mirror agency-kit checkpoints-and-revisions.md)", ()
 
   it("Essentials: 5 days, merged like Launch, direction is a pick with no round", () => {
     expect(TOTAL_DAYS.entry).toBe(5);
-    expect(PACKAGE_NAME.entry).toEqual({ pl: "Wejście", en: "Essentials" });
+    expect(PACKAGE_NAME.entry).toEqual({ pl: "Podstawa", en: "Essentials" });
     expect(stagesFor("entry")).toEqual([1, 2, 4]);
     expect(stageName(2, "entry", "en")).toBe("Your site");
     expect(stageName(2, "entry", "pl")).toBe("Cała strona");

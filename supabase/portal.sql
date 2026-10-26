@@ -204,7 +204,7 @@ create policy project_checkpoints_admin_update on public.project_checkpoints for
 create policy project_checkpoints_admin_delete on public.project_checkpoints for delete to authenticated using (public.is_admin());
 
 -- ============================================================================
--- 8. Essentials ("entry", PL Wejście), added 2026-10-08. The inline CHECK
+-- 8. Essentials ("entry", PL Podstawa), added 2026-10-08. The inline CHECK
 --    above only applies to new tables, so live databases swap it here.
 -- ============================================================================
 alter table public.projects drop constraint if exists projects_package_check;
