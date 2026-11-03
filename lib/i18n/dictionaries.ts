@@ -40,7 +40,33 @@ export const en = {
     titleEnd: `.`,
     subtitle: `We design, build and maintain digital experiences. From full websites to short-form content and brand assets, everything we make is engineered to convert.`,
     ctaPrimary: `Start your project`,
-    ctaGhost: `See our craft`,
+    ctaGhost: `See our demos`,
+    formSubmit: `Get a quote`,
+    /** Alternative hero copy for ad links: /?h=<id>. Only these ids are read
+     *  from the URL, never free text. `from` is the lowest published price. */
+    variants: {
+      fast: {
+        titleA: `A custom site for your business. Live in`,
+        titleAccent: `a week`,
+        titleEnd: ` or two.`,
+        subtitle: (from: string) =>
+          `From ${from} net. You get a fixed quote before work starts and pay 50% up front, 50% at launch.`,
+      },
+      price: {
+        titleA: `A business website for a`,
+        titleAccent: `fixed price`,
+        titleEnd: `.`,
+        subtitle: (from: string) =>
+          `From ${from} net. The quote is fixed before work starts, and payment is split 50/50.`,
+      },
+      warsaw: {
+        titleA: `Websites for businesses in`,
+        titleAccent: `Warsaw`,
+        titleEnd: `.`,
+        subtitle: (from: string) =>
+          `Custom design, copy written for you, live in one to two weeks. From ${from} net, with a fixed quote.`,
+      },
+    },
   },
   services: {
     eyebrow: `Services`,
@@ -497,7 +523,31 @@ export const pl: Dictionary = {
     titleEnd: `.`,
     subtitle: `Projektujemy, budujemy i utrzymujemy cyfrowe doświadczenia. Od kompletnych stron po treści wideo i materiały brandingowe: wszystko zaprojektowane tak, by sprzedawać.`,
     ctaPrimary: `Rozpocznij projekt`,
-    ctaGhost: `Zobacz nasze rzemiosło`,
+    ctaGhost: `Zobacz nasze demo`,
+    formSubmit: `Poproś o wycenę`,
+    variants: {
+      fast: {
+        titleA: `Autorska strona dla Twojej firmy. Gotowa w`,
+        titleAccent: `tydzień`,
+        titleEnd: ` lub dwa.`,
+        subtitle: (from: string) =>
+          `Od ${from} netto. Stałą wycenę dostajesz przed startem prac, a płacisz 50% na początku i 50% przy uruchomieniu.`,
+      },
+      price: {
+        titleA: `Strona firmowa za`,
+        titleAccent: `stałą cenę`,
+        titleEnd: `.`,
+        subtitle: (from: string) =>
+          `Od ${from} netto. Wycenę ustalamy przed startem prac, a płatność dzielimy 50/50.`,
+      },
+      warsaw: {
+        titleA: `Strony internetowe dla firm w`,
+        titleAccent: `Warszawie`,
+        titleEnd: `.`,
+        subtitle: (from: string) =>
+          `Autorski projekt, teksty piszemy za Ciebie, start w tydzień lub dwa. Od ${from} netto, ze stałą wyceną.`,
+      },
+    },
   },
   services: {
     eyebrow: `Usługi`,

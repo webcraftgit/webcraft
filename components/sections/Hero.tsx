@@ -1,16 +1,39 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useSyncExternalStore } from "react";
 import { motion } from "framer-motion";
 import { gsap, ScrollTrigger } from "@/lib/gsap";
 import { heroScroll } from "@/lib/scroll-state";
 import SceneCanvas from "@/components/three/SceneCanvas";
 import MagneticButton from "@/components/ui/MagneticButton";
 import HeroCursorLight from "@/components/ui/HeroCursorLight";
-import { useT } from "@/components/i18n/LanguageProvider";
+import { useT, useLocale } from "@/components/i18n/LanguageProvider";
+import HeroQuoteForm from "@/components/sections/HeroQuoteForm";
+import { TIERS, fmt } from "@/lib/pricing";
+
+/** Ad links open the hero with /?h=<id>. Only ids listed in
+ *  dictionaries.hero.variants are honoured, never free text from the URL.
+ *  The server (and the first client render) show the default copy, so the
+ *  static page and crawlers are unaffected. */
+const subscribeNone = () => () => {};
+const readVariant = () => new URLSearchParams(window.location.search).get("h");
 
 export default function Hero() {
   const t = useT();
+  const [locale] = useLocale();
+  const param = useSyncExternalStore(subscribeNone, readVariant, () => null);
+  const variant =
+    param && Object.prototype.hasOwnProperty.call(t.hero.variants, param)
+      ? (param as keyof typeof t.hero.variants)
+      : null;
+  const copy = variant
+    ? {
+        ...t.hero.variants[variant],
+        subtitle: t.hero.variants[variant].subtitle(
+          fmt(Math.min(...TIERS.map((x) => x.from)), locale, t.currency)
+        ),
+      }
+    : { titleA: t.hero.titleA, titleAccent: t.hero.titleAccent, titleEnd: t.hero.titleEnd, subtitle: t.hero.subtitle };
   const section = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -105,23 +128,26 @@ export default function Hero() {
             brand line, so without this the phrase in the <title> appeared
             nowhere in the visible copy. */}
         <p className="hero-reveal eyebrow mb-5">{t.hero.eyebrow}</p>
-        <h1 className="hero-reveal heading-display max-w-[13ch]">
-          {t.hero.titleA}{" "}
-          <span className="text-[var(--accent-green)]">{t.hero.titleAccent}</span>
-          {t.hero.titleEnd}
+        <h1
+          className={
+            variant
+              ? "hero-reveal heading-display max-w-[22ch] [font-size:clamp(2.25rem,5.4vw,4.75rem)]"
+              : "hero-reveal heading-display max-w-[13ch]"
+          }
+        >
+          {copy.titleA}{" "}
+          <span className="text-[var(--accent-green)]">{copy.titleAccent}</span>
+          {copy.titleEnd}
         </h1>
         <p className="hero-reveal hero-lead mt-6 max-w-[46ch] text-body text-ink/80 [animation-delay:80ms]">
-          {t.hero.subtitle}
+          {copy.subtitle}
         </p>
-        <div
-          className="hero-reveal pointer-events-auto mt-10 [animation-delay:160ms] flex w-full flex-col items-center justify-center gap-3 sm:w-auto sm:flex-row sm:gap-4"
-        >
-          {/* phones: both buttons one width, stacked — they used to size to
-              their labels and read as two unrelated pills */}
-          <MagneticButton href="#contact" wrapperClassName="w-full max-w-[320px] sm:w-auto" className="w-full sm:w-auto">
-            {t.hero.ctaPrimary}
-          </MagneticButton>
-          <MagneticButton href="#craft" variant="ghost" wrapperClassName="w-full max-w-[320px] sm:w-auto" className="w-full sm:w-auto">
+        {/* The form is the hero's primary action. It replaced the
+            "Start your project" button, which only scrolled down to the same
+            fields. */}
+        <HeroQuoteForm />
+        <div className="hero-reveal pointer-events-auto mt-4 [animation-delay:200ms]">
+          <MagneticButton href="#showcase" variant="ghost" wrapperClassName="w-full max-w-[320px] sm:w-auto" className="w-full sm:w-auto">
             {t.hero.ctaGhost}
           </MagneticButton>
         </div>
