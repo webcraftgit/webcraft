@@ -81,10 +81,14 @@ export default function PricingSection() {
                 {t.pricing.tiers[tier.id].tagline}
               </p>
 
-              <p className="mt-5">
-                {tier.upTo !== undefined && <span className="text-small text-ink-soft">{t.pricing.from}&nbsp;</span>}
-                <span className="font-display text-[clamp(2rem,3vw,2.6rem)] font-medium leading-none text-brand-300">
-                  {price(tier.from)}
+              {/* wraps "from" above the amount when the card is narrow: the
+                  English "19,900 PLN" is wider than the Polish "19 900 zł" and
+                  used to run out of the card */}
+              <p className="mt-5 flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                {tier.upTo !== undefined && <span className="text-small text-ink-soft">{t.pricing.from}</span>}
+                <span className="whitespace-nowrap font-display text-[clamp(1.6rem,2vw,2rem)] font-medium leading-none text-brand-300">
+                  {tier.from.toLocaleString(locale === "pl" ? "pl-PL" : "en-US", { useGrouping: "always" })}
+                  <span className="ml-1.5 text-[0.55em] text-brand-300/80">{t.currency}</span>
                 </span>
               </p>
               <p className="mt-1 text-small text-ink-soft">
