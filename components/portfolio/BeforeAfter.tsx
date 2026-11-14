@@ -18,7 +18,7 @@ import type { CaseCopy } from "@/lib/seo/portfolio";
  * only maps the held scroll onto 0 to 1. The old page moves the same number of pixels as the new one until it
  * runs out of page, which is the whole comparison.
  *
- * The recording is still frames of the real site, one every 6px of scroll through the animation
+ * The recording is still frames of the real site, one every 3px of scroll through the animation
  * (lib/portfolio/efkapowa.ts), fetched only around the current position and decoded at the size they are
  * shown (not the 1280px master) into a small bitmap cache, so a visitor who scrolls part way downloads part
  * and a phone never holds hundreds of megabytes of pixels.
@@ -78,12 +78,13 @@ export default function BeforeAfter({ c }: { c: CaseCopy }) {
     if (!cv || !ctx || !root) return;
 
     const small = window.innerWidth < 640;
-    const AHEAD = small ? 14 : 24;
-    const KEEP = small ? 24 : 48;
+    // frames are 3px apart through the animation, so the same distance ahead takes twice the frames
+    const AHEAD = small ? 28 : 48;
+    const KEEP = small ? 40 : 64;
     const decodeWidth = () => {
       const panel = window.innerWidth < 640 ? root.clientWidth : root.clientWidth / 2;
       const w = Math.ceil((panel * Math.min(window.devicePixelRatio || 1, 2)) / 2) * 2;
-      return Math.min(E.width, Math.max(640, w));
+      return Math.min(small ? 760 : 960, Math.max(640, w));
     };
     let W = decodeWidth();
     let H = Math.round((W * E.height) / E.width);
