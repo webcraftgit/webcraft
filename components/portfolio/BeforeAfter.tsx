@@ -56,7 +56,6 @@ function frameAt(y: number) {
 export default function BeforeAfter({ c }: { c: CaseCopy }) {
   const reduced = usePrefersReducedMotion();
   const headReveal = useReveal<HTMLDivElement>();
-  const factsReveal = useReveal<HTMLUListElement>();
   const holder = useRef<HTMLDivElement>(null);
   const sticky = useRef<HTMLDivElement>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
@@ -462,15 +461,6 @@ export default function BeforeAfter({ c }: { c: CaseCopy }) {
         <div aria-hidden style={{ height: "300svh" }} className="motion-reduce:hidden" />
       </div>
 
-      <ul ref={factsReveal} className="mt-12 grid gap-8 md:mt-16 md:grid-cols-3">
-        {c.facts.map((f) => (
-          <li key={f.h} data-reveal className="border-t border-white/10 pt-5">
-            <h3 className="font-display text-title font-medium text-ink">{f.h}</h3>
-            <p className="mt-2 leading-relaxed text-ink-soft">{f.p}</p>
-          </li>
-        ))}
-      </ul>
-      <p className="mt-6 text-[0.8125rem] text-ink-soft">{c.note}</p>
     </div>
   );
 }

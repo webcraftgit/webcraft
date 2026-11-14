@@ -27,8 +27,6 @@ export type CaseCopy = {
   stages: string[];
   /** read by screen readers in place of the moving picture */
   summary: string;
-  facts: { h: string; p: string }[];
-  note: string;
 };
 
 export type PortfolioCopy = {
@@ -73,21 +71,6 @@ export const PORTFOLIO: Record<Locale, PortfolioCopy> = {
       ],
       summary:
         "Porównanie stron pisarki: dotychczasowa (przed) i nowa (po). Przy przewijaniu nowa strona otwiera okiennice, wchodzi przez okno do pokoju, podchodzi do biurka i kończy na liście z opisem książki.",
-      facts: [
-        {
-          h: "Okno z okładki otwiera stronę",
-          p: "Scena przewijana prowadzi od okna z okładki, przez pokój, do listu z opisem książki.",
-        },
-        {
-          h: "Kolory ziemi zostały",
-          p: "Paleta z dotychczasowej strony zostaje, a pierwszy ekran ma jedno główne działanie: kup książkę.",
-        },
-        {
-          h: "Reszta jest krótka",
-          p: "Reszta to pierwszy rozdział do przeczytania, strona o autorce i kontakt.",
-        },
-      ],
-      note: "Przed: dotychczasowa strona. Po: nagranie przewijania nowej strony.",
     },
     workHeading: "Prace",
     nextHeading: "Twoja marka może być pierwsza.",
@@ -125,21 +108,6 @@ export const PORTFOLIO: Record<Locale, PortfolioCopy> = {
       ],
       summary:
         "A comparison of the author's two websites: the existing one (before) and the new one (after). As you scroll, the new site opens its shutters, steps through the window into a room, moves to the desk and ends on a letter with the book's description.",
-      facts: [
-        {
-          h: "The cover's window opens the site",
-          p: "A scroll scene leads from the window on the cover, through a room, to a letter with the book's description.",
-        },
-        {
-          h: "Earth tones stayed",
-          p: "The palette from the existing site stays, and the first screen has one main action: buy the book.",
-        },
-        {
-          h: "The rest is short",
-          p: "The rest is a first chapter to read, a page about the author and contact.",
-        },
-      ],
-      note: "Before: the existing site. After: a recording of the new site's scroll.",
     },
     workHeading: "Work",
     nextHeading: "Your brand could be first.",
