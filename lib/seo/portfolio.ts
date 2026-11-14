@@ -1,10 +1,5 @@
 /**
- * /portfolio copy (outline pass, 2026-11-03).
- *
- * The case grid is skeleton placeholders on purpose: no projects are shown
- * until there are real client projects to show. PROJECT_STATE.md binds the
- * site to "no fake proof", so there are no invented clients, numbers or
- * testimonials here either. The demo sites live in the home page showcase.
+ * /portfolio copy. No invented clients, numbers or testimonials (PROJECT_STATE.md: no fake proof).
  */
 import type { Locale } from "@/lib/i18n/config";
 
@@ -12,9 +7,7 @@ export const PORTFOLIO_PATH = "/portfolio" as const;
 
 /** The Efkapowa case (a real client project): the before/after with the recorded scroll of the new site. */
 export type CaseCopy = {
-  eyebrow: string;
   title: string;
-  intro: string;
   before: string;
   after: string;
   /** what the "before" panel is */
@@ -24,6 +17,12 @@ export type CaseCopy = {
   play: string;
   pause: string;
   stagesLabel: string;
+  /** the Przed / Po switch on a phone */
+  viewLabel: string;
+  prev: string;
+  next: string;
+  /** shown when the frames cannot be fetched */
+  loadError: string;
   /** one name per stage of the story, in order (see EFKAPOWA.stages) */
   stages: string[];
   /** read by screen readers in place of the moving picture */
@@ -35,13 +34,9 @@ export type CaseCopy = {
 export type PortfolioCopy = {
   title: string;
   description: string;
-  eyebrow: string;
   h1: string;
-  intro: string;
   case: CaseCopy;
   workHeading: string;
-  /** read by screen readers in place of the skeleton cards */
-  placeholderStatus: string;
   nextHeading: string;
   nextBody: string;
   cta: string;
@@ -53,15 +48,9 @@ export const PORTFOLIO: Record<Locale, PortfolioCopy> = {
     title: "Portfolio | Weturn Studio",
     description:
       "Portfolio Weturn Studio: strona pisarki Ewy Mysłowskiej przed i po. Zobacz, jak dotychczasowa strona zmienia się w nową, i zamów wycenę.",
-    eyebrow: "Portfolio",
-    h1: "Pierwsza realizacja.",
-    intro:
-      "Dopiero zaczynamy i pokazujemy tylko prawdziwe projekty. Poniżej strona pisarki, przed i po. Strony demo obejrzysz na stronie głównej.",
+    h1: "Portfolio",
     case: {
-      eyebrow: "Realizacja · 2026",
       title: "Ewa Mysłowska: strona pisarki",
-      intro:
-        "Strona powieści „Drobne niedogodności”. Dotychczasowa działała na szablonie WordPress. Nowa jest napisana od podstaw i pokazuje ruchem to, co okładka: okno, przez które wchodzi się do historii.",
       before: "Przed",
       after: "Po",
       beforeCaption: "ewamyslowska.pl",
@@ -69,6 +58,10 @@ export const PORTFOLIO: Record<Locale, PortfolioCopy> = {
       play: "Odtwórz",
       pause: "Zatrzymaj",
       stagesLabel: "Etapy animacji",
+      viewLabel: "Widok",
+      prev: "Poprzedni etap",
+      next: "Następny etap",
+      loadError: "Nie udało się wczytać nagrania. Odśwież stronę.",
       stages: [
         "Początek",
         "Okiennice",
@@ -79,7 +72,7 @@ export const PORTFOLIO: Record<Locale, PortfolioCopy> = {
         "List",
       ],
       summary:
-        "Porównanie stron: po lewej dotychczasowa strona pisarki, po prawej nowa. Przy przewijaniu nowa strona otwiera okiennice, wchodzi przez okno do pokoju, podchodzi do biurka i kończy na liście z opisem książki.",
+        "Porównanie stron pisarki: dotychczasowa (przed) i nowa (po). Przy przewijaniu nowa strona otwiera okiennice, wchodzi przez okno do pokoju, podchodzi do biurka i kończy na liście z opisem książki.",
       facts: [
         {
           h: "Okno z okładki otwiera stronę",
@@ -90,14 +83,13 @@ export const PORTFOLIO: Record<Locale, PortfolioCopy> = {
           p: "Paleta z dotychczasowej strony zostaje, a pierwszy ekran ma jedno główne działanie: kup książkę.",
         },
         {
-          h: "Reszta jest prosta",
-          p: "Pierwszy rozdział do przeczytania, strona o autorce i kontakt. Bez formularzy i bez zbierania danych.",
+          h: "Reszta jest krótka",
+          p: "Reszta to pierwszy rozdział do przeczytania, strona o autorce i kontakt.",
         },
       ],
-      note: "Po lewej dotychczasowa strona, po prawej nagranie przewijania nowej (1440 px szerokości).",
+      note: "Przed: dotychczasowa strona. Po: nagranie przewijania nowej strony.",
     },
     workHeading: "Prace",
-    placeholderStatus: "Kolejne realizacje pojawią się wkrótce.",
     nextHeading: "Twoja marka może być pierwsza.",
     nextBody:
       "Stawki założycielskie obejmują pierwsze projekty, a wycenę dostajesz przed startem prac.",
@@ -108,15 +100,9 @@ export const PORTFOLIO: Record<Locale, PortfolioCopy> = {
     title: "Portfolio | Weturn Studio",
     description:
       "Weturn Studio portfolio: author Ewa Mysłowska's website, before and after. See how the old site turns into the new one, and get a quote.",
-    eyebrow: "Portfolio",
-    h1: "Our first project.",
-    intro:
-      "We are new and show only real projects. Below is an author's website, before and after. You can try the demo sites on the home page.",
+    h1: "Portfolio",
     case: {
-      eyebrow: "Project · 2026",
       title: "Ewa Mysłowska: an author's website",
-      intro:
-        "The website for the novel “Drobne niedogodności”. The old one ran on a WordPress theme. The new one is written from scratch and shows in motion what the cover shows: a window you step through into the story.",
       before: "Before",
       after: "After",
       beforeCaption: "ewamyslowska.pl",
@@ -124,6 +110,10 @@ export const PORTFOLIO: Record<Locale, PortfolioCopy> = {
       play: "Play",
       pause: "Pause",
       stagesLabel: "Animation stages",
+      viewLabel: "View",
+      prev: "Previous stage",
+      next: "Next stage",
+      loadError: "The recording could not be loaded. Reload the page.",
       stages: [
         "Start",
         "Shutters",
@@ -134,7 +124,7 @@ export const PORTFOLIO: Record<Locale, PortfolioCopy> = {
         "Letter",
       ],
       summary:
-        "A comparison of two websites: on the left the author's existing site, on the right the new one. As you scroll, the new site opens its shutters, steps through the window into a room, moves to the desk and ends on a letter with the book's description.",
+        "A comparison of the author's two websites: the existing one (before) and the new one (after). As you scroll, the new site opens its shutters, steps through the window into a room, moves to the desk and ends on a letter with the book's description.",
       facts: [
         {
           h: "The cover's window opens the site",
@@ -145,14 +135,13 @@ export const PORTFOLIO: Record<Locale, PortfolioCopy> = {
           p: "The palette from the existing site stays, and the first screen has one main action: buy the book.",
         },
         {
-          h: "The rest is simple",
-          p: "A first chapter to read, a page about the author and contact. No forms and no data collection.",
+          h: "The rest is short",
+          p: "The rest is a first chapter to read, a page about the author and contact.",
         },
       ],
-      note: "On the left the existing site, on the right a recording of the new site's scroll (1440 px wide).",
+      note: "Before: the existing site. After: a recording of the new site's scroll.",
     },
     workHeading: "Work",
-    placeholderStatus: "More projects are coming soon.",
     nextHeading: "Your brand could be first.",
     nextBody:
       "Founding rates cover the first projects, and you get a quote before any work starts.",

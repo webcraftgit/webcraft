@@ -19,21 +19,24 @@ import type { CaseCopy } from "@/lib/seo/portfolio";
  * runs out of page, which is the whole comparison.
  *
  * The recording is still frames of the real site, one every 6px of scroll through the animation
- * (lib/portfolio/efkapowa.ts), fetched only around the
- * current position and decoded into a small bitmap cache, so a visitor who scrolls part way downloads part.
- * With reduced motion nothing is pinned or played: the stage buttons just swap the frame.
+ * (lib/portfolio/efkapowa.ts), fetched only around the current position and decoded at the size they are
+ * shown (not the 1280px master) into a small bitmap cache, so a visitor who scrolls part way downloads part
+ * and a phone never holds hundreds of megabytes of pixels.
+ *
+ * On a phone one screen is shown at a time (Przed / Po toggle) and the timeline is a prev/next stepper that
+ * names the stage. With reduced motion nothing is pinned or played: the layout is decided in CSS
+ * (motion-reduce:), so there is no jump, and the stage buttons just swap the frame.
  */
 
 const N = E.positions.length;
 const BEHIND = 4;
-const AHEAD = 24;
-const KEEP = 48;
 /** frames closer together than this (in recorded px of scroll) are cross-faded */
 const BLEND_GAP = 7;
 const PLAY_SECONDS = 28;
 const OLD_MAX = E.old.height - E.viewportHeight;
 /** the stage buttons' places on the 0 to 1 line (share of the recorded page scroll) */
 const STAGE_P = E.stages.map((f) => (f === null ? 0 : (E.storyStart + f * (E.storyEnd - E.storyStart)) / E.end));
+const LAST = STAGE_P.length - 1;
 
 const stageIndex = (p: number) => STAGE_P.reduce((s, sp, i) => (p >= sp - 1e-4 ? i : s), 0);
 
@@ -59,27 +62,45 @@ export default function BeforeAfter({ c }: { c: CaseCopy }) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const oldPage = useRef<HTMLDivElement>(null);
   const fill = useRef<HTMLSpanElement>(null);
+  const fillM = useRef<HTMLSpanElement>(null);
   const engine = useRef<{ setPos: (p: number) => void } | null>(null);
   const trigger = useRef<ScrollTrigger | null>(null);
   const [stage, setStage] = useState(0);
   const [playing, setPlaying] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
+  /** phone only: which of the two screens is showing */
+  const [side, setSide] = useState<"before" | "after">("after");
+  const [failed, setFailed] = useState(false);
 
-  // Frames: fetched around the current position, decoded into a small cache, painted on a canvas.
+  // Frames: fetched around the current position, decoded at display size into a small cache, painted on a canvas.
   useEffect(() => {
     const cv = canvas.current;
     const root = holder.current;
     const ctx = cv?.getContext("2d");
     if (!cv || !ctx || !root) return;
 
+    const small = window.innerWidth < 640;
+    const AHEAD = small ? 14 : 24;
+    const KEEP = small ? 24 : 48;
+    const decodeWidth = () => {
+      const panel = window.innerWidth < 640 ? root.clientWidth : root.clientWidth / 2;
+      const w = Math.ceil((panel * Math.min(window.devicePixelRatio || 1, 2)) / 2) * 2;
+      return Math.min(E.width, Math.max(640, w));
+    };
+    let W = decodeWidth();
+    let H = Math.round((W * E.height) / E.width);
+    cv.width = W;
+    cv.height = H;
+
     const cache = new Map<number, ImageBitmap>();
-    const inflight = new Set<number>();
+    const inflight = new Map<number, AbortController>();
     let alive = true;
     let near = false;
     let raf = 0;
     let pos = 0;
     let focus = 0;
     let shown = 0;
+    let fails = 0;
+    let reported = false;
 
     const trim = () => {
       if (cache.size <= KEEP) return;
@@ -99,23 +120,49 @@ export default function BeforeAfter({ c }: { c: CaseCopy }) {
     };
     const load = (i: number) => {
       if (i < 0 || i >= N || cache.has(i) || inflight.has(i)) return;
-      inflight.add(i);
-      fetch(frameSrc(i))
-        .then((r) => r.blob())
-        .then((b) => createImageBitmap(b))
+      const ac = new AbortController();
+      inflight.set(i, ac);
+      fetch(frameSrc(i), { signal: ac.signal })
+        .then((r) => {
+          if (!r.ok) throw new Error(String(r.status));
+          return r.blob();
+        })
+        .then((b) =>
+          createImageBitmap(b, { resizeWidth: W, resizeHeight: H, resizeQuality: "medium" }).catch(() => createImageBitmap(b)),
+        )
         .then((bm) => {
-          inflight.delete(i);
+          if (inflight.get(i) === ac) inflight.delete(i);
           if (!alive) return bm.close();
+          fails = 0;
+          if (reported) {
+            reported = false;
+            setFailed(false);
+          }
           cache.set(i, bm);
           trim();
           request();
         })
-        .catch(() => inflight.delete(i));
+        .catch((e) => {
+          if (inflight.get(i) === ac) inflight.delete(i);
+          if (e?.name === "AbortError" || !alive) return;
+          // a few misses in a row with nothing to show: say so instead of leaving a still picture
+          if (++fails >= 4 && cache.size === 0 && !reported) {
+            reported = true;
+            setFailed(true);
+          }
+        });
     };
     const draw = () => {
       raf = 0;
       const { i, t } = frameAt(pos * E.end);
       focus = i;
+      // a seek leaves requests behind for frames nobody wants any more: stop them
+      for (const [k, ac] of inflight) {
+        if (k < i - BEHIND - 2 || k > i + AHEAD + 2) {
+          ac.abort();
+          inflight.delete(k);
+        }
+      }
       for (let k = -BEHIND; k <= AHEAD; k++) load(i + k);
       const a = nearest(i);
       if (a < 0) return;
@@ -140,7 +187,9 @@ export default function BeforeAfter({ c }: { c: CaseCopy }) {
         const y = pos * E.end;
         // the old page travels the same distance, until it runs out of page
         if (oldPage.current) oldPage.current.style.transform = `translate3d(0,${((-Math.min(OLD_MAX, y) / E.old.height) * 100).toFixed(3)}%,0)`;
-        if (fill.current) fill.current.style.transform = `scaleX(${pos.toFixed(4)})`;
+        const sx = `scaleX(${pos.toFixed(4)})`;
+        if (fill.current) fill.current.style.transform = sx;
+        if (fillM.current) fillM.current.style.transform = sx;
         const s = stageIndex(pos);
         if (s !== shown) {
           shown = s;
@@ -149,6 +198,22 @@ export default function BeforeAfter({ c }: { c: CaseCopy }) {
         request();
       },
     };
+
+    // a bigger window needs sharper frames: start the cache again at the new size
+    const onResize = () => {
+      const nw = decodeWidth();
+      if (nw <= W * 1.25) return;
+      W = nw;
+      H = Math.round((W * E.height) / E.width);
+      inflight.forEach((ac) => ac.abort());
+      inflight.clear();
+      cache.forEach((bm) => bm.close());
+      cache.clear();
+      cv.width = W;
+      cv.height = H;
+      request();
+    };
+    window.addEventListener("resize", onResize);
 
     // nothing is fetched until the card is within a screen or so
     const io = new IntersectionObserver(
@@ -163,7 +228,10 @@ export default function BeforeAfter({ c }: { c: CaseCopy }) {
     return () => {
       alive = false;
       io.disconnect();
+      window.removeEventListener("resize", onResize);
       cancelAnimationFrame(raf);
+      inflight.forEach((ac) => ac.abort());
+      inflight.clear();
       cache.forEach((bm) => bm.close());
       cache.clear();
       engine.current = null;
@@ -181,10 +249,7 @@ export default function BeforeAfter({ c }: { c: CaseCopy }) {
       start: () => `top ${top()}px`,
       end: () => `bottom top+=${top() + s.offsetHeight}`,
       invalidateOnRefresh: true,
-      onUpdate: (self) => {
-        engine.current?.setPos(self.progress);
-        if (self.progress > 0.004) setScrolled(true);
-      },
+      onUpdate: (self) => engine.current?.setPos(self.progress),
       onRefresh: (self) => engine.current?.setPos(self.progress),
     });
     trigger.current = st;
@@ -194,7 +259,7 @@ export default function BeforeAfter({ c }: { c: CaseCopy }) {
     };
   }, [reduced]);
 
-  // Play: the page scrolls itself through the held range; any wheel, touch or key from the visitor takes over.
+  // Play: the page scrolls itself through the held range; any wheel, touch, key or scrollbar grab takes over.
   useEffect(() => {
     if (!playing) return;
     const st = trigger.current;
@@ -214,14 +279,20 @@ export default function BeforeAfter({ c }: { c: CaseCopy }) {
       if ((e.target as Element | null)?.closest?.("[data-play]")) return;
       setPlaying(false);
     };
+    // a press on the page's own scrollbar lands on the root element
+    const grab = (e: Event) => {
+      if (e.target === document.documentElement) setPlaying(false);
+    };
     window.addEventListener("wheel", stop, { passive: true });
     window.addEventListener("touchmove", stop, { passive: true });
     window.addEventListener("keydown", stop);
+    window.addEventListener("mousedown", grab);
     return () => {
       cancelAnimationFrame(raf);
       window.removeEventListener("wheel", stop);
       window.removeEventListener("touchmove", stop);
       window.removeEventListener("keydown", stop);
+      window.removeEventListener("mousedown", grab);
     };
   }, [playing]);
 
@@ -231,32 +302,55 @@ export default function BeforeAfter({ c }: { c: CaseCopy }) {
     if (reduced || !st) return engine.current?.setPos(p);
     scrollWindowTo(st.start + p * (st.end - st.start), { duration: 0.9 });
   };
+  const step = (d: number) => go(STAGE_P[Math.min(LAST, Math.max(0, stage + d))]);
 
   return (
     <div>
-      <div ref={headReveal} className="max-w-[62ch]">
-        <p data-reveal className="eyebrow">{c.eyebrow}</p>
-        <h2 data-reveal className="mt-3 font-display text-[clamp(1.75rem,3.2vw,2.5rem)] font-semibold leading-[1.1]">
+      <div ref={headReveal} className="flex flex-wrap items-baseline justify-between gap-x-8 gap-y-2">
+        <h2 data-reveal className="font-display text-[clamp(1.5rem,2.6vw,2rem)] font-semibold leading-[1.1]">
           {c.title}
         </h2>
-        <p data-reveal className="mt-4 text-body text-ink-soft">{c.intro}</p>
+        {/* The hint lives up here, not on the recording, so nothing covers the new site's own buttons. */}
+        <p data-reveal className="flex items-center gap-2 text-[0.8125rem] text-ink-soft motion-reduce:hidden">
+          {c.hint}
+          <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+            <path d="M3.5 6 8 10.5 12.5 6" />
+          </svg>
+        </p>
       </div>
 
       {/* The holder is as tall as the scroll that plays the recording; the card stays on screen inside it. */}
-      <div ref={holder} className="mt-8 md:mt-10">
+      <div ref={holder} className="mt-6 md:mt-8">
         <div
           ref={sticky}
-          className={cn("glass rounded-3xl p-3 md:p-5", !reduced && "sticky top-[max(88px,calc(50svh-250px))]")}
+          className="glass rounded-3xl p-3 max-sm:-mx-3 max-sm:p-2 md:p-5 sticky top-[max(88px,calc(50svh-250px))] [@media(max-height:480px)]:top-[76px] motion-reduce:static"
         >
+          {/* Phone: one screen at a time, switched here. From 640px both sit side by side. */}
+          <div role="group" aria-label={c.viewLabel} className="mb-2 flex gap-1 rounded-full bg-white/[0.06] p-1 sm:hidden">
+            {(["before", "after"] as const).map((s) => (
+              <button
+                key={s}
+                type="button"
+                aria-pressed={side === s}
+                onClick={() => setSide(s)}
+                className={cn(
+                  "min-h-11 flex-1 rounded-full text-[0.8125rem] font-semibold uppercase tracking-[0.08em] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400",
+                  side === s ? "bg-white/[0.14] text-ink" : "text-ink-soft hover:text-ink",
+                )}
+              >
+                {c[s]}
+              </button>
+            ))}
+          </div>
+
           {/* Each screen carries its own label above it, so nothing sits on top of the recording. The width is
-              capped (stacked on a phone, side by side from 640px) so both screens, the labels and the timeline
-              still fit in a short window. */}
+              capped so both screens, the labels and the timeline still fit in a short window. */}
           <div
             role="img"
             aria-label={c.summary}
-            className="mx-auto grid max-w-[max(240px,calc((100svh-330px)/1.25))] gap-3 sm:max-w-[max(560px,calc(3.2*(100svh-330px)))] sm:grid-cols-2 sm:gap-4"
+            className="mx-auto grid max-w-[max(280px,calc((100svh-300px)*1.6))] gap-3 sm:max-w-[max(560px,calc(3.2*(100svh-330px)))] sm:grid-cols-2 sm:gap-4"
           >
-            <Screen label={c.before} note={c.beforeCaption}>
+            <Screen label={c.before} note={c.beforeCaption} className={side === "after" ? "max-sm:hidden" : undefined}>
               <div ref={oldPage} className="absolute left-0 top-0 w-full will-change-transform">
                 <Image
                   src={E.old.src}
@@ -269,7 +363,7 @@ export default function BeforeAfter({ c }: { c: CaseCopy }) {
                 />
               </div>
             </Screen>
-            <Screen label={c.after} note={c.stages[stage]}>
+            <Screen label={c.after} note={c.stages[stage]} className={side === "before" ? "max-sm:hidden" : undefined}>
               <Image
                 src={frameSrc(0)}
                 alt=""
@@ -280,42 +374,45 @@ export default function BeforeAfter({ c }: { c: CaseCopy }) {
                 className="absolute inset-0 h-full w-full object-cover"
               />
               <canvas ref={canvas} width={E.width} height={E.height} aria-hidden className="absolute inset-0 h-full w-full" />
-              {!reduced && (
-                <span
-                  className={cn(
-                    "pointer-events-none absolute bottom-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-bg/80 px-3.5 py-1.5 text-[12px] font-semibold text-ink backdrop-blur transition-opacity duration-500",
-                    scrolled && "opacity-0",
-                  )}
-                >
-                  {c.hint}
-                </span>
-              )}
             </Screen>
           </div>
 
           <div className="mt-2 flex items-center gap-2 md:gap-3">
-            {!reduced && (
-              <button
-                type="button"
-                data-play
-                aria-pressed={playing}
-                aria-label={playing ? c.pause : c.play}
-                onClick={() => setPlaying((p) => !p)}
-                className="grid size-11 flex-none place-items-center rounded-full border border-white/10 bg-white/[0.06] text-ink transition-colors hover:bg-white/[0.12] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400"
-              >
-                {playing ? (
-                  <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" aria-hidden>
-                    <path d="M3 2h3.5v12H3zM9.5 2H13v12H9.5z" />
-                  </svg>
-                ) : (
-                  <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" aria-hidden>
-                    <path d="M4 1.5v13l10-6.5z" />
-                  </svg>
-                )}
-              </button>
-            )}
+            <button
+              type="button"
+              data-play
+              aria-label={playing ? c.pause : c.play}
+              onClick={() => setPlaying((p) => !p)}
+              className="grid size-11 flex-none place-items-center rounded-full border border-white/10 bg-white/[0.06] text-ink transition-colors hover:bg-white/[0.12] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400 motion-reduce:hidden"
+            >
+              {playing ? (
+                <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" aria-hidden>
+                  <path d="M3 2h3.5v12H3zM9.5 2H13v12H9.5z" />
+                </svg>
+              ) : (
+                <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" aria-hidden>
+                  <path d="M4 1.5v13l10-6.5z" />
+                </svg>
+              )}
+            </button>
+
+            {/* Phone: seven dots would be too close to tap, so a stepper that names the stage. */}
+            <div role="group" aria-label={c.stagesLabel} className="relative flex flex-1 items-center md:hidden">
+              <StepButton dir="prev" label={c.prev} disabled={stage === 0} onClick={() => step(-1)} />
+              <p className="min-w-0 flex-1 truncate px-1 text-center text-[0.8125rem] text-ink-soft">
+                <span className="font-semibold text-ink">
+                  {stage + 1}/{LAST + 1}
+                </span>{" "}
+                {c.stages[stage]}
+              </p>
+              <StepButton dir="next" label={c.next} disabled={stage === LAST} onClick={() => step(1)} />
+              <span aria-hidden className="absolute inset-x-1 bottom-0 h-[3px] overflow-hidden rounded-full bg-white/10">
+                <span ref={fillM} className="block h-full origin-left scale-x-0 bg-brand-400" />
+              </span>
+            </div>
+
             {/* Left margin clears the first stage's name ("Początek") from the play button. */}
-            <div role="group" aria-label={c.stagesLabel} className="relative ml-5 mr-3 h-11 flex-1 md:mb-5 md:ml-11">
+            <div role="group" aria-label={c.stagesLabel} className="relative ml-5 mr-3 hidden h-11 flex-1 md:mb-5 md:ml-11 md:block">
               <span aria-hidden className="absolute inset-x-0 top-1/2 h-[3px] -translate-y-1/2 rounded-full bg-white/10" />
               <span
                 ref={fill}
@@ -345,7 +442,7 @@ export default function BeforeAfter({ c }: { c: CaseCopy }) {
                   <span
                     aria-hidden
                     className={cn(
-                      "pointer-events-none absolute left-1/2 top-[calc(50%+13px)] hidden -translate-x-1/2 whitespace-nowrap text-[12px] transition-colors md:block",
+                      "pointer-events-none absolute left-1/2 top-[calc(50%+13px)] -translate-x-1/2 whitespace-nowrap text-[0.75rem] transition-colors",
                       i === stage ? "text-ink" : "text-ink-soft group-hover:text-ink",
                     )}
                   >
@@ -355,9 +452,14 @@ export default function BeforeAfter({ c }: { c: CaseCopy }) {
               ))}
             </div>
           </div>
+          {failed && (
+            <p role="status" className="mt-2 px-1 text-[0.8125rem] text-ink-soft">
+              {c.loadError}
+            </p>
+          )}
         </div>
         {/* The scroll that plays it. A real element, not padding: a sticky box only travels inside its parent's content box. */}
-        {!reduced && <div aria-hidden style={{ height: "300svh" }} />}
+        <div aria-hidden style={{ height: "300svh" }} className="motion-reduce:hidden" />
       </div>
 
       <ul ref={factsReveal} className="mt-12 grid gap-8 md:mt-16 md:grid-cols-3">
@@ -368,17 +470,34 @@ export default function BeforeAfter({ c }: { c: CaseCopy }) {
           </li>
         ))}
       </ul>
-      <p className="mt-6 text-[13px] text-ink-soft">{c.note}</p>
+      <p className="mt-6 text-[0.8125rem] text-ink-soft">{c.note}</p>
     </div>
   );
 }
 
-/** One of the two screens: a label row (name, then a quiet note), then a 16:10 window. */
-function Screen({ label, note, children }: { label: string; note: string; children: React.ReactNode }) {
+/** A 44px previous / next arrow for the phone stepper. */
+function StepButton({ dir, label, disabled, onClick }: { dir: "prev" | "next"; label: string; disabled: boolean; onClick: () => void }) {
   return (
-    <div>
-      <p className="mb-2 flex items-baseline gap-2 px-1 text-[13px] text-ink-soft">
-        <span className="text-[12px] font-semibold uppercase tracking-[0.08em] text-ink">{label}</span>
+    <button
+      type="button"
+      aria-label={label}
+      disabled={disabled}
+      onClick={onClick}
+      className="grid size-11 flex-none place-items-center rounded-full text-ink transition-colors hover:bg-white/[0.08] focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-brand-400 disabled:text-ink-soft/40 disabled:hover:bg-transparent"
+    >
+      <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+        <path d={dir === "prev" ? "M10 3 5 8l5 5" : "M6 3l5 5-5 5"} />
+      </svg>
+    </button>
+  );
+}
+
+/** One of the two screens: a label row (name, then a quiet note), then a 16:10 window. */
+function Screen({ label, note, className, children }: { label: string; note: string; className?: string; children: React.ReactNode }) {
+  return (
+    <div className={className}>
+      <p className="mb-2 flex items-baseline gap-2 px-1 text-[0.8125rem] text-ink-soft">
+        <span className="text-[0.75rem] font-semibold uppercase tracking-[0.08em] text-ink">{label}</span>
         <span aria-hidden>{note}</span>
       </p>
       <div className="relative aspect-[16/10] overflow-hidden rounded-2xl bg-black/40 ring-1 ring-white/10">{children}</div>

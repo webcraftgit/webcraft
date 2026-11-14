@@ -80,6 +80,11 @@ const nextConfig = {
   async headers() {
     return [
       { source: "/:path*", headers: securityHeaders },
+      // the Efkapowa recording: 700+ frames a visitor scrolls back and forth through, so keep them
+      {
+        source: "/portfolio/efkapowa/:path*",
+        headers: [{ key: "Cache-Control", value: "public, max-age=604800, stale-while-revalidate=86400" }],
+      },
       // the dashboard must never be cached by a proxy or a shared browser
       {
         source: "/admin/:path*",
