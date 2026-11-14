@@ -349,7 +349,7 @@ export default function BeforeAfter({ c }: { c: CaseCopy }) {
             aria-label={c.summary}
             className="mx-auto grid max-w-[max(280px,calc((100svh-300px)*1.6))] gap-3 sm:max-w-[max(560px,calc(3.2*(100svh-330px)))] sm:grid-cols-2 sm:gap-4"
           >
-            <Screen label={c.before} note={c.beforeCaption} className={side === "after" ? "max-sm:hidden" : undefined}>
+            <Screen label={c.before} note={c.beforeCaption} href="https://ewamyslowska.pl/" className={side === "after" ? "max-sm:hidden" : undefined}>
               <div ref={oldPage} className="absolute left-0 top-0 w-full will-change-transform">
                 <Image
                   src={E.old.src}
@@ -483,12 +483,36 @@ function StepButton({ dir, label, disabled, onClick }: { dir: "prev" | "next"; l
 }
 
 /** One of the two screens: a label row (name, then a quiet note), then a 16:10 window. */
-function Screen({ label, note, className, children }: { label: string; note: string; className?: string; children: React.ReactNode }) {
+function Screen({
+  label,
+  note,
+  href,
+  className,
+  children,
+}: {
+  label: string;
+  note: string;
+  /** makes the note a link that opens in a new tab */
+  href?: string;
+  className?: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className={className}>
       <p className="mb-2 flex items-baseline gap-2 px-1 text-[0.8125rem] text-ink-soft">
         <span className="text-[0.75rem] font-semibold uppercase tracking-[0.08em] text-ink">{label}</span>
-        <span aria-hidden>{note}</span>
+        {href ? (
+          <a
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline decoration-white/30 underline-offset-4 transition-colors hover:text-ink hover:decoration-brand-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400"
+          >
+            {note}
+          </a>
+        ) : (
+          <span aria-hidden>{note}</span>
+        )}
       </p>
       <div className="relative aspect-[16/10] overflow-hidden rounded-2xl bg-black/40 ring-1 ring-white/10">{children}</div>
     </div>
