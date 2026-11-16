@@ -28,7 +28,6 @@ import type { CaseCopy } from "@/lib/seo/portfolio";
  * (motion-reduce:), so there is no jump, and the stage buttons just swap the frame.
  */
 
-const N = E.positions.length;
 const BEHIND = 4;
 /** frames closer together than this (in recorded px of scroll) are cross-faded */
 const BLEND_GAP = 7;
@@ -41,15 +40,15 @@ const LAST = STAGE_P.length - 1;
 const stageIndex = (p: number) => STAGE_P.reduce((s, sp, i) => (p >= sp - 1e-4 ? i : s), 0);
 
 /** the last frame at or before scroll position y, and how far it is on towards the next */
-function frameAt(y: number) {
+function frameAt(pts: number[], y: number) {
   let lo = 0;
-  let hi = N - 1;
+  let hi = pts.length - 1;
   while (lo < hi) {
     const m = (lo + hi + 1) >> 1;
-    if (E.positions[m] <= y) lo = m;
+    if (pts[m] <= y) lo = m;
     else hi = m - 1;
   }
-  const t = lo < N - 1 ? (y - E.positions[lo]) / (E.positions[lo + 1] - E.positions[lo]) : 0;
+  const t = lo < pts.length - 1 ? (y - pts[lo]) / (pts[lo + 1] - pts[lo]) : 0;
   return { i: lo, t: Math.min(1, Math.max(0, t)) };
 }
 
@@ -78,9 +77,18 @@ export default function BeforeAfter({ c }: { c: CaseCopy }) {
     if (!cv || !ctx || !root) return;
 
     const small = window.innerWidth < 640;
-    // frames are 3px apart through the animation, so the same distance ahead takes twice the frames
-    const AHEAD = small ? 28 : 48;
-    const KEEP = small ? 40 : 64;
+    // Frames are 3px apart through the animation (about 55 a second when played). A phone uses every other one,
+    // the 6px set (about 30 a second): half the download and half the decoded pictures held, and the
+    // cross-fade between them keeps it smooth.
+    const idx: number[] = [];
+    E.positions.forEach((y, i) => {
+      const odd = y >= E.storyStart && y < E.storyEnd && (y - E.storyStart) % 6 === 3;
+      if (!(small && odd)) idx.push(i);
+    });
+    const pts = idx.map((i) => E.positions[i]);
+    const N = idx.length;
+    const AHEAD = small ? 20 : 48;
+    const KEEP = small ? 30 : 64;
     const decodeWidth = () => {
       const panel = window.innerWidth < 640 ? root.clientWidth : root.clientWidth / 2;
       const w = Math.ceil((panel * Math.min(window.devicePixelRatio || 1, 2)) / 2) * 2;
@@ -122,7 +130,7 @@ export default function BeforeAfter({ c }: { c: CaseCopy }) {
       if (i < 0 || i >= N || cache.has(i) || inflight.has(i)) return;
       const ac = new AbortController();
       inflight.set(i, ac);
-      fetch(frameSrc(i), { signal: ac.signal })
+      fetch(frameSrc(idx[i]), { signal: ac.signal })
         .then((r) => {
           if (!r.ok) throw new Error(String(r.status));
           return r.blob();
@@ -154,7 +162,7 @@ export default function BeforeAfter({ c }: { c: CaseCopy }) {
     };
     const draw = () => {
       raf = 0;
-      const { i, t } = frameAt(pos * E.end);
+      const { i, t } = frameAt(pts, pos * E.end);
       focus = i;
       // a seek leaves requests behind for frames nobody wants any more: stop them
       for (const [k, ac] of inflight) {
@@ -171,7 +179,7 @@ export default function BeforeAfter({ c }: { c: CaseCopy }) {
       // Blend only through the animation, where frames are 6px apart. Where the page just scrolls (opening,
       // letter) the frames are further apart and blending would double-expose the text, so those snap.
       const next = cache.get(i + 1);
-      if (a === i && next && t > 0.04 && E.positions[i + 1] - E.positions[i] <= BLEND_GAP) {
+      if (a === i && next && t > 0.04 && pts[i + 1] - pts[i] <= BLEND_GAP) {
         ctx.globalAlpha = t;
         ctx.drawImage(next, 0, 0, cv.width, cv.height);
         ctx.globalAlpha = 1;
