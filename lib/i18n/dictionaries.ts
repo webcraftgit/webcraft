@@ -216,8 +216,8 @@ export const en = {
   },
   pricing: {
     eyebrow: `Pricing`,
-    heading: `Clear prices, fixed before we start.`,
-    intro: `Real, published prices, so you know where you stand before the first call. Every project gets the same full process, and the exact quote is fixed before any work starts.`,
+    heading: `Pricing`,
+    intro: `After the discovery call you receive a quote and a list of the materials needed to start: vector logo, photos, copy. That way your site is built fast and looks the way it should.`,
     from: `from`,
     upToPre: `typically up to`,
     mostProjects: `Most projects`,
@@ -694,8 +694,8 @@ export const pl: Dictionary = {
   },
   pricing: {
     eyebrow: `Cennik`,
-    heading: `Jasne ceny, ustalone przed startem prac.`,
-    intro: `Realne, publikowane ceny, żebyś wiedział, na czym stoisz, zanim zadzwonisz. Każdy projekt przechodzi przez ten sam pełny proces, a dokładna wycena jest ustalana przed rozpoczęciem prac.`,
+    heading: `Cennik`,
+    intro: `Po rozmowie wstępnej dostajesz wycenę i listę materiałów potrzebnych do startu: logo w wektorze, zdjęcia, teksty. Dzięki temu Twoja strona powstaje szybko i wygląda tak, jak powinna.`,
     from: `od`,
     upToPre: `zwykle do`,
     mostProjects: `Najczęściej wybierane`,
