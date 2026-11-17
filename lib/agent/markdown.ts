@@ -4,6 +4,7 @@ import { CARE_PLAN, FOUNDING_SLOTS, TIERS, fmt } from "@/lib/pricing";
 import { CONTACT_EMAIL, CONTACT_PHONE, ORG, SITE_URL } from "@/lib/site";
 import { LANDINGS, LANDING_PATHS, type LandingCopy } from "@/lib/seo/landings";
 import { ABOUT, ABOUT_PATH } from "@/lib/seo/about";
+import { PORTFOLIO, PORTFOLIO_PATH } from "@/lib/seo/portfolio";
 import { PRIVACY_COPY } from "@/lib/privacy";
 
 /**
@@ -141,6 +142,7 @@ ${faq}
 - [Strona główna](${SITE_URL}/): usługi, cennik, proces, FAQ, kontakt
 ${LANDING_PATHS.map((p) => `- [${LANDINGS[p].pl.label}](${SITE_URL}${p}): ${LANDINGS[p].pl.description}`).join("\n")}
 - [${ABOUT.pl.label}](${SITE_URL}${ABOUT_PATH}): ${ABOUT.pl.description}
+- [Portfolio](${SITE_URL}${PORTFOLIO_PATH}): ${PORTFOLIO.pl.description}
 - [Polityka prywatności](${SITE_URL}/privacy): co zbieramy i jak to wyłączyć
 `;
 }
@@ -170,6 +172,29 @@ ${faq}
 ## ${copy.ctaHeading}
 
 ${copy.ctaBody} [${copy.cta}](${SITE_URL}/#contact) · ${CONTACT_EMAIL}
+
+---
+
+Więcej: [llms.txt](${SITE_URL}/llms.txt) · [Mapa strony](${SITE_URL}/sitemap.xml)
+`;
+}
+
+/** /portfolio: the one case so far, as text (the page itself is a scroll-driven comparison). */
+export function portfolioMarkdown(): string {
+  const p = PORTFOLIO.pl;
+  return `# ${p.h1}
+
+## ${p.case.title}
+
+${p.case.summary}
+
+Etapy nowej strony: ${p.case.stages.join(", ")}.
+
+${p.case.before}: [${p.case.beforeCaption}](https://ewamyslowska.pl/)
+
+## ${p.nextHeading}
+
+${p.nextBody} [${p.cta}](${SITE_URL}/#contact) · ${CONTACT_EMAIL}
 
 ---
 
@@ -223,6 +248,7 @@ export function pageMarkdown(path: string): string | null {
   const p = normalizePath(path);
   if (p === "/") return llmsTxt();
   if (p === ABOUT_PATH) return landingMarkdown(ABOUT.pl);
+  if (p === PORTFOLIO_PATH) return portfolioMarkdown();
   if (p === "/privacy") return privacyMarkdown();
   const landing = (LANDING_PATHS as readonly string[]).includes(p)
     ? LANDINGS[p as (typeof LANDING_PATHS)[number]].pl

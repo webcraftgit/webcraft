@@ -18,6 +18,7 @@ const LINKS = [
   { key: "services", href: "/#services" },
   { key: "craft", href: "/#craft" },
   { key: "showcase", href: "/#showcase" },
+  { key: "portfolio", href: "/portfolio" },
   { key: "process", href: "/#process" },
   { key: "pricing", href: "/#pricing" },
   { key: "faq", href: "/#faq" },

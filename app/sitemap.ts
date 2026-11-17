@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { SITE_URL } from "@/lib/site";
 import { LANDING_PATHS } from "@/lib/seo/landings";
 import { ABOUT_PATH } from "@/lib/seo/about";
+import { PORTFOLIO_PATH } from "@/lib/seo/portfolio";
 
 /**
  * sitemap.xml (CP4_17-seo).
@@ -31,6 +32,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "monthly" as const,
       priority: 0.8,
     })),
+    { url: `${SITE_URL}${PORTFOLIO_PATH}`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
     { url: `${SITE_URL}${ABOUT_PATH}`, lastModified: now, changeFrequency: "yearly", priority: 0.5 },
     { url: `${SITE_URL}/privacy`, lastModified: now, changeFrequency: "yearly", priority: 0.3 },
   ];

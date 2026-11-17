@@ -2,9 +2,11 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { motion, useScroll, useMotionValueEvent, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { lockScroll } from "@/lib/scroll-to";
+import { CONTACT_PHONE, CONTACT_PHONE_E164 } from "@/lib/site";
 import MagneticButton from "@/components/ui/MagneticButton";
 import { useT } from "@/components/i18n/LanguageProvider";
 import LangToggle from "@/components/i18n/LangToggle";
@@ -13,20 +15,51 @@ const LINKS = [
   { key: "services", href: "/#services" },
   { key: "craft", href: "/#craft" },
   { key: "showcase", href: "/#showcase" },
+  { key: "portfolio", href: "/portfolio" },
   { key: "process", href: "/#process" },
   { key: "pricing", href: "/#pricing" },
   { key: "faq", href: "/#faq" },
 ] as const;
 
-const SECTION_IDS = LINKS.map((l) => l.href.replace("/#", ""));
+const SECTION_IDS = LINKS.filter((l) => l.href.startsWith("/#")).map((l) => l.href.replace("/#", ""));
 
 /* The full link row needs ~1000px: logo + six links + language toggle + CTA.
  * It used to switch on at `md` (768px), where it overflowed — on an iPad the
  * CTA wrapped to two lines and ran off the right edge and the wordmark touched
  * the first link. Below `lg` the menu button is used instead. */
 
+/** Tap-to-call. Icon only on phones and at lg; the number is written out from
+ *  xl up, where the link row has room for it. */
+function PhoneLink({
+  label,
+  showNumber = false,
+  className,
+}: {
+  label: string;
+  showNumber?: boolean;
+  className?: string;
+}) {
+  return (
+    <a
+      href={`tel:${CONTACT_PHONE_E164}`}
+      aria-label={`${label}: ${CONTACT_PHONE}`}
+      className={cn(
+        "inline-flex h-11 items-center justify-center gap-2 rounded-full text-ui font-medium text-ink-soft transition-colors hover:text-ink",
+        showNumber ? "min-w-11 px-2 xl:px-3" : "w-11",
+        className
+      )}
+    >
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.8 19.8 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.9.34 1.77.66 2.6a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.48-1.23a2 2 0 0 1 2.11-.45c.83.32 1.7.54 2.6.66A2 2 0 0 1 22 16.92z" />
+      </svg>
+      {showNumber && <span className="hidden whitespace-nowrap tabular-nums xl:inline">{CONTACT_PHONE}</span>}
+    </a>
+  );
+}
+
 export default function Navbar() {
   const t = useT();
+  const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState<string | null>(null);
@@ -151,17 +184,20 @@ export default function Navbar() {
           </span>
         </Link>
 
-        <div className="hidden items-center gap-7 lg:flex">
+        {/* gap stays 20px at every width: with Portfolio in the row, 28px pushed the CTA out of the 1200px bar */}
+        <div className="hidden items-center gap-5 lg:flex">
           {LINKS.map((l) => {
-            const isActive = active === l.href.replace("/#", "");
+            const isActive = l.href.startsWith("/#") ? active === l.href.replace("/#", "") : pathname === l.href;
             return (
               <a
                 key={l.href}
                 href={l.href}
-                aria-current={isActive ? "location" : undefined}
+                aria-current={isActive ? (l.href.startsWith("/#") ? "location" : "page") : undefined}
                 className={cn(
                   "relative py-2 text-ui font-medium transition-colors hover:text-ink",
-                  isActive ? "text-ink" : "text-ink-soft"
+                  isActive ? "text-ink" : "text-ink-soft",
+                  /* the row has no room for a seventh link below ~1400px; the menu below lg and the footer carry it */
+                  l.key === "portfolio" && "hidden min-[1400px]:inline-block"
                 )}
               >
                 {t.nav[l.key]}
@@ -175,17 +211,23 @@ export default function Navbar() {
               </a>
             );
           })}
+          <PhoneLink label={t.nav.call} showNumber className="-mr-3" />
           <LangToggle />
           <MagneticButton href="/#contact" className="whitespace-nowrap px-6 py-2.5 text-ui">
             {t.nav.cta}
           </MagneticButton>
         </div>
 
+        {/* Mobile / tablet: the phone stays one tap away, next to the menu */}
+        <div className="ml-auto flex items-center lg:hidden">
+          <PhoneLink label={t.nav.call} />
+        </div>
+
         {/* Mobile / tablet toggle */}
         <button
           ref={toggle}
           type="button"
-          className="-mr-2 flex h-11 w-11 items-center justify-center rounded-full lg:hidden"
+          className="-ml-4 -mr-2 flex h-11 w-11 items-center justify-center rounded-full lg:hidden"
           onClick={() => setOpen((o) => !o)}
           aria-label={open ? t.nav.closeMenu : t.nav.openMenu}
           aria-expanded={open}
@@ -221,13 +263,13 @@ export default function Navbar() {
           >
             <nav aria-label={t.nav.menu} className="flex flex-col">
               {LINKS.map((l) => {
-                const isActive = active === l.href.replace("/#", "");
+                const isActive = l.href.startsWith("/#") ? active === l.href.replace("/#", "") : pathname === l.href;
                 return (
                   <a
                     key={l.href}
                     href={l.href}
                     onClick={() => close()}
-                    aria-current={isActive ? "location" : undefined}
+                    aria-current={isActive ? (l.href.startsWith("/#") ? "location" : "page") : undefined}
                     className={cn(
                       "flex min-h-[48px] items-center rounded-input px-3 text-body font-medium transition-colors hover:bg-brand-400/10",
                       isActive ? "text-brand-300" : "text-ink"
