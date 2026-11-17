@@ -66,13 +66,13 @@ export default function ConsentBanner() {
                   <button
                     type="button"
                     onClick={() => setManaging(true)}
-                    className="text-ink-soft underline decoration-brand-500/40 underline-offset-4 hover:text-ink"
+                    className="inline-flex min-h-[44px] items-center text-ink-soft underline decoration-brand-500/40 underline-offset-4 hover:text-ink"
                   >
                     {t.consent.manage}
                   </button>
                   <Link
                     href="/privacy"
-                    className="text-brand-300 underline decoration-brand-500/40 underline-offset-4 hover:text-brand-400"
+                    className="inline-flex min-h-[44px] items-center text-brand-300 underline decoration-brand-500/40 underline-offset-4 hover:text-brand-400"
                   >
                     {t.consent.policy}
                   </Link>
