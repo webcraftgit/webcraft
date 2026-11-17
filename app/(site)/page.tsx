@@ -18,14 +18,14 @@ import StickyCta from "@/components/ui/StickyCta";
  *
  * The description is not the hero subtitle verbatim: a SERP snippet has ~155
  * characters and has to answer "what is this and what does it cost" for
- * someone who has not seen the page. The founding-rate line is the only
+ * someone who has not seen the page. The starting price is the only
  * concrete, checkable fact the studio can offer a stranger, so it earns its
  * space here.
  */
 export const metadata: Metadata = pageMetadata({
   title: "Tworzenie stron internetowych Warszawa | Weturn Studio",
   description:
-    "Studio cyfrowe: strony szyte na miarę, opieka nad stroną, krótkie wideo i materiały marki. Stawki założycielskie od 3 500 zł, wycena przed startem prac.",
+    "Studio cyfrowe: strony szyte na miarę, opieka nad stroną, krótkie wideo i materiały marki. Ceny od 3 500 zł, wycena przed startem prac.",
   path: "/",
 });
 

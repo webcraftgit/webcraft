@@ -1,9 +1,9 @@
 /**
  * Pricing — numeric single source of truth (CP4.x → CP5-i18n).
  *
- * Positioning (with client): NOT budget-tier. Founding rates — real published
- * prices lower than the target rate, framed as "first client slots while the
- * portfolio fills", never a fake crossed-out discount.
+ * Positioning (with client): NOT budget-tier. Real published prices, our
+ * standard rates (the earlier "founding rates" framing was dropped; the numbers
+ * stayed), never a fake crossed-out discount.
  *
  * i18n split: this file now holds ONLY numbers, ids and logic. Every piece of
  * user-facing text (tier names/taglines/includes/weeks, readiness + budget
@@ -13,11 +13,10 @@
  *
  * Rate history: 4 900/11 900/24 900 → 3 900/9 900/19 900 → 3 500/9 900/19 900
  * → 3 500/5 500/9 900/19 900 (Entry added to close the gap between Launch and
- * Business; it is the fixed-scope offer the ads lead with).
+ * Business; it is the fixed-scope offer the ads lead with). Launch then
+ * became a flat 3 500 too (no "from", no "typically up to").
  */
 import type { Locale } from "@/lib/i18n/config";
-
-export const FOUNDING_SLOTS = 10;
 
 /**
  * CP5.4: monthly care plan — hosting + maintenance + small changes.
@@ -43,16 +42,17 @@ export type TierId = "launch" | "entry" | "business" | "signature";
 
 export type Tier = {
   id: TierId;
-  /** founding rate — real price, shown as "from" when there's an upTo */
+  /** standard price — real; shown as "from" only when there's an upTo,
+   *  otherwise it is the flat price */
   from: number;
   /** honest typical top of the range at this scope. Omitted on a fixed-scope
-   *  tier (Entry): the scope does not drift, so `from` is the flat price. */
+   *  tier (Launch, Entry): the scope does not drift, so `from` is the flat price. */
   upTo?: number;
   highlight?: boolean;
 };
 
 export const TIERS: Tier[] = [
-  { id: "launch", from: 3500, upTo: 6500 },
+  { id: "launch", from: 3500 },
   { id: "entry", from: 5500, highlight: true },
   { id: "business", from: 9900, upTo: 16000 },
   { id: "signature", from: 19900, upTo: 36000 },

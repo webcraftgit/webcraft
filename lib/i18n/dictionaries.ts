@@ -216,14 +216,13 @@ export const en = {
   },
   pricing: {
     eyebrow: `Pricing`,
-    heading: `Founding rates, while our portfolio fills.`,
-    introPre: `We're a new studio. You can see exactly how we build on this very site, but you can't scroll through twenty case studies yet. So the first `,
-    introPost: ` client slots get our full process at rates we'll never offer again. As the portfolio grows, the prices do too.`,
+    heading: `Clear prices, fixed before we start.`,
+    intro: `Real, published prices, so you know where you stand before the first call. Every project gets the same full process, and the exact quote is fixed before any work starts.`,
     from: `from`,
     upToPre: `typically up to`,
     mostProjects: `Most projects`,
     ctaPrefix: `Start with`,
-    footnote: `All prices are net (excl. VAT). Every price above is a real starting point, not bait. The range shows where projects of that scope typically land.`,
+    footnote: `All prices are net (excl. VAT). Launch and Essentials are flat prices. For Business and Signature the price is a real starting point, not bait, and the range shows where projects of that scope typically land.`,
     /** Key terms, pulled out of the footnote so they are not missed. */
     terms: [
       {
@@ -233,10 +232,6 @@ export const en = {
       {
         title: `Pay in two halves`,
         body: `50% to start, 50% at launch. Never the full amount up front.`,
-      },
-      {
-        title: `The founding-rate deal`,
-        body: `Founding-rate projects agree to let us publish the finished work as a case study.`,
       },
     ],
     tiers: {
@@ -317,7 +312,7 @@ export const en = {
       },
       {
         q: `What does a project cost?`,
-        a: `Published starting prices are right above in the pricing section, currently at founding rates while our portfolio fills. The exact number is fixed after a short discovery call, before any work starts, and the quote is itemized so you can trim scope instead of quality. Work outside the package, like an extra page, is billed at 200 zł/h and always quoted before we start, so there are no surprises on the invoice.`,
+        a: `Published starting prices are right above in the pricing section. The exact number is fixed after a short discovery call, before any work starts, and the quote is itemized so you can trim scope instead of quality. Work outside the package, like an extra page, is billed at 200 zł/h and always quoted before we start, so there are no surprises on the invoice.`,
       },
       {
         q: `Why does this cost more than the 3 000 PLN websites I've seen?`,
@@ -699,14 +694,13 @@ export const pl: Dictionary = {
   },
   pricing: {
     eyebrow: `Cennik`,
-    heading: `Stawki założycielskie, póki zapełnia się nasze portfolio.`,
-    introPre: `Jesteśmy nowym studiem. To, jak budujemy, widzisz dokładnie na tej stronie, ale nie przewiniesz jeszcze dwudziestu case studies. Dlatego pierwszych `,
-    introPost: ` klientów dostaje nasz pełny proces po stawkach, których nigdy więcej nie zaproponujemy. Wraz z portfolio rosną też ceny.`,
+    heading: `Jasne ceny, ustalone przed startem prac.`,
+    intro: `Realne, publikowane ceny, żebyś wiedział, na czym stoisz, zanim zadzwonisz. Każdy projekt przechodzi przez ten sam pełny proces, a dokładna wycena jest ustalana przed rozpoczęciem prac.`,
     from: `od`,
     upToPre: `zwykle do`,
     mostProjects: `Najczęściej wybierane`,
     ctaPrefix: `Zacznij od`,
-    footnote: `Wszystkie ceny są cenami netto. Każda cena powyżej to realny punkt startowy, nie przynęta. Przedział pokazuje, gdzie zwykle zamykają się projekty o takim zakresie.`,
+    footnote: `Wszystkie ceny są cenami netto. Start i Podstawa mają stałą cenę. W pakietach Biznes i Premium cena to realny punkt startowy, nie przynęta, a przedział pokazuje, gdzie zwykle zamykają się projekty o takim zakresie.`,
     terms: [
       {
         title: `Stała wycena przed startem prac`,
@@ -715,10 +709,6 @@ export const pl: Dictionary = {
       {
         title: `Płatność w dwóch częściach`,
         body: `50% na start, 50% przy uruchomieniu. Nigdy całość z góry.`,
-      },
-      {
-        title: `Warunek stawki założycielskiej`,
-        body: `Projekty w stawce założycielskiej zgadzają się na publikację gotowej pracy jako case study.`,
       },
     ],
     tiers: {
@@ -799,7 +789,7 @@ export const pl: Dictionary = {
       },
       {
         q: `Ile kosztuje projekt?`,
-        a: `Ceny startowe znajdziesz powyżej, w sekcji cennika. Obecnie obowiązują stawki założycielskie, póki nasze portfolio się zapełnia. Dokładną kwotę ustalamy po krótkiej rozmowie wstępnej, przed rozpoczęciem prac, a wycena jest rozpisana pozycjami, żebyś mógł ciąć zakres, a nie jakość. Prace spoza pakietu, np. dodatkową podstronę, rozliczamy po 200 zł/h i zawsze wyceniamy przed rozpoczęciem, więc faktura Cię nie zaskoczy.`,
+        a: `Ceny startowe znajdziesz powyżej, w sekcji cennika. Dokładną kwotę ustalamy po krótkiej rozmowie wstępnej, przed rozpoczęciem prac, a wycena jest rozpisana pozycjami, żebyś mógł ciąć zakres, a nie jakość. Prace spoza pakietu, np. dodatkową podstronę, rozliczamy po 200 zł/h i zawsze wyceniamy przed rozpoczęciem, więc faktura Cię nie zaskoczy.`,
       },
       {
         q: `Dlaczego to kosztuje więcej niż strony za 3 000 zł, które widziałem?`,

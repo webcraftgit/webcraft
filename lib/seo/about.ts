@@ -11,7 +11,7 @@
  * Shape is LandingCopy so it renders through components/landing/LandingPage
  * and the Markdown mirror without a second template.
  */
-import { CARE_PLAN, FOUNDING_SLOTS, TIERS, fmt } from "@/lib/pricing";
+import { CARE_PLAN, TIERS, fmt } from "@/lib/pricing";
 import { CONTACT_EMAIL, CONTACT_PHONE, ORG } from "@/lib/site";
 import type { Locale } from "@/lib/i18n/config";
 import type { LandingCopy } from "@/lib/seo/landings";
@@ -60,7 +60,7 @@ export const ABOUT: Record<Locale, LandingCopy> = {
       {
         h: "Czego nie twierdzimy",
         p: [
-          `Studio jest nowe. Strony w sekcji „Demo” to koncepcyjne projekty fikcyjnych marek, zbudowane jako pokaz możliwości, a nie realizacje dla klientów. Nie publikujemy opinii ani ocen, bo nie wymyślamy referencji. Dlatego pierwsze ${FOUNDING_SLOTS} projektów realizujemy w stawkach założycielskich.`,
+          `Studio jest nowe. Strony w sekcji „Demo” to koncepcyjne projekty fikcyjnych marek, zbudowane jako pokaz możliwości, a nie realizacje dla klientów. Nie publikujemy opinii ani ocen, bo nie wymyślamy referencji.`,
         ],
       },
     ],
@@ -117,7 +117,7 @@ export const ABOUT: Record<Locale, LandingCopy> = {
       {
         h: "What we don't claim",
         p: [
-          `The studio is new. The sites in the “Showcase” section are concept builds for fictional brands, made to show what we can do, not client work. We publish no reviews or ratings, because we don't invent testimonials. That is why our first ${FOUNDING_SLOTS} projects are priced at founding rates.`,
+          `The studio is new. The sites in the “Showcase” section are concept builds for fictional brands, made to show what we can do, not client work. We publish no reviews or ratings, because we don't invent testimonials.`,
         ],
       },
     ],

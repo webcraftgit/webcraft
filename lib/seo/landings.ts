@@ -17,7 +17,7 @@
  * server-rendered HTML, same rule as lib/seo/schema.ts). `en` is what the
  * language toggle swaps in client-side.
  */
-import { CARE_PLAN, FOUNDING_SLOTS, TIERS, fmt, type Tier, type TierId } from "@/lib/pricing";
+import { CARE_PLAN, TIERS, fmt, type Tier, type TierId } from "@/lib/pricing";
 import type { Locale } from "@/lib/i18n/config";
 
 export type LandingSection = { h: string; p?: string[]; list?: string[] };
@@ -47,11 +47,11 @@ export const LANDING_PATHS = [
 export type LandingPath = (typeof LANDING_PATHS)[number];
 
 const tier = (id: TierId) => TIERS.find((t) => t.id === id)!;
-/** the range tiers always carry an upper bound; only Entry is fixed-scope */
-const ranged = (id: Exclude<TierId, "entry">) => tier(id) as Tier & { upTo: number };
+/** the range tiers always carry an upper bound; Launch and Entry are fixed-price */
+const ranged = (id: Exclude<TierId, "launch" | "entry">) => tier(id) as Tier & { upTo: number };
 const p = (n: number) => fmt(n, "pl", "zł");
 const e = (n: number) => fmt(n, "en", "PLN");
-const [L, N, B, S] = [ranged("launch"), tier("entry"), ranged("business"), ranged("signature")];
+const [L, N, B, S] = [tier("launch"), tier("entry"), ranged("business"), ranged("signature")];
 
 export const LANDINGS: Record<LandingPath, Record<Locale, LandingCopy>> = {
   "/strony-internetowe": {
@@ -78,11 +78,11 @@ export const LANDINGS: Record<LandingPath, Record<Locale, LandingCopy>> = {
         {
           h: "Cztery pakiety, jasne ceny",
           p: [
-            `Start: jednostronicowa strona, która dobrze sprzedaje jedną rzecz. Od ${p(L.from)}, zwykle do ${p(L.upTo)}, gotowa w 1 tydzień.`,
+            `Start: jednostronicowa strona, która dobrze sprzedaje jedną rzecz. Stała cena: ${p(L.from)}, gotowa w 1 tydzień.`,
             `Podstawa: mała strona do 4 podstron (Start, Usługi, O nas, Kontakt) o stałym zakresie i stałej cenie: ${p(N.from)}, gotowa w ok. tydzień.`,
             `Biznes: rozbudowana strona do 7 podstron, dwie wersje językowe w cenie i panel do samodzielnej edycji treści. Od ${p(B.from)}, zwykle do ${p(B.upTo)}, gotowa w 2 tygodnie.`,
             `Premium: wszystko z pakietu Biznes plus autorskie sceny 3D i projekt interakcji szyty na miarę. Od ${p(S.from)}, zwykle do ${p(S.upTo)}, gotowa w 2 tygodnie.`,
-            `Ceny netto, w stawkach założycielskich dla pierwszych ${FOUNDING_SLOTS} projektów. Dokładną kwotę ustalamy po krótkiej rozmowie, przed rozpoczęciem prac, a płatność dzielimy na 50% na start i 50% przy uruchomieniu.`,
+            `Ceny netto. Dokładną kwotę ustalamy po krótkiej rozmowie, przed rozpoczęciem prac, a płatność dzielimy na 50% na start i 50% przy uruchomieniu.`,
           ],
         },
         {
@@ -151,11 +151,11 @@ export const LANDINGS: Record<LandingPath, Record<Locale, LandingCopy>> = {
         {
           h: "Four packages, clear prices",
           p: [
-            `Launch: a single page that sells one thing well. From ${e(L.from)}, typically up to ${e(L.upTo)}, live in 1 week.`,
+            `Launch: a single page that sells one thing well. Fixed price: ${e(L.from)}, live in 1 week.`,
             `Essentials: a small site of up to 4 pages (Home, Services, About, Contact) with a fixed scope and a fixed price: ${e(N.from)}, live in about a week.`,
             `Business: a multi-page site (up to 7 pages), two languages included and a panel to edit content yourself. From ${e(B.from)}, typically up to ${e(B.upTo)}, live in 2 weeks.`,
             `Signature: everything in Business plus custom 3D scenes and bespoke interaction design. From ${e(S.from)}, typically up to ${e(S.upTo)}, live in 2 weeks.`,
-            `Net prices (excl. VAT), at founding rates for our first ${FOUNDING_SLOTS} projects. The exact number is fixed after a short call, before any work starts, and payment splits 50% to start and 50% at launch.`,
+            `Net prices (excl. VAT). The exact number is fixed after a short call, before any work starts, and payment splits 50% to start and 50% at launch.`,
           ],
         },
         {
@@ -313,7 +313,7 @@ export const LANDINGS: Record<LandingPath, Record<Locale, LandingCopy>> = {
       label: "Ile kosztuje strona internetowa",
       eyebrow: "Poradnik · Cennik stron www",
       h1: "Ile kosztuje strona internetowa?",
-      intro: `Krótka odpowiedź: strona firmowa zbudowana indywidualnie kosztuje u nas od ${p(L.from)} za jedną stronę do ok. ${p(S.upTo)} za rozbudowaną stronę z grafiką 3D. Poniżej wyjaśniamy, od czego zależy cena i na co uważać przy porównywaniu ofert.`,
+      intro: `Krótka odpowiedź: strona firmowa zbudowana indywidualnie kosztuje u nas od ${p(L.from)} (jednostronicowy pakiet Start w stałej cenie) do ok. ${p(S.upTo)} za rozbudowaną stronę z grafiką 3D. Poniżej wyjaśniamy, od czego zależy cena i na co uważać przy porównywaniu ofert.`,
       sections: [
         {
           h: "Od czego zależy cena strony",
@@ -334,14 +334,14 @@ export const LANDINGS: Record<LandingPath, Record<Locale, LandingCopy>> = {
         {
           h: "Nasze ceny",
           list: [
-            `Start (strona jednostronicowa): od ${p(L.from)}, zwykle do ${p(L.upTo)}, 1 tydzień`,
+            `Start (strona jednostronicowa, stały zakres): ${p(L.from)}, 1 tydzień`,
             `Podstawa (do 4 podstron, stały zakres): ${p(N.from)}, ok. 1 tydzień`,
             `Biznes (do 7 podstron, 2 języki, panel edycji): od ${p(B.from)}, zwykle do ${p(B.upTo)}, 2 tygodnie`,
             `Premium (wszystko z Biznes + sceny 3D): od ${p(S.from)}, zwykle do ${p(S.upTo)}, 2 tygodnie`,
             `Opieka nad stroną po starcie: ${p(CARE_PLAN.monthly)}/mies., opcjonalnie`,
           ],
           p: [
-            `Ceny netto, w stawkach założycielskich dla pierwszych ${FOUNDING_SLOTS} projektów. Dokładna, stała wycena powstaje po krótkiej rozmowie, przed rozpoczęciem prac.`,
+            `Ceny netto. Dokładna, stała wycena powstaje po krótkiej rozmowie, przed rozpoczęciem prac.`,
           ],
         },
         {
@@ -359,7 +359,7 @@ export const LANDINGS: Record<LandingPath, Record<Locale, LandingCopy>> = {
       faq: [
         {
           q: "Ile kosztuje prosta strona internetowa dla firmy?",
-          a: `U nas jednostronicowa strona w pakiecie Start kosztuje od ${p(L.from)}, zwykle do ${p(L.upTo)}, razem z projektem, tekstami, formularzem kontaktowym i analityką. Działa w ciągu tygodnia.`,
+          a: `U nas jednostronicowa strona w pakiecie Start kosztuje ${p(L.from)} (stała cena), razem z projektem, tekstami, formularzem kontaktowym i analityką. Działa w ciągu tygodnia.`,
         },
         {
           q: "Czy logo jest wliczone w cenę strony?",
@@ -381,7 +381,7 @@ export const LANDINGS: Record<LandingPath, Record<Locale, LandingCopy>> = {
       label: "How much does a website cost",
       eyebrow: "Guide · Website pricing",
       h1: "How much does a website cost?",
-      intro: `Short answer: a custom-built business website costs from ${e(L.from)} for a single page to about ${e(S.upTo)} for a full site with 3D graphics. Below is what drives the price and what to watch for when comparing quotes.`,
+      intro: `Short answer: a custom-built business website costs from ${e(L.from)} (the single-page Launch package, at a fixed price) to about ${e(S.upTo)} for a full site with 3D graphics. Below is what drives the price and what to watch for when comparing quotes.`,
       sections: [
         {
           h: "What drives the price",
@@ -402,13 +402,13 @@ export const LANDINGS: Record<LandingPath, Record<Locale, LandingCopy>> = {
         {
           h: "Our prices",
           list: [
-            `Launch (single page): from ${e(L.from)}, typically up to ${e(L.upTo)}, 1 week`,
+            `Launch (single page, fixed scope): ${e(L.from)}, 1 week`,
             `Business (up to 7 pages, 2 languages, editing panel): from ${e(B.from)}, typically up to ${e(B.upTo)}, 2 weeks`,
             `Signature (everything in Business + 3D scenes): from ${e(S.from)}, typically up to ${e(S.upTo)}, 2 weeks`,
             `Care plan after launch: ${e(CARE_PLAN.monthly)}/month, optional`,
           ],
           p: [
-            `Net prices (excl. VAT), at founding rates for our first ${FOUNDING_SLOTS} projects. The exact fixed quote comes after a short call, before any work starts.`,
+            `Net prices (excl. VAT). The exact fixed quote comes after a short call, before any work starts.`,
           ],
         },
         {
@@ -426,7 +426,7 @@ export const LANDINGS: Record<LandingPath, Record<Locale, LandingCopy>> = {
       faq: [
         {
           q: "How much does a simple business website cost?",
-          a: `Our single-page Launch site costs from ${e(L.from)}, typically up to ${e(L.upTo)}, including design, copy, a contact form and analytics. It goes live within a week.`,
+          a: `Our single-page Launch site costs a fixed ${e(L.from)}, including design, copy, a contact form and analytics. It goes live within a week.`,
         },
         {
           q: "Is a logo included in the website price?",

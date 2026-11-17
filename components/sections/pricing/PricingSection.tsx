@@ -2,17 +2,15 @@
 
 import { useReveal } from "@/hooks/useReveal";
 import { cn } from "@/lib/utils";
-import { TIERS, FOUNDING_SLOTS, CARE_PLAN, fmt } from "@/lib/pricing";
+import { TIERS, CARE_PLAN, fmt } from "@/lib/pricing";
 import { useT, useLocale } from "@/components/i18n/LanguageProvider";
 
 /**
- * Pricing (CP4.2) — four transparent tiers at FOUNDING RATES.
+ * Pricing (CP4.2) — four transparent tiers at our standard prices.
  *
  * Honesty rules baked in: real published prices (no fake strikethroughs —
- * we never charged more, so nothing is "crossed out"), the no-portfolio
- * situation stated plainly and turned into the offer, ranges instead of
- * false precision, and "prices rise as slots fill" as a true statement of
- * intent rather than a countdown-timer trick.
+ * we never charged more, so nothing is "crossed out"), ranges instead of
+ * false precision, and no countdown-timer tricks.
  *
  * Tier CTAs jump to #contact and prefill the form's project-type chip via
  * a CustomEvent — no global state needed.
@@ -40,9 +38,7 @@ export default function PricingSection() {
           {t.pricing.heading}
         </h2>
         <p data-reveal className="mt-5 max-w-[58ch] text-body text-ink-soft">
-          {t.pricing.introPre}
-          {FOUNDING_SLOTS}
-          {t.pricing.introPost}
+          {t.pricing.intro}
         </p>
 
         <div className="mt-12 grid gap-5 md:mt-16 md:grid-cols-2 md:gap-6 xl:grid-cols-4">
@@ -133,9 +129,9 @@ export default function PricingSection() {
         </div>
 
         {/* Key terms. These used to be the second half of a grey footnote
-            (fixed quote, case-study condition) and a chip repeated on every
+            (fixed quote) and a chip repeated on every
             card (50/50) — the three things a buyer most needs to know. */}
-        <ul data-reveal className="mt-8 grid gap-4 md:grid-cols-3 md:gap-6">
+        <ul data-reveal className="mt-8 grid gap-4 md:grid-cols-2 md:gap-6">
           {t.pricing.terms.map((term) => (
             <li key={term.title} className="flex gap-3">
               <svg

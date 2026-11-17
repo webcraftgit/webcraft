@@ -75,7 +75,7 @@ export const PORTFOLIO: Record<Locale, PortfolioCopy> = {
     workHeading: "Prace",
     nextHeading: "Twoja marka może być pierwsza.",
     nextBody:
-      "Stawki założycielskie obejmują pierwsze projekty, a wycenę dostajesz przed startem prac.",
+      "Wycenę dostajesz przed startem prac, a cena jest stała.",
     cta: "Zamów darmową wycenę",
     secondaryCta: "Zobacz cennik",
   },
@@ -112,7 +112,7 @@ export const PORTFOLIO: Record<Locale, PortfolioCopy> = {
     workHeading: "Work",
     nextHeading: "Your brand could be first.",
     nextBody:
-      "Founding rates cover the first projects, and you get a quote before any work starts.",
+      "You get a quote before any work starts, and the price stays fixed.",
     cta: "Get a free quote",
     secondaryCta: "See pricing",
   },

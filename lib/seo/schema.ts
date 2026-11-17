@@ -17,9 +17,8 @@
  *  - AggregateRating / Review. There are no clients yet. The no-fake-numbers
  *    rule that keeps testimonials off this site applies twice as hard in
  *    structured data, where invented ratings are a policy violation.
- *  - A limited-time Offer wrapper on the founding rates. "First 10 slots" is
- *    real but not tracked against a date, and priceValidUntil would be a
- *    guess presented as a fact.
+ *  - A limited-time Offer wrapper. The prices are standing prices with no
+ *    end date, and priceValidUntil would be a guess presented as a fact.
  *  - Exact `price` on the ranged tiers. They are genuinely "from" numbers, so
  *    they are emitted with minPrice/maxPrice. Entry has a fixed scope and one
  *    flat price, so it alone gets `price`.

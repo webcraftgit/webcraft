@@ -1,6 +1,6 @@
 import { DICTS } from "@/lib/i18n/dictionaries";
 import { DEFAULT_LOCALE } from "@/lib/i18n/config";
-import { CARE_PLAN, FOUNDING_SLOTS, TIERS, fmt } from "@/lib/pricing";
+import { CARE_PLAN, TIERS, fmt } from "@/lib/pricing";
 import { CONTACT_EMAIL, CONTACT_PHONE, ORG, SITE_URL } from "@/lib/site";
 import { LANDINGS, LANDING_PATHS, type LandingCopy } from "@/lib/seo/landings";
 import { ABOUT, ABOUT_PATH } from "@/lib/seo/about";
@@ -103,9 +103,8 @@ ${services}
 
 ## Cennik
 
-Stawki założycielskie — realne, publikowane ceny startowe dla pierwszych
-${FOUNDING_SLOTS} projektów, póki zapełnia się portfolio. Nie są to ceny
-przecenione ani promocja czasowa; wraz z portfolio rosną.
+Realne, publikowane ceny startowe. Nie są to ceny przecenione ani promocja
+czasowa.
 
 ${pricing}
 - ${t.pricing.care.title} — ${fmt(CARE_PLAN.monthly, L, c)}${t.pricing.care.perMonth}. ${t.pricing.care.tagline}
