@@ -62,7 +62,7 @@ const CUBES = [
 /** Same set and order as the footer, so the two never drift apart. */
 const SECTIONS = [
   { key: "services", href: "/#services" },
-  { key: "craft", href: "/#craft" },
+  { key: "portfolio", href: "/#portfolio" },
   { key: "showcase", href: "/#showcase" },
   { key: "process", href: "/#process" },
   { key: "pricing", href: "/#pricing" },

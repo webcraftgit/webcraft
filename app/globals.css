@@ -47,7 +47,7 @@ body {
  * the headings is now one of these five. Headings use .heading-* below.
  * In @layer components (not tailwind.config, not utilities) so a line-height
  * utility on the same element (leading-snug…) still overrides the default
- * here. The craft demos' mock UIs keep their own miniature sizes on purpose —
+ * here. The showcase demos' mock UIs keep their own miniature sizes on purpose —
  * they imitate a shrunken client site. */
 @layer components {
   .text-label { font-size: 12px; line-height: 1.5; }  /* badges, chips, tiny meta */
@@ -237,41 +237,6 @@ html.lenis, html.lenis body { height: auto; }
     inset 0 2px 1px rgba(226, 244, 255, 0.18),
     inset 0 -14px 30px rgba(2, 6, 16, 0.65),
     0 34px 70px -30px rgba(0, 0, 0, 0.9);
-}
-
-/* ---------- CP3: Craft band ---------- */
-/* blueprint grid — the workshop behind the showroom */
-.craft-grid {
-  background-image:
-    linear-gradient(rgba(56, 189, 248, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(56, 189, 248, 0.05) 1px, transparent 1px);
-  background-size: 56px 56px;
-  -webkit-mask-image: radial-gradient(120% 90% at 50% 40%, black 30%, transparent 78%);
-  mask-image: radial-gradient(120% 90% at 50% 40%, black 30%, transparent 78%);
-}
-
-/* CP5.3: Craft custom cursor — pure CSS, replaces the JS CursorFollower.
-   A native `cursor: url()` swap: zero JS, zero fixed/z-index layers, and
-   touch devices simply ignore the property, so mobile can't break.
-   Dark halo under the cyan ring keeps it visible on the light demo UIs.
-   Gated to real hover+fine pointers; hybrid/touch fall through to defaults. */
-@media (hover: hover) and (pointer: fine) {
-  .craft-cursor {
-    cursor:
-      url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 26 26"><circle cx="13" cy="13" r="7.5" fill="none" stroke="rgba(5,8,15,0.85)" stroke-width="4"/><circle cx="13" cy="13" r="7.5" fill="none" stroke="%2338BDF8" stroke-width="1.6"/><circle cx="13" cy="13" r="1.8" fill="%23A5F3FC"/></svg>')
-        13 13,
-      auto;
-  }
-  /* interactive demo targets — filled dot + ticks: "grab / press here" */
-  .craft-cursor [data-cursor],
-  .craft-cursor button,
-  .craft-cursor a,
-  .craft-cursor [role="slider"] {
-    cursor:
-      url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 30 30"><circle cx="15" cy="15" r="9" fill="none" stroke="rgba(5,8,15,0.85)" stroke-width="4"/><circle cx="15" cy="15" r="9" fill="none" stroke="%2338BDF8" stroke-width="1.8"/><circle cx="15" cy="15" r="3.2" fill="%23A5F3FC" stroke="rgba(5,8,15,0.7)" stroke-width="1"/><path d="M15 1.5v3.2M15 25.3v3.2M1.5 15h3.2M25.3 15h3.2" stroke="%2338BDF8" stroke-width="1.8" stroke-linecap="round"/></svg>')
-        15 15,
-      pointer;
-  }
 }
 
 /* loading skeleton shimmer (SpeedDemo) */

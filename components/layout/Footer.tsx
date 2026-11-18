@@ -16,9 +16,8 @@ import { ABOUT, ABOUT_PATH } from "@/lib/seo/about";
  */
 const LINKS = [
   { key: "services", href: "/#services" },
-  { key: "craft", href: "/#craft" },
+  { key: "portfolio", href: "/#portfolio" },
   { key: "showcase", href: "/#showcase" },
-  { key: "portfolio", href: "/portfolio" },
   { key: "process", href: "/#process" },
   { key: "pricing", href: "/#pricing" },
   { key: "faq", href: "/#faq" },

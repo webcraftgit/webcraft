@@ -20,7 +20,6 @@ import type { Locale } from "./config";
 export const en = {
   nav: {
     services: `Services`,
-    craft: `Craft`,
     showcase: `Showcase`,
     portfolio: `Portfolio`,
     process: `Process`,
@@ -108,33 +107,6 @@ export const en = {
         /** Mobile disc copy. The circle cannot hold the full body at a
          *  readable size — see ServiceCard. Same promise, fewer words. */
         bodyShort: `Print and display work that matches your site pixel-for-pixel.`,
-      },
-    },
-  },
-  craft: {
-    eyebrow: `Craft`,
-    heading: `Don't take our word for it. Try it.`,
-    intro: `Four live demos, built with the exact techniques we ship on client sites. Drag, tap, replay: everything below is running code, not a video of it.`,
-    cards: {
-      resize: {
-        title: `Fluid, not shrunken`,
-        caption: `Grab the handle. The layout doesn't squeeze; it rethinks itself at every width.`,
-        proof: `One build, every screen`,
-      },
-      theme: {
-        title: `Any brand, one system`,
-        caption: `Tap a swatch. Every color and corner re-skins from a single set of tokens.`,
-        proof: `Your brand, pixel-for-pixel`,
-      },
-      speed: {
-        title: `Fast where it counts`,
-        caption: `Watch a page load in under a second. That's the window in which visitors decide whether to stay.`,
-        proof: `Speed that keeps visitors`,
-      },
-      motion: {
-        title: `Motion with intent`,
-        caption: `The same move, three temperaments. Easing is why some sites feel expensive.`,
-        proof: `Details visitors feel`,
       },
     },
   },
@@ -415,54 +387,6 @@ export const en = {
   sticky: {
     cta: `Start a project`,
   },
-  /* Live craft demos — every visible string inside the four demo widgets,
-   * incl. the fake client brands, the cursor-follower labels and aria text.
-   * TTFB/FCP/LCP stay untranslated: they're industry acronyms, not words. */
-  demos: {
-    resize: {
-      cursor: `Drag`,
-      aria: `Resize the demo viewport`,
-      brand: `Acme`,
-      bp: { desktop: `Desktop`, tablet: `Tablet`, mobile: `Mobile` },
-    },
-    theme: {
-      cursor: `Re-skin`,
-      aria: `Demo brand theme`,
-      themeAria: (name: string) => `${name} theme`,
-      brandSuffix: ` Co.`,
-      headline: `Open six days a week.`,
-      sub: `Same layout, different brand. Nothing was redesigned.`,
-      cta: `Book now`,
-      secondary: `Menu`,
-      names: { studio: `Studio`, bakery: `Bakery`, clinic: `Clinic`, gym: `Gym` },
-    },
-    speed: {
-      cursor: `Replay`,
-      headline: `Fresh coffee, faster site.`,
-      sub: `Content painted. Nothing left to wait for.`,
-      cta: `Order ahead`,
-      msLabel: ` ms to loaded`,
-      replay: `Replay load`,
-    },
-    motion: {
-      cursor: `Play`,
-      aria: `Easing`,
-      moves: {
-        linear: {
-          name: `Linear`,
-          note: `Constant speed. Reads mechanical, which is how default sites move.`,
-        },
-        expo: {
-          name: `Expo out`,
-          note: `Fast in, gentle landing: our scroll and reveal signature.`,
-        },
-        spring: {
-          name: `Spring`,
-          note: `Physics, not a curve. What buttons and cards run on here.`,
-        },
-      },
-    },
-  },
   notFound: {
     eyebrow: `Error 404`,
     heading: `This page took a wrong turn.`,
@@ -500,7 +424,6 @@ export type Dictionary = typeof en;
 export const pl: Dictionary = {
   nav: {
     services: `Usługi`,
-    craft: `Warsztat`,
     showcase: `Demo`,
     portfolio: `Portfolio`,
     process: `Proces`,
@@ -586,33 +509,6 @@ export const pl: Dictionary = {
         /** Mobile disc copy. The circle cannot hold the full body at a
          *  readable size — see ServiceCard. Same promise, fewer words. */
         bodyShort: `Materiały do druku i na ekran, spójne z Twoją stroną co do piksela.`,
-      },
-    },
-  },
-  craft: {
-    eyebrow: `Warsztat`,
-    heading: `Nie wierz nam na słowo. Sprawdź sam.`,
-    intro: `Cztery dema na żywo, zbudowane dokładnie tymi technikami, które wdrażamy u klientów. Przeciągaj, klikaj, odtwarzaj. Wszystko poniżej to działający kod, a nie jego nagranie.`,
-    cards: {
-      resize: {
-        title: `Płynne, nie ściśnięte`,
-        caption: `Złap uchwyt. Układ się nie ściska, tylko na każdej szerokości układa się od nowa.`,
-        proof: `Jedna wersja, każdy ekran`,
-      },
-      theme: {
-        title: `Każda marka, jeden system`,
-        caption: `Kliknij próbkę. Każdy kolor i każde zaokrąglenie pochodzą z jednego zestawu tokenów, więc zmieniasz je tylko raz.`,
-        proof: `Twoja marka, co do piksela`,
-      },
-      speed: {
-        title: `Szybkie tam, gdzie trzeba`,
-        caption: `Zobacz, jak strona ładuje się w mniej niż sekundę. To właśnie wtedy odwiedzający decydują, czy zostać.`,
-        proof: `Szybkość, która zatrzymuje`,
-      },
-      motion: {
-        title: `Ruch z zamysłem`,
-        caption: `Ten sam ruch, trzy temperamenty. To właśnie sposób wyhamowania ruchu sprawia, że niektóre strony wyglądają na drogie.`,
-        proof: `Detale, które czuć`,
       },
     },
   },
@@ -890,51 +786,6 @@ export const pl: Dictionary = {
   },
   sticky: {
     cta: `Rozpocznij projekt`,
-  },
-  demos: {
-    resize: {
-      cursor: `Przeciągnij`,
-      aria: `Zmień szerokość okna demo`,
-      brand: `Acme`,
-      bp: { desktop: `Komputer`, tablet: `Tablet`, mobile: `Telefon` },
-    },
-    theme: {
-      cursor: `Zmień markę`,
-      aria: `Motyw marki demo`,
-      themeAria: (name: string) => `Motyw ${name}`,
-      brandSuffix: ``,
-      headline: `Otwarte sześć dni w tygodniu.`,
-      sub: `Ten sam układ, inna marka. Nic nie zostało przeprojektowane.`,
-      cta: `Zarezerwuj`,
-      secondary: `Menu`,
-      names: { studio: `Studio`, bakery: `Piekarnia`, clinic: `Klinika`, gym: `Siłownia` },
-    },
-    speed: {
-      cursor: `Odtwórz`,
-      headline: `Świeża kawa, szybsza strona.`,
-      sub: `Treść wyświetlona. Nie ma już na co czekać.`,
-      cta: `Zamów z wyprzedzeniem`,
-      msLabel: ` ms do załadowania`,
-      replay: `Odtwórz ładowanie`,
-    },
-    motion: {
-      cursor: `Odtwórz`,
-      aria: `Krzywa ruchu`,
-      moves: {
-        linear: {
-          name: `Liniowy`,
-          note: `Stała prędkość. Wygląda mechanicznie, bo tak porusza się domyślna strona.`,
-        },
-        expo: {
-          name: `Wykładniczy`,
-          note: `Szybki start, łagodne lądowanie: nasz znak firmowy przy przewijaniu.`,
-        },
-        spring: {
-          name: `Sprężysty`,
-          note: `Fizyka, nie krzywa. Na tym działają tu przyciski i karty.`,
-        },
-      },
-    },
   },
   notFound: {
     eyebrow: `Błąd 404`,

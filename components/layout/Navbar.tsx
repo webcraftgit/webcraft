@@ -13,9 +13,8 @@ import LangToggle from "@/components/i18n/LangToggle";
 
 const LINKS = [
   { key: "services", href: "/#services" },
-  { key: "craft", href: "/#craft" },
+  { key: "portfolio", href: "/#portfolio" },
   { key: "showcase", href: "/#showcase" },
-  { key: "portfolio", href: "/portfolio" },
   { key: "process", href: "/#process" },
   { key: "pricing", href: "/#pricing" },
   { key: "faq", href: "/#faq" },
@@ -195,9 +194,7 @@ export default function Navbar() {
                 aria-current={isActive ? (l.href.startsWith("/#") ? "location" : "page") : undefined}
                 className={cn(
                   "relative py-2 text-ui font-medium transition-colors hover:text-ink",
-                  isActive ? "text-ink" : "text-ink-soft",
-                  /* the row has no room for a seventh link below ~1400px; the menu below lg and the footer carry it */
-                  l.key === "portfolio" && "hidden min-[1400px]:inline-block"
+                  isActive ? "text-ink" : "text-ink-soft"
                 )}
               >
                 {t.nav[l.key]}

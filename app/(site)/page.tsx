@@ -4,7 +4,7 @@ import { pageMetadata } from "@/lib/seo/metadata";
 import { homeGraph } from "@/lib/seo/schema";
 import Hero from "@/components/sections/Hero";
 import ServicesSection from "@/components/sections/services/ServicesSection";
-import CraftSection from "@/components/sections/craft/CraftSection";
+import PortfolioSection from "@/components/sections/PortfolioSection";
 import ShowcaseSection from "@/components/sections/ShowcaseSection";
 import ProcessSection from "@/components/sections/process/ProcessSection";
 import PricingSection from "@/components/sections/pricing/PricingSection";
@@ -38,7 +38,7 @@ export default function Home() {
 
       <ServicesSection />
 
-      <CraftSection />
+      <PortfolioSection />
 
       <ShowcaseSection />
 

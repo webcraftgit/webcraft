@@ -8,40 +8,40 @@ import { useConsent } from "@/components/analytics/ConsentProvider";
 /**
  * Sticky mobile CTA (CP4.2, conversion idea #6). Mobile-only pill fixed to
  * the bottom edge. Logic: show only AFTER the visitor has scrolled past the
- * Craft section — by then they've seen the proof, so the ask has earned its
+ * Portfolio section — by then they've seen the proof, so the ask has earned its
  * place — and hide again while the Contact section (the thing it links to)
  * is on screen. Two IntersectionObservers, no scroll listeners.
  */
 export default function StickyCta() {
   const t = useT();
-  const [pastCraft, setPastCraft] = useState(false);
+  const [pastPortfolio, setPastPortfolio] = useState(false);
   const [contactVisible, setContactVisible] = useState(false);
   // the consent banner owns the bottom edge until it is answered — both used
   // to sit at bottom-4 and stack on top of each other
   const { decided } = useConsent();
 
   useEffect(() => {
-    const craft = document.getElementById("craft");
+    const portfolio = document.getElementById("portfolio");
     const contact = document.getElementById("contact");
-    if (!craft || !contact) return;
+    if (!portfolio || !contact) return;
 
-    const craftIO = new IntersectionObserver(
-      ([e]) => setPastCraft(!e.isIntersecting && e.boundingClientRect.top < 0),
+    const portfolioIO = new IntersectionObserver(
+      ([e]) => setPastPortfolio(!e.isIntersecting && e.boundingClientRect.top < 0),
       { threshold: 0 }
     );
     const contactIO = new IntersectionObserver(
       ([e]) => setContactVisible(e.isIntersecting),
       { threshold: 0.15 }
     );
-    craftIO.observe(craft);
+    portfolioIO.observe(portfolio);
     contactIO.observe(contact);
     return () => {
-      craftIO.disconnect();
+      portfolioIO.disconnect();
       contactIO.disconnect();
     };
   }, []);
 
-  const show = pastCraft && !contactVisible && decided;
+  const show = pastPortfolio && !contactVisible && decided;
 
   return (
     <AnimatePresence>
