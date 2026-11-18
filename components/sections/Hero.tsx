@@ -5,7 +5,6 @@ import { motion } from "framer-motion";
 import { gsap, ScrollTrigger } from "@/lib/gsap";
 import { heroScroll } from "@/lib/scroll-state";
 import SceneCanvas from "@/components/three/SceneCanvas";
-import MagneticButton from "@/components/ui/MagneticButton";
 import HeroCursorLight from "@/components/ui/HeroCursorLight";
 import { useT, useLocale } from "@/components/i18n/LanguageProvider";
 import { TIERS, fmt } from "@/lib/pricing";
@@ -144,13 +143,14 @@ export default function Hero() {
         {/* The hero's primary action scrolls to the full quote form (#contact),
             which collects project type, scope and budget. A 3-field hero form
             gave too little to price from, so it was removed. */}
-        <div className="hero-reveal pointer-events-auto mt-9 flex w-full flex-col items-center gap-3 sm:w-auto sm:flex-row [animation-delay:160ms]">
-          <MagneticButton href="#contact" wrapperClassName="w-full max-w-[320px] sm:w-auto" className="w-full sm:w-auto">
+        {/* Same dark glowing green as the portfolio CTA below. */}
+        <div className="hero-reveal pointer-events-auto mt-9 [animation-delay:160ms]">
+          <a
+            href="#contact"
+            className="inline-flex min-h-[48px] items-center rounded-full bg-[#10b981] px-8 text-ui font-semibold text-bg shadow-[0_0_24px_4px_rgba(16,185,129,0.45),0_0_60px_10px_rgba(16,185,129,0.2)] transition-shadow hover:shadow-[0_0_32px_8px_rgba(16,185,129,0.6),0_0_80px_16px_rgba(16,185,129,0.28)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#10b981]"
+          >
             {t.hero.formSubmit}
-          </MagneticButton>
-          <MagneticButton href="#showcase" variant="ghost" wrapperClassName="w-full max-w-[320px] sm:w-auto" className="w-full sm:w-auto">
-            {t.hero.ctaGhost}
-          </MagneticButton>
+          </a>
         </div>
         <p className="hero-reveal mt-4 text-small text-ink-soft [animation-delay:200ms]">
           {t.contact.replyPromise}

@@ -41,7 +41,6 @@ export const en = {
     titleEnd: `.`,
     subtitle: `We design, build and maintain digital experiences. From full websites to short-form content and brand assets, everything we make is engineered to convert.`,
     ctaPrimary: `Start your project`,
-    ctaGhost: `See our demos`,
     formSubmit: `Get a quote`,
     /** Alternative hero copy for ad links: /?h=<id>. Only these ids are read
      *  from the URL, never free text. `from` is the lowest published price. */
@@ -445,7 +444,6 @@ export const pl: Dictionary = {
     titleEnd: `.`,
     subtitle: `Projektujemy, budujemy i utrzymujemy cyfrowe doświadczenia. Od kompletnych stron po treści wideo i materiały brandingowe: wszystko zaprojektowane tak, by sprzedawać.`,
     ctaPrimary: `Rozpocznij projekt`,
-    ctaGhost: `Zobacz nasze demo`,
     formSubmit: `Poproś o wycenę`,
     variants: {
       fast: {
