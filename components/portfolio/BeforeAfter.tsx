@@ -52,7 +52,7 @@ function frameAt(pts: number[], y: number) {
   return { i: lo, t: Math.min(1, Math.max(0, t)) };
 }
 
-export default function BeforeAfter({ c }: { c: CaseCopy }) {
+export default function BeforeAfter({ c, footer }: { c: CaseCopy; footer?: React.ReactNode }) {
   const reduced = usePrefersReducedMotion();
   const headReveal = useReveal<HTMLDivElement>();
   const holder = useRef<HTMLDivElement>(null);
@@ -318,7 +318,7 @@ export default function BeforeAfter({ c }: { c: CaseCopy }) {
       <div ref={holder}>
         <div
           ref={sticky}
-          className="sticky top-[max(88px,calc(50svh-290px))] [@media(max-height:480px)]:top-[76px] motion-reduce:static"
+          className="sticky top-[max(100px,calc(50svh-330px))] [@media(max-height:480px)]:top-[76px] motion-reduce:static"
         >
         {/* The title is held with the card, so it never scrolls away while the recording plays. */}
         <div ref={headReveal} className="mb-4 flex flex-wrap items-baseline justify-between gap-x-8 gap-y-2">
@@ -468,6 +468,8 @@ export default function BeforeAfter({ c }: { c: CaseCopy }) {
             </p>
           )}
         </div>
+        {/* Held with the title and the card (e.g. a CTA), so it is on screen from the first moment. */}
+        {footer && <div className="mt-5 flex justify-center">{footer}</div>}
         </div>
         {/* The scroll that plays it. A real element, not padding: a sticky box only travels inside its parent's content box. */}
         <div aria-hidden style={{ height: "300svh" }} className="motion-reduce:hidden" />
