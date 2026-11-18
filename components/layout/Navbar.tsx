@@ -172,7 +172,9 @@ export default function Navbar() {
           scrolled || open ? "glass glass-nav mx-4 md:mx-8 xl:mx-auto" : "bg-transparent"
         )}
       >
-        <Link href="/" className="flex shrink-0 items-center gap-2.5" aria-label={t.nav.home}>
+        {/* /#hero goes through the shared in-page scroll path (SmoothScroll), so on
+            the home page the logo glides up to the hero; elsewhere it opens home. */}
+        <Link href="/#hero" className="flex shrink-0 items-center gap-2.5" aria-label={t.nav.home}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo-w.svg" alt="" className="h-7 w-auto" />
           <span
