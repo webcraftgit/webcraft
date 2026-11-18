@@ -8,7 +8,6 @@ import SceneCanvas from "@/components/three/SceneCanvas";
 import MagneticButton from "@/components/ui/MagneticButton";
 import HeroCursorLight from "@/components/ui/HeroCursorLight";
 import { useT, useLocale } from "@/components/i18n/LanguageProvider";
-import HeroQuoteForm from "@/components/sections/HeroQuoteForm";
 import { TIERS, fmt } from "@/lib/pricing";
 
 /** Ad links open the hero with /?h=<id>. Only ids listed in
@@ -142,15 +141,20 @@ export default function Hero() {
         <p className="hero-reveal hero-lead mt-6 max-w-[46ch] text-body text-ink/80 [animation-delay:80ms]">
           {copy.subtitle}
         </p>
-        {/* The form is the hero's primary action. It replaced the
-            "Start your project" button, which only scrolled down to the same
-            fields. */}
-        <HeroQuoteForm />
-        <div className="hero-reveal pointer-events-auto mt-4 [animation-delay:200ms]">
+        {/* The hero's primary action scrolls to the full quote form (#contact),
+            which collects project type, scope and budget. A 3-field hero form
+            gave too little to price from, so it was removed. */}
+        <div className="hero-reveal pointer-events-auto mt-9 flex w-full flex-col items-center gap-3 sm:w-auto sm:flex-row [animation-delay:160ms]">
+          <MagneticButton href="#contact" wrapperClassName="w-full max-w-[320px] sm:w-auto" className="w-full sm:w-auto">
+            {t.hero.formSubmit}
+          </MagneticButton>
           <MagneticButton href="#showcase" variant="ghost" wrapperClassName="w-full max-w-[320px] sm:w-auto" className="w-full sm:w-auto">
             {t.hero.ctaGhost}
           </MagneticButton>
         </div>
+        <p className="hero-reveal mt-4 text-small text-ink-soft [animation-delay:200ms]">
+          {t.contact.replyPromise}
+        </p>
       </div>
 
       {/* Scroll cue — a mouse, so only for devices that have one */}
