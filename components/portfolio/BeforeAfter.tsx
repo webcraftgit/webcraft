@@ -314,25 +314,27 @@ export default function BeforeAfter({ c }: { c: CaseCopy }) {
 
   return (
     <div>
-      <div ref={headReveal} className="flex flex-wrap items-baseline justify-between gap-x-8 gap-y-2">
-        <h2 data-reveal className="font-display text-[clamp(1.5rem,2.6vw,2rem)] font-semibold leading-[1.1]">
-          {c.title}
-        </h2>
-        {/* The hint lives up here, not on the recording, so nothing covers the new site's own buttons. */}
-        <p data-reveal className="flex items-center gap-2 text-[0.8125rem] text-ink-soft motion-reduce:hidden">
-          {c.hint}
-          <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-            <path d="M3.5 6 8 10.5 12.5 6" />
-          </svg>
-        </p>
-      </div>
-
-      {/* The holder is as tall as the scroll that plays the recording; the card stays on screen inside it. */}
-      <div ref={holder} className="mt-6 md:mt-8">
+      {/* The holder is as tall as the scroll that plays the recording; the title and the card stay on screen inside it. */}
+      <div ref={holder}>
         <div
           ref={sticky}
-          className="glass rounded-3xl p-3 max-sm:-mx-3 max-sm:p-2 md:p-5 sticky top-[max(88px,calc(50svh-250px))] [@media(max-height:480px)]:top-[76px] motion-reduce:static"
+          className="sticky top-[max(88px,calc(50svh-290px))] [@media(max-height:480px)]:top-[76px] motion-reduce:static"
         >
+        {/* The title is held with the card, so it never scrolls away while the recording plays. */}
+        <div ref={headReveal} className="mb-4 flex flex-wrap items-baseline justify-between gap-x-8 gap-y-2">
+          <h2 data-reveal className="font-display text-[clamp(1.5rem,2.6vw,2rem)] font-semibold leading-[1.1]">
+            {c.title}
+          </h2>
+          {/* The hint lives up here, not on the recording, so nothing covers the new site's own buttons. */}
+          <p data-reveal className="flex items-center gap-2 text-[0.8125rem] text-ink-soft motion-reduce:hidden">
+            {c.hint}
+            <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+              <path d="M3.5 6 8 10.5 12.5 6" />
+            </svg>
+          </p>
+        </div>
+
+        <div className="glass rounded-3xl p-3 max-sm:-mx-3 max-sm:p-2 md:p-5">
           {/* Phone: one screen at a time, switched here. From 640px both sit side by side. */}
           <div role="group" aria-label={c.viewLabel} className="mb-2 flex gap-1 rounded-full bg-white/[0.06] p-1 sm:hidden">
             {(["before", "after"] as const).map((s) => (
@@ -465,6 +467,7 @@ export default function BeforeAfter({ c }: { c: CaseCopy }) {
               {c.loadError}
             </p>
           )}
+        </div>
         </div>
         {/* The scroll that plays it. A real element, not padding: a sticky box only travels inside its parent's content box. */}
         <div aria-hidden style={{ height: "300svh" }} className="motion-reduce:hidden" />
